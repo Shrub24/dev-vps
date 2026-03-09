@@ -7,6 +7,7 @@ Reproducible NixOS VPS for mobile OpenCode sessions via CodeNomad + Tailscale.
 - `flake.nix`: flake entrypoint (`.#dev-vps`)
 - `nixos/configuration.nix`: host config, services, users, firewall
 - `nixos/disko-config.nix`: GPT + BIOS+UEFI partitioning
+- `home/dev.nix`: Home Manager profile for user `dev`
 - `pkgs/codenomad/package.nix`: pinned `buildNpmPackage` for CodeNomad
 - `pkgs/opencode/package.nix`: pinned `buildNpmPackage` for OpenCode
 - `pkgs/repo-sync/`: repo sync utility for code + private agent state
@@ -48,6 +49,14 @@ or:
 ```bash
 nix develop
 ```
+
+## Home Manager
+
+User-level shell config for `dev` is managed with Home Manager.
+
+- zsh config is deployed from `zshrc/` to `~/.config/zshrc`
+- `~/.zshenv` sets `ZDOTDIR=~/.config/zshrc`
+- `ZSH_MOBILE` defaults to `1` and can be overridden per session
 
 ## Secrets (bootstrap once)
 

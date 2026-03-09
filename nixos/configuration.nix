@@ -74,7 +74,7 @@ in {
     fzf
     bat
     zoxide
-    thefuck
+    pay-respects
     antidote
     eza
     duf
@@ -205,29 +205,7 @@ in {
     "d /home/dev/workspaces 0755 dev users - -"
     "d /home/dev/workspaces/github 0755 dev users - -"
     "d /home/dev/state 0755 dev users - -"
-    "d /home/dev/.config/zshrc 0755 dev users - -"
   ];
-
-  system.activationScripts.devZshConfig = {
-    deps = [ "users" ];
-    text = ''
-      install -d -m 0755 -o dev -g users /home/dev/.config/zshrc
-      cp -rT ${../zshrc} /home/dev/.config/zshrc
-      rm -f /home/dev/.config/zshrc/.zsh_history /home/dev/.config/zshrc/.zcompdump
-      touch /home/dev/.config/zshrc/.zsh_history
-      chown -R dev:users /home/dev/.config/zshrc
-      chmod 600 /home/dev/.config/zshrc/.zsh_history
-
-      cat > /home/dev/.zshenv <<'EOF'
-export ZDOTDIR="$HOME/.config/zshrc"
-: ''${ZSH_MOBILE:=1}
-export ZSH_MOBILE
-export ANTIDOTE_ZSH="${pkgs.antidote}/share/antidote/antidote.zsh"
-EOF
-      chown dev:users /home/dev/.zshenv
-      chmod 644 /home/dev/.zshenv
-    '';
-  };
 
   system.stateVersion = "24.11";
 }
