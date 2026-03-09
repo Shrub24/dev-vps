@@ -7,9 +7,8 @@ if [[ $# -lt 1 ]]; then
 fi
 
 TARGET_IP="$1"
-DISK_DEVICE="${2:-/dev/vda}"
 
 nix run github:nix-community/nixos-anywhere -- \
-  --flake ./nixos#dev-vps \
-  --disk main "$DISK_DEVICE" \
-  "root@${TARGET_IP}"
+  --flake .#dev-vps \
+  --extra-files "$tmp" \
+  --target-host "root@${TARGET_IP}"
