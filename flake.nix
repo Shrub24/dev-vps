@@ -32,6 +32,19 @@
       inherit (pkgs) codenomad opencode repo-sync;
     };
 
+    devShells.${system}.default = pkgs.mkShell {
+      packages = with pkgs; [
+        just
+        git
+        jq
+        yq
+        sops
+        age
+        nixos-anywhere
+        nix-output-monitor
+      ];
+    };
+
     nixosConfigurations.dev-vps = nixpkgs.lib.nixosSystem {
       inherit system;
       modules = [

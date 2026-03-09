@@ -35,6 +35,20 @@ Build VM artifact:
 nix build --no-link path:.#nixosConfigurations.dev-vps.config.system.build.vm
 ```
 
+## Dev shell
+
+This repo includes a Nix dev shell for local maintenance commands (`just`, `sops`, `age`, `nixos-anywhere`, `jq`, `yq`).
+
+```bash
+direnv allow
+```
+
+or:
+
+```bash
+nix develop
+```
+
 ## Secrets (bootstrap once)
 
 This repo uses `sops-nix`.
