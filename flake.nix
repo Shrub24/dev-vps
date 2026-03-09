@@ -33,14 +33,12 @@
 
     nixosConfigurations.dev-vps = nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = {
-        diskDevice = "/dev/vda";
-      };
       modules = [
+        ./nixos/digitalocean.nix
         {nixpkgs.overlays = [ overlay ];}
         disko.nixosModules.disko
+        {disko.devices.disk.main.device = "/dev/vda";}
         sops-nix.nixosModules.sops
-        ./nixos/disko-config.nix
         ./nixos/configuration.nix
       ];
     };

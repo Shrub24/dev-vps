@@ -1,18 +1,23 @@
 {
+  modulesPath,
   lib,
   pkgs,
-  diskDevice ? "/dev/vda",
   ...
 }: let
   sshKeys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCcCrrwmxabl1/fnYTkrlMLa+I4ucauph3GMtTvDg4B/EyzsEFUB+sOEf9sLpdnocsxOaUu4e6qE2sZRWJHafIo8gidE3JB/Ogf9aeddWjukeYH3EddJDd0iPqCL2JMPdVpNi/Ly/RAcxi2ENSZf5eoX30EEkC3s2kzxJ1znlhS6YOjG1XFdmjtf5bMnj4JFxXNhEa5mpzR6G5Qua2lcaA53+J20mldyRGYSrQAnR2E0x0k0XS95/jJ7xo7pCqPyCkT2zBTzRoEb1A+4ulHsuW9d6nk6W61nUX3QDj4gNGcq9jUmtHVd+OdZPKU1ILWWHm8x2YDPron3wihe072VWEhwG8ojmfqeKUceF41/ymN1ws9DhxNaF+ofJwuGR8J9afPXeYfV1qxOvpSwKHvLCNsPP88HApd+0q5JADeclUGtrnfNxNolnTowA6dFJ1tqXE7doYiyaoitnHmR8DO/k0SQ21wnScfJUSdkD/Ifcz8M+36qB2/SkdUG788hpIObs0= saurabhj@Saurabh-fedora"
   ];
 in {
+  imports = [
+    (modulesPath + "/installer/scan/not-detected.nix")
+    (modulesPath + "/profiles/qemu-guest.nix")
+    ./disko-config.nix
+  ];
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
 
   networking.hostName = "dev-vps";
-  networking.useDHCP = lib.mkDefault true;
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   time.timeZone = "UTC";
@@ -20,6 +25,22 @@ in {
   services.openssh = {
     enable = true;
     openFirewall = true;
+    hostKeys = [
+      {
+        type = "ed25519";
+        path = "/etc/ssh/ssh_host_ed25519_key";
+      }
+      {
+        type = "ecdsa";
+        bits = 256;
+        path = "/etc/ssh/ssh_host_ecdsa_key";
+      }
+      {
+        type = "rsa";
+        bits = 4096;
+        path = "/etc/ssh/ssh_host_rsa_key";
+      }
+    ];
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
@@ -93,15 +114,17 @@ in {
     ];
   };
 
+  systemd.services.tailscaled-autoconnect = {
+    after = [ "sops-install-secrets.service" ];
+    wants = [ "sops-install-secrets.service" ];
+  };
+
   boot.loader.grub = {
     enable = true;
     efiSupport = true;
     efiInstallAsRemovable = true;
-    device = diskDevice;
   };
   boot.loader.efi.canTouchEfiVariables = false;
-
-  services.qemuGuest.enable = true;
 
   systemd.services.codenomad = {
     description = "CodeNomad Server";
