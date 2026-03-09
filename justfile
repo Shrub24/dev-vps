@@ -19,7 +19,7 @@ ssh-root:
   ssh root@{{ip}}
 
 redeploy:
-  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#dev-vps --target-host {{user}}@{{ip}} --use-remote-sudo
+  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#dev-vps --use-remote-sudo --target-host {{user}}@{{ip}} --build-host {{user}}@{{ip}}
 
 flake-check:
   nix flake check --no-build --no-write-lock-file path:.
