@@ -1,3 +1,6 @@
 *.key
 id_rsa.pub
 .direnv/
+zshrc/.zsh_history
+zshrc/.zcompdump
+zshrc/.zsh_plugins.zsh
