@@ -9,16 +9,17 @@ Reproducible NixOS VPS for mobile OpenCode sessions via CodeNomad + Tailscale.
 - `nixos/disko-config.nix`: GPT + BIOS+UEFI partitioning
 - `pkgs/codenomad/package.nix`: pinned `buildNpmPackage` for CodeNomad
 - `pkgs/opencode/package.nix`: pinned `buildNpmPackage` for OpenCode
+- `pkgs/repo-sync/`: repo sync utility for code + private agent state
 - `secrets/secrets.yaml`: encrypted runtime secrets (sops)
 - `deploy.sh`: nixos-anywhere helper
 
 ## Deploy
 
 ```bash
-./deploy.sh <DROPLET_IP> [DISK_DEVICE]
+./deploy.sh <DROPLET_IP> [EXTRA_FILES_DIR]
 ```
 
-Default disk is `/dev/vda`.
+Disk target is pinned for DigitalOcean as `/dev/vda` in `flake.nix`.
 
 ## Local test
 
@@ -47,6 +48,7 @@ Secrets expected:
 
 - `codenomad/env`: env file content (username + password)
 - `tailscale/auth_key`: reusable tagged auth key
+- `github/token`: GitHub token used by `repo-sync` for private repo HTTPS access
 
 ## Tailscale
 
@@ -60,3 +62,49 @@ ACL starter policy is provided at `docs/tailscale-acl-snippet.json`.
 ## Renovate
 
 `renovate.json` is configured for weekly flake input updates (no automerge).
+
+## Repo Sync
+
+`repo-sync` keeps selected repos and per-repo private state in sync.
+
+- code repos live under `/home/dev/workspaces/github/<owner>/<repo>`
+- private state repo lives at `/home/dev/state` (`Shrub24/agent-state`)
+- per-repo state lives at `/home/dev/state/repos/github/<owner>/<repo>`
+
+### Config file
+
+`/home/dev/state/config/repos.yaml` controls managed repos and arbitrary mappings.
+
+Example:
+
+```yaml
+repos:
+  - name: Shrub24/dev-vps
+    mappings:
+      - from: state:.opencode
+        to: repo:.opencode
+        untracked: true
+      - from: state:personal/flake.nix
+        to: repo:flake.nix
+        untracked: true
+```
+
+Mapping rules:
+
+- `from: state:<path>` is relative to `/home/dev/state/repos/github/<owner>/<repo>/`
+- `to: repo:<path>` is relative to the code repo root
+- mappings are symlinks
+- `untracked: true` adds the target to `.git/info/exclude` in the code repo
+
+### Commands
+
+- `repo-sync bootstrap` - clone/init state repo and config
+- `repo-sync add Shrub24/repo` - add a managed repo (local commit to state repo)
+- `repo-sync add Shrub24/repo --push` - add and push state repo changes
+- `repo-sync sync` - pull state config and sync all managed repos
+- `repo-sync scan` - discover local repos under workspaces and add to YAML
+- `repo-sync state pull` - pull latest state repo
+- `repo-sync state commit` - commit pending state changes
+- `repo-sync state push` - push state repo commits
+
+Each managed repo gets a local `post-commit` hook that runs `repo-sync state commit --repo <owner/repo> --code-sha <sha>`. It commits state locally only (no push unless explicit).

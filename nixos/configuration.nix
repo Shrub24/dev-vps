@@ -53,6 +53,7 @@ in {
     isNormalUser = true;
     description = "Dev User";
     extraGroups = [ "wheel" ];
+    shell = pkgs.zsh;
     openssh.authorizedKeys.keys = sshKeys;
   };
   users.users.root.openssh.authorizedKeys.keys = sshKeys;
@@ -61,6 +62,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     git
+    gh
     vim
     neovim
     curl
@@ -69,12 +71,35 @@ in {
     ripgrep
     fd
     jq
+    fzf
+    tree
+    lsof
+    strace
+    rsync
+    unzip
+    zip
+    gnumake
+    gcc
+    clang
+    pkg-config
+    cmake
+    ninja
+    python3
+    python3Packages.pyyaml
+    nodejs
+    bun
+    go
+    rustc
+    cargo
     opencode
     codenomad
+    repo-sync
   ];
 
+  programs.zsh.enable = true;
   programs.direnv.enable = true;
   programs.direnv.nix-direnv.enable = true;
+  programs.direnv.enableZshIntegration = true;
 
   programs.nix-ld = {
     enable = true;
@@ -102,6 +127,14 @@ in {
   sops.secrets.tailscale_auth_key = {
     key = "tailscale/auth_key";
     path = "/run/secrets/tailscale.auth_key";
+    mode = "0400";
+  };
+
+  sops.secrets.github_token = {
+    key = "github/token";
+    path = "/run/secrets/github.token";
+    owner = "dev";
+    group = "users";
     mode = "0400";
   };
 
@@ -164,6 +197,8 @@ in {
 
   systemd.tmpfiles.rules = [
     "d /home/dev/workspaces 0755 dev users - -"
+    "d /home/dev/workspaces/github 0755 dev users - -"
+    "d /home/dev/state 0755 dev users - -"
   ];
 
   system.stateVersion = "24.11";

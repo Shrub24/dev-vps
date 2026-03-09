@@ -25,3 +25,4 @@ jobs:
         run: |
           nix build --no-link path:.#packages.x86_64-linux.codenomad
           nix build --no-link path:.#packages.x86_64-linux.opencode
+          nix build --no-link path:.#packages.x86_64-linux.repo-sync

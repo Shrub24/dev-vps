@@ -20,6 +20,7 @@
     overlay = final: prev: {
       codenomad = prev.callPackage ./pkgs/codenomad/package.nix {};
       opencode = prev.callPackage ./pkgs/opencode/package.nix {};
+      repo-sync = prev.callPackage ./pkgs/repo-sync/package.nix {};
     };
 
     pkgs = import nixpkgs {
@@ -28,7 +29,7 @@
     };
   in {
     packages.${system} = {
-      inherit (pkgs) codenomad opencode;
+      inherit (pkgs) codenomad opencode repo-sync;
     };
 
     nixosConfigurations.dev-vps = nixpkgs.lib.nixosSystem {
