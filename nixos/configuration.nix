@@ -11,8 +11,9 @@ in {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
 
-  networking.hostName = "uk-dev-box";
+  networking.hostName = "dev-vps";
   networking.useDHCP = lib.mkDefault true;
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   time.timeZone = "UTC";
 
@@ -33,7 +34,6 @@ in {
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = sshKeys;
   };
-
   users.users.root.openssh.authorizedKeys.keys = sshKeys;
 
   security.sudo.wheelNeedsPassword = false;
@@ -67,8 +67,31 @@ in {
     ];
   };
 
-  services.tailscale.enable = true;
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  sops.defaultSopsFile = ../secrets/secrets.yaml;
+  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
+
+  sops.secrets.codenomad_env = {
+    key = "codenomad/env";
+    path = "/run/secrets/codenomad.env";
+    owner = "dev";
+    group = "users";
+    mode = "0400";
+  };
+
+  sops.secrets.tailscale_auth_key = {
+    key = "tailscale/auth_key";
+    path = "/run/secrets/tailscale.auth_key";
+    mode = "0400";
+  };
+
+  services.tailscale = {
+    enable = true;
+    authKeyFile = "/run/secrets/tailscale.auth_key";
+    extraUpFlags = [
+      "--hostname=dev-vps"
+      "--advertise-tags=tag:dev-vps"
+    ];
+  };
 
   boot.loader.grub = {
     enable = true;
@@ -82,11 +105,11 @@ in {
 
   systemd.services.codenomad = {
     description = "CodeNomad Server";
-    after = [ "network-online.target" "tailscaled.service" ];
-    wants = [ "network-online.target" "tailscaled.service" ];
+    after = [ "network-online.target" "tailscaled-autoconnect.service" ];
+    wants = [ "network-online.target" "tailscaled-autoconnect.service" ];
     wantedBy = [ "multi-user.target" ];
+    unitConfig.ConditionPathExists = "/run/secrets/codenomad.env";
     environment = {
-      CODENOMAD_SERVER_USERNAME = "saurabhj";
       CLI_UI_NO_UPDATE = "true";
       CLI_UI_AUTO_UPDATE = "false";
     };
@@ -95,7 +118,7 @@ in {
       User = "dev";
       Group = "users";
       WorkingDirectory = "/home/dev";
-      EnvironmentFile = [ "/etc/codenomad.env" ];
+      EnvironmentFile = "/run/secrets/codenomad.env";
       ExecStart = "${pkgs.codenomad}/bin/codenomad --host 127.0.0.1 --https false --http true --http-port 9899 --workspace-root /home/dev/workspaces --ui-no-update --ui-auto-update false";
       Restart = "on-failure";
       RestartSec = "5s";
@@ -104,9 +127,10 @@ in {
 
   systemd.services.tailscale-serve-codenomad = {
     description = "Publish CodeNomad over Tailscale Serve";
-    after = [ "tailscaled.service" "codenomad.service" ];
-    wants = [ "tailscaled.service" "codenomad.service" ];
+    after = [ "tailscaled-autoconnect.service" "codenomad.service" ];
+    wants = [ "tailscaled-autoconnect.service" "codenomad.service" ];
     wantedBy = [ "multi-user.target" ];
+    unitConfig.ConditionPathExists = "/run/secrets/tailscale.auth_key";
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
