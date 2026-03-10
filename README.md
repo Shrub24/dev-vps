@@ -42,7 +42,8 @@ export DROPLET_USER=dev
 Repo-sync env template:
 
 ```bash
-cp .env.template ~/.config/repo-sync.env
+mkdir -p ~/.config/repo-sync
+cp templates/repo-sync/config.env.template ~/.config/repo-sync/config.env
 ```
 
 Disk target is pinned for DigitalOcean as `/dev/vda` in `flake.nix`.
@@ -97,7 +98,7 @@ Secrets expected:
 
 Template files:
 
-- `.env.template` for repo-sync runtime configuration
+- `templates/repo-sync/config.env.template` for repo-sync runtime configuration
 - `secrets/secrets.template.yaml` as unencrypted secrets reference
 
 ## Tailscale
@@ -123,19 +124,21 @@ Intentions:
 - keep private per-repo agent state in one private repo (`Shrub24/project-state`)
 - auto-commit local state changes on project commits (push only when explicit)
 
-- code repos live under `/home/dev/workspaces/github/<owner>/<repo>`
-- private state repo lives at `/home/dev/project-state` (`Shrub24/project-state`)
-- per-repo state lives at `/home/dev/project-state/repos/github/<owner>/<repo>`
+- shared repo metadata lives in `~/project-state/config/repos.yaml`
+- local machine path mapping lives in `~/.config/repo-sync/paths.yaml`
+- private state repo lives at `~/project-state` (`Shrub24/project-state`)
+- per-repo state lives at `~/project-state/repos/github/<owner>/<repo>`
 
 ### Config file
 
-`/home/dev/project-state/config/repos.yaml` controls managed repos and arbitrary mappings.
+`~/project-state/config/repos.yaml` controls shared repo metadata and arbitrary mappings.
 
 Example:
 
 ```yaml
 repos:
-  - name: Shrub24/dev-vps
+  - key: github:Shrub24/dev-vps
+    remote: Shrub24/dev-vps
     mappings:
       - from: state:.opencode
         to: repo:.opencode
@@ -147,7 +150,7 @@ repos:
 
 Mapping rules:
 
-- `from: state:<path>` is relative to `/home/dev/project-state/repos/github/<owner>/<repo>/`
+- `from: state:<path>` is relative to `~/project-state/repos/github/<owner>/<repo>/`
 - `to: repo:<path>` is relative to the code repo root
 - mappings are symlinks
 - `untracked` defaults to `true` unless explicitly set to `false`
@@ -160,7 +163,8 @@ Extended example:
 
 ```yaml
 repos:
-  - name: Shrub24/dev-vps
+  - key: github:Shrub24/dev-vps
+    remote: Shrub24/dev-vps
     ignorePaths:
       - .direnv
       - private
@@ -176,7 +180,12 @@ repos:
 
 - `repo-sync bootstrap` - clone/init state repo and config
 - `repo-sync init` - initialize or clone `project-state` and config
-- `repo-sync add Shrub24/repo` - add a managed repo (local commit to state repo)
+- `repo-sync add Shrub24/repo` - add a managed repo and clone to default path
+- `repo-sync add Shrub24/repo --path ~/Projects/dev/repo` - add using alternate clone path
+- `repo-sync add Shrub24/repo --path ~/Projects/dev/repo --existing` - track existing local repo
+- `repo-sync track ~/Projects/dev/repo` - alias for `repo-sync add --path ~/Projects/dev/repo --existing`
+- `repo-sync track ~/Projects/dev/repo Shrub24/repo` - track and pin remote explicitly
+- `repo-sync track --path ~/Projects/dev/local-only --key local:dev/local-only` - track non-GitHub local repo
 - `repo-sync add Shrub24/repo --ignore-path .direnv --ignore-path private` - ignore defaults
 - `repo-sync add Shrub24/repo --push` - add and push state repo changes
 - `repo-sync sync` - pull state config and sync all managed repos

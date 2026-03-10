@@ -48,3 +48,10 @@ hm-status:
 
 install-repo-sync:
   nix profile install --accept-flake-config path:.#repo-sync
+
+upgrade-repo-sync:
+  nix profile upgrade repo-sync
+
+reinstall-repo-sync:
+  nix profile remove repo-sync || true
+  nix profile install --accept-flake-config path:.#repo-sync

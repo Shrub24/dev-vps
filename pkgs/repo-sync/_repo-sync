@@ -9,6 +9,7 @@ _repo_sync() {
     'init:initialize or clone project-state repo'
     'bootstrap:initialize state repo and config'
     'add:add and manage one repository'
+    'track:alias for add --path <path> --existing'
     'sync:sync all configured repositories'
     'scan:discover local repositories into config'
     'state:state repository operations'
@@ -23,8 +24,24 @@ _repo_sync() {
     add)
       _arguments \
         '--push[push state commit]' \
+        '--path[target repository path]:path:_files' \
+        '--existing[do not clone; use existing git repository]' \
+        '--key[custom non-github key]' \
         '--ignore-path[ignore state path from default mapping]:path:_files' \
         '1:repository:->repo'
+      if [[ "$state" == "repo" ]]; then
+        local -a repos
+        repos=("${(@f)$(repo-sync __complete-repo "$PREFIX" 2>/dev/null)}")
+        _describe 'repository' repos
+      fi
+      ;;
+    track)
+      _arguments \
+        '--push[push state commit]' \
+        '--key[custom non-github key]' \
+        '--ignore-path[ignore state path from default mapping]:path:_files' \
+        '1:path:_files' \
+        '2:repository:->repo'
       if [[ "$state" == "repo" ]]; then
         local -a repos
         repos=("${(@f)$(repo-sync __complete-repo "$PREFIX" 2>/dev/null)}")
@@ -46,7 +63,8 @@ _repo_sync() {
       case "$words[3]" in
         add)
           _arguments \
-            '--repo[target repository in owner/repo format]:repository:->repo' \
+            '--repo[target repository remote owner/repo or key]:repository:->repo' \
+            '--repo-key[target repository key]:key:' \
             '--push[push state commit]' \
             '1:path:_files'
           if [[ "$state" == "repo" ]]; then
@@ -57,7 +75,8 @@ _repo_sync() {
           ;;
         commit)
           _arguments \
-            '--repo[repository in owner/repo format]:repository:->repo' \
+            '--repo[repository remote owner/repo or key]:repository:->repo' \
+            '--repo-key[repository key]:key:' \
             '--code-sha[code commit SHA]' \
             '--push[push state commit]'
           if [[ "$state" == "repo" ]]; then
