@@ -68,12 +68,12 @@
           disko.nixosModules.disko
           { disko.devices.disk.main.device = "/dev/vda"; }
           sops-nix.nixosModules.sops
-          home-manager.nixosModules.home-manager.home-manager
+          home-manager.nixosModules.home-manager
           {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            backupFileExtension = "hm-bak";
-            users.dev = import ./home/dev.nix;
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "hm-bak";
+            home-manager.users.dev = import ./home/dev.nix;
           }
           ./nixos/configuration.nix
         ];

@@ -16,6 +16,7 @@ in {
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
+  nix.settings.trusted-users = [ "root" "dev" ];
 
   networking.hostName = "dev-vps";
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
@@ -170,7 +171,7 @@ in {
   systemd.tmpfiles.rules = [
     "d /home/dev/workspaces 0755 dev users - -"
     "d /home/dev/workspaces/github 0755 dev users - -"
-    "d /home/dev/state 0755 dev users - -"
+    "d /home/dev/project-state 0755 dev users - -"
   ];
 
   system.stateVersion = "24.11";

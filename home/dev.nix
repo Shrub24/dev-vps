@@ -48,6 +48,22 @@
     force = true;
   };
 
+  xdg.configFile."repo-sync.env".text = ''
+    REPO_SYNC_GH_USERNAME=Shrub24
+    REPO_SYNC_STATE_REPO_URL=https://github.com/Shrub24/project-state.git
+    REPO_SYNC_WORKSPACES_DIR=~/workspaces/github
+    REPO_SYNC_STATE_DIR=~/project-state
+    REPO_SYNC_GH_TOKEN_PATH=/run/secrets/github.token
+  '';
+
+  home.sessionVariables = {
+    REPO_SYNC_GH_USERNAME = "Shrub24";
+    REPO_SYNC_STATE_REPO_URL = "https://github.com/Shrub24/project-state.git";
+    REPO_SYNC_WORKSPACES_DIR = "~/workspaces/github";
+    REPO_SYNC_STATE_DIR = "~/project-state";
+    REPO_SYNC_GH_TOKEN_PATH = "/run/secrets/github.token";
+  };
+
   home.file.".zshenv".text = ''
     export ZDOTDIR="$HOME/.config/zshrc"
     : ''${ZSH_MOBILE:=1}

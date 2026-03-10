@@ -9,17 +9,21 @@ default:
 help:
   @just --list
 
+check:
+  just flake-check
+  just build
+
 ping:
   ping -c 3 {{ip}}
 
 ssh:
-  ssh {{user}}@{{ip}}
+  ssh {{user}}@{{ip}} || true
 
 ssh-root:
-  ssh root@{{ip}}
+  ssh root@{{ip}} || true
 
 redeploy:
-  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#dev-vps --use-remote-sudo --target-host {{user}}@{{ip}} --build-host {{user}}@{{ip}}
+  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#dev-vps --sudo --target-host {{user}}@{{ip}} --build-host {{user}}@{{ip}}
 
 flake-check:
   nix flake check --no-build --no-write-lock-file path:.
@@ -39,5 +43,8 @@ status:
 tailscale-status:
   ssh {{user}}@{{ip}} "sudo tailscale status; echo; sudo tailscale serve status"
 
-repo-sync cmd="sync":
-  ssh {{user}}@{{ip}} "repo-sync {{cmd}}"
+hm-status:
+  ssh {{user}}@{{ip}} "systemctl status home-manager-dev --no-pager || true"
+
+install-repo-sync:
+  nix profile install --accept-flake-config path:.#repo-sync
