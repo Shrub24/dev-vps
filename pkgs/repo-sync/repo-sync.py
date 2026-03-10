@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -56,7 +57,7 @@ EPILOG = """Examples:
   repo-sync add Shrub24/dev-vps
   repo-sync add Shrub24/dev-vps --path ~/Projects/dev/dev-vps --existing
   repo-sync track ~/Projects/dev/dev-vps
-  repo-sync track ~/Projects/dev/dev-vps Shrub24/dev-vps
+  repo-sync track ~/Projects/dev/dev-vps --repo Shrub24/dev-vps
   repo-sync sync
   repo-sync state add .opencode
 """
@@ -103,6 +104,13 @@ def validate_required_config():
         missing.append("REPO_SYNC_STATE_REPO_URL")
     if missing:
         raise RuntimeError(f"Missing required configuration: {', '.join(missing)}")
+
+
+def set_state_dir(path: Path):
+    global STATE_DIR, STATE_CONFIG_PATH, STATE_REPOS_ROOT
+    STATE_DIR = path.expanduser()
+    STATE_CONFIG_PATH = STATE_DIR / "config" / "repos.yaml"
+    STATE_REPOS_ROOT = STATE_DIR / "repos"
 
 
 def get_gh_token():
@@ -561,6 +569,8 @@ def ensure_state_branch_and_pull():
 
 
 def cmd_init(args):
+    if args.state_dir:
+        set_state_dir(Path(args.state_dir))
     ensure_state_repo()
     ensure_dirs()
     git_cmd(["-C", str(STATE_DIR), "fetch", "--prune", "origin"])
@@ -797,7 +807,7 @@ def cmd_state_add(args):
         and not repo_target.is_symlink()
         and not state_target.exists()
     ):
-        repo_target.rename(state_target)
+        shutil.move(str(repo_target), str(state_target))
     apply_mapping(key, repo_root, desired)
     commit_state(key=key, reason="state-add", push=args.push)
 
@@ -857,6 +867,10 @@ def build_parser():
     p_init = sub.add_parser(
         "init", help="Clone/init project-state and bootstrap if remote is empty"
     )
+    p_init.add_argument(
+        "--state-dir",
+        help="Override REPO_SYNC_STATE_DIR for this command",
+    )
     p_init.add_argument("--push", action="store_true", help="Push state commit")
     p_init.set_defaults(func=cmd_init)
 
@@ -880,9 +894,9 @@ def build_parser():
     )
     p_add.set_defaults(func=cmd_add)
 
-    p_track = sub.add_parser("track", help="Alias for add --path <path> --existing")
+    p_track = sub.add_parser("track", help="Track existing repo by local path")
     p_track.add_argument("path", help="Existing local repository path")
-    p_track.add_argument("repo", nargs="?", help="Repository in owner/repo format")
+    p_track.add_argument("--repo", help="Repository in owner/repo format")
     p_track.add_argument("--key", help="Custom key for non-GitHub repositories")
     p_track.add_argument("--push", action="store_true", help="Push state commit")
     p_track.add_argument(

@@ -19,15 +19,22 @@ _repo_sync_complete() {
 		fi
 		;;
 	track)
-		if [[ $cword -eq 2 ]]; then
-			COMPREPLY=($(compgen -f -- "$cur"))
-		elif [[ $cword -eq 3 ]]; then
+		if [[ "$prev" == "--repo" ]]; then
 			COMPREPLY=($(compgen -W "$(repo-sync __complete-repo "$cur" 2>/dev/null)" -- "$cur"))
+		elif [[ $cword -eq 2 ]]; then
+			COMPREPLY=($(compgen -f -- "$cur"))
 		else
-			COMPREPLY=($(compgen -W "--push --key --ignore-path" -- "$cur"))
+			COMPREPLY=($(compgen -W "--repo --push --key --ignore-path" -- "$cur"))
 		fi
 		;;
-	init | bootstrap | sync | scan)
+	init)
+		if [[ "$prev" == "--state-dir" ]]; then
+			COMPREPLY=($(compgen -f -- "$cur"))
+		else
+			COMPREPLY=($(compgen -W "--state-dir --push" -- "$cur"))
+		fi
+		;;
+	bootstrap | sync | scan)
 		COMPREPLY=($(compgen -W "--push" -- "$cur"))
 		;;
 	state)

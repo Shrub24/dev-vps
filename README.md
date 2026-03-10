@@ -180,12 +180,13 @@ repos:
 
 - `repo-sync bootstrap` - clone/init state repo and config
 - `repo-sync init` - initialize or clone `project-state` and config
+- `repo-sync init --state-dir ~/Projects/dev/project-state` - one-off override for state repo location
 - `repo-sync add Shrub24/repo` - add a managed repo and clone to default path
 - `repo-sync add Shrub24/repo --path ~/Projects/dev/repo` - add using alternate clone path
 - `repo-sync add Shrub24/repo --path ~/Projects/dev/repo --existing` - track existing local repo
 - `repo-sync track ~/Projects/dev/repo` - alias for `repo-sync add --path ~/Projects/dev/repo --existing`
-- `repo-sync track ~/Projects/dev/repo Shrub24/repo` - track and pin remote explicitly
-- `repo-sync track --path ~/Projects/dev/local-only --key local:dev/local-only` - track non-GitHub local repo
+- `repo-sync track ~/Projects/dev/repo --repo Shrub24/repo` - track and pin remote explicitly
+- `repo-sync track ~/Projects/dev/local-only --key local:dev/local-only` - track non-GitHub local repo
 - `repo-sync add Shrub24/repo --ignore-path .direnv --ignore-path private` - ignore defaults
 - `repo-sync add Shrub24/repo --push` - add and push state repo changes
 - `repo-sync sync` - pull state config and sync all managed repos

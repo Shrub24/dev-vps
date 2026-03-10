@@ -9,7 +9,7 @@ _repo_sync() {
     'init:initialize or clone project-state repo'
     'bootstrap:initialize state repo and config'
     'add:add and manage one repository'
-    'track:alias for add --path <path> --existing'
+    'track:track existing repo by local path'
     'sync:sync all configured repositories'
     'scan:discover local repositories into config'
     'state:state repository operations'
@@ -38,17 +38,22 @@ _repo_sync() {
     track)
       _arguments \
         '--push[push state commit]' \
+        '--repo[repository in owner/repo format]:repository:->repo' \
         '--key[custom non-github key]' \
         '--ignore-path[ignore state path from default mapping]:path:_files' \
-        '1:path:_files' \
-        '2:repository:->repo'
+        '1:path:_files'
       if [[ "$state" == "repo" ]]; then
         local -a repos
         repos=("${(@f)$(repo-sync __complete-repo "$PREFIX" 2>/dev/null)}")
         _describe 'repository' repos
       fi
       ;;
-    init|bootstrap|sync|scan)
+    init)
+      _arguments \
+        '--state-dir[state repo location for this command]:path:_files' \
+        '--push[push state commit]'
+      ;;
+    bootstrap|sync|scan)
       _arguments '--push[push state commit]'
       ;;
     state)
