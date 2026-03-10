@@ -62,42 +62,8 @@ in {
 
   environment.systemPackages = with pkgs; [
     git
-    gh
-    vim
-    neovim
     curl
     wget
-    tmux
-    ripgrep
-    fd
-    jq
-    fzf
-    bat
-    zoxide
-    pay-respects
-    antidote
-    eza
-    duf
-    tree
-    lsof
-    strace
-    rsync
-    unzip
-    zip
-    gnumake
-    gcc
-    clang
-    pkg-config
-    cmake
-    ninja
-    python3
-    python3Packages.pyyaml
-    nodejs
-    bun
-    go
-    rustc
-    cargo
-    opencode
     codenomad
     repo-sync
   ];
