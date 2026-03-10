@@ -4,8 +4,9 @@
   lib,
   makeWrapper,
   nodejs,
-}: buildNpmPackage rec {
-  pname = "opencode";
+}:
+buildNpmPackage rec {
+  pname = "opencode-ai";
   version = "1.2.24";
 
   src = fetchurl {
@@ -19,7 +20,10 @@
 
   npmDepsHash = "sha256-0UwKt9N2TWNxnV1t85VL36CMsB/vNpAJtwQVHnwMWkI=";
   dontNpmBuild = true;
-  npmInstallFlags = [ "--ignore-scripts" "--omit=dev" ];
+  npmInstallFlags = [
+    "--ignore-scripts"
+    "--omit=dev"
+  ];
 
   nativeBuildInputs = [ makeWrapper ];
 
