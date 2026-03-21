@@ -20,25 +20,9 @@
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
-  sops.secrets.codenomad_env = {
-    key = "codenomad/env";
-    path = "/run/secrets/codenomad.env";
-    owner = "dev";
-    group = "users";
-    mode = "0400";
-  };
-
   sops.secrets.tailscale_auth_key = {
     key = "tailscale/auth_key";
     path = "/run/secrets/tailscale.auth_key";
-    mode = "0400";
-  };
-
-  sops.secrets.github_token = {
-    key = "github/token";
-    path = "/run/secrets/github.token";
-    owner = "dev";
-    group = "users";
     mode = "0400";
   };
 
@@ -65,20 +49,6 @@
       xz
       icu
     ];
-  };
-
-  systemd.services.tailscale-serve-codenomad = {
-    description = "Publish CodeNomad over Tailscale Serve";
-    after = [ "tailscaled-autoconnect.service" ];
-    wants = [ "tailscaled-autoconnect.service" ];
-    wantedBy = [ "multi-user.target" ];
-    unitConfig.ConditionPathExists = "/run/secrets/tailscale.auth_key";
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${pkgs.tailscale}/bin/tailscale serve --bg --https=443 http://127.0.0.1:9899";
-      ExecStop = "${pkgs.tailscale}/bin/tailscale serve reset";
-    };
   };
 
   system.stateVersion = "25.11";
