@@ -12,6 +12,7 @@ EXTRA_FILES="${2:-}"
 CMD=(
 	nix run github:nix-community/nixos-anywhere --
 	--flake "path:.#oci-melb-1"
+	--build-on-remote
 	--target-host "root@${TARGET_HOST}"
 )
 
