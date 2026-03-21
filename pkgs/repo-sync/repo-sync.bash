@@ -6,7 +6,7 @@ _repo_sync_complete() {
 	local sub=${words[2]:-}
 
 	if [[ $cword -eq 1 ]]; then
-		COMPREPLY=($(compgen -W "init bootstrap add track sync scan state" -- "$cur"))
+		COMPREPLY=($(compgen -W "init bootstrap add track sync scan config state" -- "$cur"))
 		return
 	fi
 
@@ -36,6 +36,9 @@ _repo_sync_complete() {
 		;;
 	bootstrap | sync | scan)
 		COMPREPLY=($(compgen -W "--push" -- "$cur"))
+		;;
+	config)
+		COMPREPLY=()
 		;;
 	state)
 		if [[ $cword -eq 2 ]]; then

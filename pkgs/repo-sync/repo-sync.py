@@ -41,6 +41,10 @@ def load_repo_sync_env():
 
 load_repo_sync_env()
 
+ENV_FILE_PATH = _env_path(
+    "REPO_SYNC_ENV_FILE", str(Path.home() / ".config" / "repo-sync" / "config.env")
+)
+
 OWNER = os.environ.get("REPO_SYNC_GH_USERNAME", "").strip()
 STATE_REPO_URL = os.environ.get("REPO_SYNC_STATE_REPO_URL", "").strip()
 WORKSPACES_DIR = _env_path("REPO_SYNC_WORKSPACES_DIR", "~/workspaces/github")
@@ -849,6 +853,41 @@ def cmd_complete_repo(args):
         print(item)
 
 
+def _fmt_value(value):
+    if value is None:
+        return "<unset>"
+    if isinstance(value, str) and not value.strip():
+        return "<unset>"
+    return str(value)
+
+
+def cmd_config(_args):
+    shared_exists = STATE_CONFIG_PATH.exists()
+    local_exists = LOCAL_PATHS_PATH.exists()
+    shared = load_shared_config() if shared_exists else {"repos": []}
+    local = load_local_paths() if local_exists else {"paths": []}
+
+    print("repo-sync configuration")
+    print(f"  cwd: {Path.cwd()}")
+    print(
+        f"  env_file: {ENV_FILE_PATH} ({'exists' if ENV_FILE_PATH.exists() else 'missing'})"
+    )
+    print(f"  gh_username: {_fmt_value(OWNER)}")
+    print(f"  state_repo_url: {_fmt_value(STATE_REPO_URL)}")
+    print(f"  workspaces_dir: {WORKSPACES_DIR}")
+    print(f"  state_dir: {STATE_DIR}")
+    print(f"  gh_token_path: {GH_TOKEN_PATH}")
+    print(
+        f"  local_paths_file: {LOCAL_PATHS_PATH} ({'exists' if local_exists else 'missing'})"
+    )
+    print(
+        f"  shared_config_file: {STATE_CONFIG_PATH} ({'exists' if shared_exists else 'missing'})"
+    )
+    print(f"  repos_root: {STATE_REPOS_ROOT}")
+    print(f"  shared_repos_count: {len(shared.get('repos', []))}")
+    print(f"  local_paths_count: {len(local.get('paths', []))}")
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="repo-sync",
@@ -917,6 +956,9 @@ def build_parser():
     p_scan.add_argument("--push", action="store_true", help="Push state commit")
     p_scan.set_defaults(func=cmd_scan)
 
+    p_config = sub.add_parser("config", help="Print loaded repo-sync configuration")
+    p_config.set_defaults(func=cmd_config)
+
     p_state = sub.add_parser("state", help="State repository operations")
     state_sub = p_state.add_subparsers(dest="state_cmd", required=True)
 
@@ -953,10 +995,12 @@ def main():
         cmd_complete_repo(argparse.Namespace(prefix=prefix))
         return 0
 
+    cmd = sys.argv[1] if len(sys.argv) >= 2 else ""
     if (
         "-h" not in sys.argv
         and "--help" not in sys.argv
         and "__complete-repo" not in sys.argv
+        and cmd != "config"
     ):
         validate_required_config()
 

@@ -12,6 +12,7 @@ _repo_sync() {
     'track:track existing repo by local path'
     'sync:sync all configured repositories'
     'scan:discover local repositories into config'
+    'config:print loaded repo-sync configuration'
     'state:state repository operations'
   )
 
@@ -55,6 +56,9 @@ _repo_sync() {
       ;;
     bootstrap|sync|scan)
       _arguments '--push[push state commit]'
+      ;;
+    config)
+      _arguments
       ;;
     state)
       if (( CURRENT == 3 )); then
