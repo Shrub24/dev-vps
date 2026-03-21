@@ -1,5 +1,5 @@
 {
-  "model_profile": "inherit",
+  "model_profile": "custom",
   "commit_docs": true,
   "parallelization": false,
   "search_gitignored": false,
@@ -16,20 +16,21 @@
     "research": true,
     "plan_check": true,
     "verifier": true,
-    "nyquist_validation": false,
-    "auto_advance": true,
+    "nyquist_validation": true,
+    "auto_advance": false,
     "node_repair": true,
     "node_repair_budget": 2,
-    "ui_phase": true,
+    "ui_phase": false,
     "ui_safety_gate": true,
     "text_mode": false,
-    "_auto_chain_active": true
+    "_auto_chain_active": false
   },
   "hooks": {
-    "context_warnings": true
+    "context_warnings": true,
+    "research_questions": true
   },
-  "mode": "yolo",
-  "granularity": "coarse",
+  "mode": "interactive",
+  "granularity": "standard",
   "model_overrides": {
     "gsd-planner": "openai/gpt-5.4",
     "gsd-roadmapper": "openai/gpt-5.4",

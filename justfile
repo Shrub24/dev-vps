@@ -1,7 +1,7 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-ip := env_var_or_default("DROPLET_IP", "138.68.162.231")
-user := env_var_or_default("DROPLET_USER", "dev")
+target_host := env_var_or_default("TARGET_HOST", "oci-melb-1")
+target_user := env_var_or_default("TARGET_USER", "dev")
 
 default:
   @just --list
@@ -14,44 +14,31 @@ check:
   just build
 
 ping:
-  ping -c 3 {{ip}}
+  ping -c 3 {{target_host}}
 
 ssh:
-  ssh {{user}}@{{ip}} || true
+  ssh {{target_user}}@{{target_host}} || true
 
 ssh-root:
-  ssh root@{{ip}} || true
+  ssh root@{{target_host}} || true
 
 redeploy:
-  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#dev-vps --sudo --target-host {{user}}@{{ip}} --build-host {{user}}@{{ip}}
+  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#oci-melb-1 --sudo --target-host {{target_user}}@{{target_host}} --build-host {{target_user}}@{{target_host}}
 
 flake-check:
   nix flake check --no-build --no-write-lock-file path:.
 
 build:
-  nix build --no-link --no-write-lock-file path:.#nixosConfigurations.dev-vps.config.system.build.toplevel
+  nix build --no-link --no-write-lock-file path:.#nixosConfigurations.oci-melb-1.config.system.build.toplevel
 
 vm-build:
-  nix build --no-link --no-write-lock-file path:.#nixosConfigurations.dev-vps.config.system.build.vm
+  nix build --no-link --no-write-lock-file path:.#nixosConfigurations.oci-melb-1.config.system.build.vm
 
 logs unit="codenomad" lines="200":
-  ssh {{user}}@{{ip}} "sudo journalctl -u {{unit}} -n {{lines}} --no-pager"
+  ssh {{target_user}}@{{target_host}} "sudo journalctl -u {{unit}} -n {{lines}} --no-pager"
 
 status:
-  ssh {{user}}@{{ip}} "hostnamectl; echo; sudo systemctl --no-pager --full status tailscaled codenomad tailscale-serve-codenomad"
+  ssh {{target_user}}@{{target_host}} "hostnamectl; echo; sudo systemctl --no-pager --full status tailscaled"
 
 tailscale-status:
-  ssh {{user}}@{{ip}} "sudo tailscale status; echo; sudo tailscale serve status"
-
-hm-status:
-  ssh {{user}}@{{ip}} "systemctl status home-manager-dev --no-pager || true"
-
-install-repo-sync:
-  nix profile install --accept-flake-config path:.#repo-sync
-
-upgrade-repo-sync:
-  nix profile upgrade repo-sync
-
-reinstall-repo-sync:
-  nix profile remove repo-sync || true
-  nix profile install --accept-flake-config path:.#repo-sync
+  ssh {{target_user}}@{{target_host}} "sudo tailscale status"

@@ -2,17 +2,17 @@
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
-	echo "Usage: $0 <droplet-ip> [extra-files]"
+	echo "Usage: $0 <target-host> [extra-files]"
 	exit 1
 fi
 
-TARGET_IP="$1"
+TARGET_HOST="$1"
 EXTRA_FILES="${2:-}"
 
 CMD=(
 	nix run github:nix-community/nixos-anywhere --
-	--flake "path:.#dev-vps"
-	--target-host "root@${TARGET_IP}"
+	--flake "path:.#oci-melb-1"
+	--target-host "root@${TARGET_HOST}"
 )
 
 if [[ -n "$EXTRA_FILES" ]]; then
