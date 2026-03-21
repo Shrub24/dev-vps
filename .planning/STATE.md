@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.1-01-PLAN.md
-last_updated: "2026-03-21T04:20:39.694Z"
+stopped_at: Completed 01.1-02-PLAN.md
+last_updated: "2026-03-21T04:23:50.846Z"
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Plan: 2 of 2
 | Phase 01 P02 | 5 min | 2 tasks | 3 files |
 | Phase 01 P03 | 4 min | 2 tasks | 6 files |
 | Phase 01.1 P01 | 3 min | 2 tasks | 4 files |
+| Phase 01.1 P02 | 2 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Record full cutover and explicit module boundaries in decisions register
 - [Phase 01.1]: Isolate OCI disk device defaults in modules/providers/oci/default.nix instead of flake inline overrides.
 - [Phase 01.1]: Compose root disk layout from modules/storage/disko-root.nix through host imports to remove legacy nixos disko coupling.
+- [Phase 01.1]: Retire legacy nixos/configuration.nix, nixos/digitalocean.nix, and nixos/disko-config.nix once active module wiring is verified.
+- [Phase 01.1]: Keep docs/architecture.md and docs/context-history.md as canonical by updating active path references in the same cleanup plan.
 
 ### Roadmap Evolution
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T04:20:39.687Z
-Stopped at: Completed 01.1-01-PLAN.md
+Last session: 2026-03-21T04:23:50.836Z
+Stopped at: Completed 01.1-02-PLAN.md
 Resume file: None
