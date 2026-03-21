@@ -51,7 +51,7 @@ Plans:
 **Goal:** Residual legacy configuration surfaces are cleaned so operator defaults, secret scaffolding, and planning context all match the active `oci-melb-1` host-first architecture before secrets/bootstrap execution.
 **Requirements**: REPO-02, OPER-02
 **Depends on:** Phase 01.1
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 01.1.1-01-PLAN.md - Remove legacy operator defaults and migrate secret template/rule scaffolding.

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.1-02-PLAN.md
-last_updated: "2026-03-21T04:25:15.824Z"
+stopped_at: Completed 01.1.1-01-PLAN.md
+last_updated: "2026-03-21T15:13:40.045Z"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-21)
 
 **Core value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
-**Current focus:** Phase 01.1 — modular-provider-flakes-integrate-and-remove-legacy-nixos-flakes
+**Current focus:** Phase 01.1.1 — legacy-config-migration-cleanup
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
+Phase: 01.1.1 (legacy-config-migration-cleanup) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: Not started
 | Phase 01 P03 | 4 min | 2 tasks | 6 files |
 | Phase 01.1 P01 | 3 min | 2 tasks | 4 files |
 | Phase 01.1 P02 | 2 min | 2 tasks | 5 files |
+| Phase 01.1.1 P01 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -72,10 +73,13 @@ Recent decisions affecting current work:
 - [Phase 01.1]: Compose root disk layout from modules/storage/disko-root.nix through host imports to remove legacy nixos disko coupling.
 - [Phase 01.1]: Retire legacy nixos/configuration.nix, nixos/digitalocean.nix, and nixos/disko-config.nix once active module wiring is verified.
 - [Phase 01.1]: Keep docs/architecture.md and docs/context-history.md as canonical by updating active path references in the same cleanup plan.
+- [Phase 01.1.1]: Set just logs default to tailscaled to remove retired codenomad assumptions from operator commands.
+- [Phase 01.1.1]: Adopt transitional SOPS regex for secrets/common.yaml and secrets/secrets.yaml plus explicit hosts/<host>/secrets.yaml rule.
 
 ### Roadmap Evolution
 
 - Phase 01.1 inserted after Phase 01: modular provider flakes + integrate and remove legacy nixos flakes (URGENT)
+- Phase 01.1.1 inserted after Phase 01.1: Legacy config migration cleanup (URGENT)
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T04:23:50.836Z
-Stopped at: Completed 01.1-02-PLAN.md
+Last session: 2026-03-21T15:13:40.035Z
+Stopped at: Completed 01.1.1-01-PLAN.md
 Resume file: None
