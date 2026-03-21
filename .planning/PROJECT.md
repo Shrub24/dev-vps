@@ -40,6 +40,8 @@ Research and prior planning already converged on a practical first-host posture:
 
 Phase 01.1 completed the provider/storage modularization cutover (`modules/providers/oci/default.nix`, `modules/storage/disko-root.nix`) and retired legacy `nixos/*.nix` implementation files, keeping docs and active architecture paths aligned.
 
+Phase 01.1.1 completed legacy config migration cleanup by removing retired operator defaults, migrating secret scaffold naming to `secrets/common.template.yaml`, and refreshing `.planning/codebase` architecture maps to the active `flake.nix` + `hosts/` + `modules/` structure.
+
 ## Constraints
 
 - **Platform**: First host is `oci-melb-1` on Oracle Cloud Free Tier using `aarch64-linux` - the initial solution must work on that concrete target.
@@ -82,4 +84,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after Phase 01.1 completion*
+*Last updated: 2026-03-21 after Phase 01.1.1 completion*
