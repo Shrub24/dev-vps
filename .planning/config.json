@@ -1,0 +1,50 @@
+{
+  "model_profile": "inherit",
+  "commit_docs": true,
+  "parallelization": false,
+  "search_gitignored": false,
+  "brave_search": false,
+  "firecrawl": false,
+  "exa_search": false,
+  "git": {
+    "branching_strategy": "none",
+    "phase_branch_template": "gsd/phase-{phase}-{slug}",
+    "milestone_branch_template": "gsd/{milestone}-{slug}",
+    "quick_branch_template": null
+  },
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": false,
+    "auto_advance": true,
+    "node_repair": true,
+    "node_repair_budget": 2,
+    "ui_phase": true,
+    "ui_safety_gate": true,
+    "text_mode": false,
+    "_auto_chain_active": true
+  },
+  "hooks": {
+    "context_warnings": true
+  },
+  "mode": "yolo",
+  "granularity": "coarse",
+  "model_overrides": {
+    "gsd-planner": "openai/gpt-5.4",
+    "gsd-roadmapper": "openai/gpt-5.4",
+    "gsd-project-researcher": "openai/gpt-5.4",
+    "gsd-phase-researcher": "openai/gpt-5.4",
+    "gsd-research-synthesizer": "openai/gpt-5.4",
+    "gsd-executor": "openai/gpt-5.3-codex",
+    "gsd-debugger": "openai/gpt-5.3-codex",
+    "gsd-verifier": "openai/gpt-5.4-mini",
+    "gsd-codebase-mapper": "openai/gpt-5.4-mini",
+    "gsd-plan-checker": "openai/gpt-5.4-mini",
+    "gsd-integration-checker": "openai/gpt-5.4-mini",
+    "gsd-nyquist-auditor": "openai/gpt-5.4-mini",
+    "gsd-ui-researcher": "openai/gpt-5.4-mini",
+    "gsd-ui-checker": "openai/gpt-5.4-mini",
+    "gsd-ui-auditor": "openai/gpt-5.4-mini"
+  }
+}
