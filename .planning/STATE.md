@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-21T03:34:15.444Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-03-21T03:37:25.039Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -47,6 +47,7 @@ Plan: 3 of 3
 
 | Phase 01 P01 | 10 min | 2 tasks | 5 files |
 | Phase 01 P02 | 5 min | 2 tasks | 3 files |
+| Phase 01 P03 | 4 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Remove legacy package/Home Manager host wiring from active flake composition
 - [Phase 01]: Use neutral TARGET_HOST/TARGET_USER naming in operator command surface
 - [Phase 01]: CI builds only canonical oci-melb-1 host output
+- [Phase 01]: Treat docs/ as canonical authority and keep README orientation-only
+- [Phase 01]: Record full cutover and explicit module boundaries in decisions register
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T03:34:15.438Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-03-21T03:37:25.031Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
