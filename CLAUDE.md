@@ -5,6 +5,8 @@
 
 This repository is the infrastructure source of truth for a modular NixOS homelab fleet. It is being repurposed from a legacy `dev-vps` setup into a host-centric, service-oriented repository that can reliably bootstrap and operate `oci-melb-1` first, then expand to additional hosts, providers, and architectures over time.
 
+Canonical human-facing architecture and migration guidance lives under `docs/` (`docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`, `docs/context-history.md`).
+
 **Core Value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
 
 ### Constraints
