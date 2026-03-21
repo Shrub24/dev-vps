@@ -97,3 +97,12 @@ Any major implementation decision that changes behavior, trust boundaries, or mi
 - `docs/plan.md`
 
 These documents are intended to remain current and drive implementation, not trail it.
+
+Active implementation anchor paths that must stay reflected in docs:
+
+- `hosts/oci-melb-1/default.nix`
+- `modules/core/base.nix`
+- `modules/profiles/base-server.nix`
+- `modules/services/tailscale.nix`
+
+Maintenance requirement: changes to active architecture paths, trust boundaries, or operator/CI commands must update canonical docs in the same change window.

@@ -89,6 +89,8 @@ As of this planning update:
 
 - first host name is fixed: `oci-melb-1`
 - architecture direction is fleet-first, modular, and native-service-first
+- active host path is `hosts/oci-melb-1/default.nix`
+- active reusable module boundaries are `modules/core/base.nix`, `modules/profiles/base-server.nix`, and `modules/services/tailscale.nix`
 - decisions have been formalized in `docs/decisions.md`
 - strategic planning posture is maintained in `docs/plan.md`
 - architecture intent and boundaries are in `docs/architecture.md`

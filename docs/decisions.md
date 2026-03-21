@@ -178,6 +178,51 @@ Rationale:
 
 - minimizes attack surface during architecture transition
 
+## D-014: Full repository cutover now (no long-lived bridge)
+
+Status: Accepted
+
+Decision:
+
+- use `nixosConfigurations.oci-melb-1` as the active flake output now
+- keep host identity in `hosts/oci-melb-1/default.nix`
+- remove legacy `nixosConfigurations.dev-vps` and associated personal-tooling outputs from active wiring
+
+Rationale:
+
+- avoids dual-mission drift and broken references in active workflows
+- keeps operator and CI surfaces aligned to a single canonical host target
+
+## D-015: Reusable module boundaries are explicit in active paths
+
+Status: Accepted
+
+Decision:
+
+- baseline shared policy lives in `modules/core/base.nix`
+- profile composition lives in `modules/profiles/base-server.nix`
+- service boundary for private access starts in `modules/services/tailscale.nix`
+
+Rationale:
+
+- separates host identity from reusable logic for future host growth
+- keeps provider-specific concerns out of reusable modules
+
+## D-016: Documentation authority and derivation contract
+
+Status: Accepted
+
+Decision:
+
+- `docs/` is canonical for architecture, decisions, and migration direction
+- `README.md` remains orientation-only with links to canonical docs
+- `CLAUDE.md` is a derived mirror and must not conflict with canonical `docs/`
+
+Rationale:
+
+- prevents conflicting migration narratives during aggressive cutover
+- keeps implementation and operator guidance synchronized
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

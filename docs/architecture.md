@@ -74,8 +74,12 @@ Fleet direction:
 
 The exact file tree can evolve, but the intended shape is:
 
+- `hosts/oci-melb-1/default.nix` as the active first-host entrypoint today
 - `hosts/<host>/default.nix` for host composition
 - `hosts/<host>/secrets.yaml` for host-scoped encrypted values
+- `modules/core/base.nix` for shared baseline policy
+- `modules/profiles/base-server.nix` for host profile composition
+- `modules/services/tailscale.nix` for reusable service wiring
 - `modules/services/*.nix` for reusable service modules with enable flags
 - `modules/profiles/*.nix` for shared profile-level composition
 - `secrets/common.yaml` for tightly-scoped fleet-shared secrets
