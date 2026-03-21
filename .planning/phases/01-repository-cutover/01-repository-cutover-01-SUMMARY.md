@@ -45,6 +45,7 @@ completed: 2026-03-21
 ## Task Commits
 1. **Task 1: Create host-and-module contract files for cutover** - `d86d34a` (feat)
 2. **Task 2: Rewire flake to canonical host and remove broken legacy refs** - `55f36c6` (feat)
+3. **Task 2 follow-up: Sync flake lockfile to canonical inputs** - `6299ec5` (fix)
 
 ## Files Created/Modified
 - `hosts/oci-melb-1/default.nix` - Canonical host identity and import boundary.
@@ -71,7 +72,17 @@ completed: 2026-03-21
 
 ---
 
-**Total deviations:** 1 auto-fixed (1 blocking)
+**2. [Rule 2 - Missing Critical] Synced lockfile after removing legacy flake inputs**
+- **Found during:** Task 2 follow-up verification
+- **Issue:** `flake.lock` still referenced removed inputs (`home-manager`, `nixpkgs-unstable`), causing repeated warning noise and lock/input drift.
+- **Fix:** Updated and committed `flake.lock` to match active flake inputs.
+- **Files modified:** `flake.lock`
+- **Verification:** `git diff flake.lock` showed removed stale inputs only.
+- **Committed in:** `6299ec5`
+
+---
+
+**Total deviations:** 2 auto-fixed (1 blocking, 1 missing critical)
 **Impact on plan:** Fix was required to keep canonical host output evaluable and did not expand scope beyond baseline correctness.
 
 ## Issues Encountered
