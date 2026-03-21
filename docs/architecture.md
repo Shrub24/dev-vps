@@ -94,6 +94,7 @@ Secrets follow a scoped blast-radius model.
 Global scope:
 
 - file: `secrets/common.yaml`
+- unencrypted reference: `secrets/common.template.yaml`
 - contains only values intentionally shared across hosts
 
 Host scope:

@@ -51,6 +51,8 @@ Track A: Repository migration
 Track B: Secrets and identity model
 
 - enforce scoped secret topology via `.sops.yaml`
+- keep shared values in `secrets/common.yaml` and host-only values in `hosts/<host>/secrets.yaml`
+- use `secrets/common.template.yaml` as the unencrypted reference template for common secret scaffolding
 - maintain clear distinction between common and host-scoped data
 - keep host enrollment artifacts and policies explicit
 
