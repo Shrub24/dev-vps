@@ -9,9 +9,9 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Repository
 
-- [ ] **REPO-01**: Operator can use a fleet-oriented flake entrypoint and canonical directory layout that separates host identity from reusable modules.
+- [x] **REPO-01**: Operator can use a fleet-oriented flake entrypoint and canonical directory layout that separates host identity from reusable modules.
 - [ ] **REPO-02**: Operator can understand the active architecture, decisions, and migration direction from repository docs without relying on legacy `dev-vps` assumptions.
-- [ ] **REPO-03**: Operator can extend the repository for a future second host without restructuring the core layout again.
+- [x] **REPO-03**: Operator can extend the repository for a future second host without restructuring the core layout again.
 
 ### Bootstrap
 
@@ -92,9 +92,9 @@ Which phases cover which requirements. This section is populated during roadmap 
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REPO-01 | Phase 1 | Pending |
+| REPO-01 | Phase 1 | Complete |
 | REPO-02 | Phase 1 | Pending |
-| REPO-03 | Phase 1 | Pending |
+| REPO-03 | Phase 1 | Complete |
 | BOOT-01 | Phase 3 | Pending |
 | BOOT-02 | Phase 3 | Pending |
 | BOOT-03 | Phase 3 | Pending |
