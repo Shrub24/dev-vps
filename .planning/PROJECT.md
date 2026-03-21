@@ -18,7 +18,6 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 
 ### Active
 
-- [ ] Repository structure clearly reflects a fleet-oriented NixOS mission instead of the legacy `dev-vps` mission.
 - [ ] `oci-melb-1` can be bootstrapped repeatably with a reliable, debuggable first-host path.
 - [ ] Secrets management follows explicit blast-radius scoping across common and host-specific data.
 - [ ] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model.
@@ -38,6 +37,8 @@ The repository originally centered on a single-machine developer VPS workflow wi
 Current architecture intent is already documented in `docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`, and `docs/context-history.md`. Those documents establish a native-service-first direction, a host-centric module layout, Tailscale-first private access, and a scoped secrets model. They also make clear that the migration should aggressively remove legacy direction instead of letting two repository missions coexist.
 
 Research and prior planning already converged on a practical first-host posture: use `nixos-anywhere` for bootstrap, keep provider specifics isolated from reusable modules, start with one persistent data mount, run Syncthing in bidirectional mode with safety controls, and let Navidrome read directly from the sync-managed media path. Future hooks, `rclone`/VFS authority, public exposure, and more advanced fleet tooling are all intentionally deferred until operational pressure justifies them.
+
+Phase 01.1 completed the provider/storage modularization cutover (`modules/providers/oci/default.nix`, `modules/storage/disko-root.nix`) and retired legacy `nixos/*.nix` implementation files, keeping docs and active architecture paths aligned.
 
 ## Constraints
 
@@ -81,4 +82,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after Phase 1 completion*
+*Last updated: 2026-03-21 after Phase 01.1 completion*
