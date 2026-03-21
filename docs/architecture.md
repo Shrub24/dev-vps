@@ -77,6 +77,8 @@ The exact file tree can evolve, but the intended shape is:
 - `hosts/oci-melb-1/default.nix` as the active first-host entrypoint today
 - `hosts/<host>/default.nix` for host composition
 - `hosts/<host>/secrets.yaml` for host-scoped encrypted values
+- `modules/providers/oci/default.nix` for OCI-specific host-safe defaults
+- `modules/storage/disko-root.nix` for active declarative root disk layout
 - `modules/core/base.nix` for shared baseline policy
 - `modules/profiles/base-server.nix` for host profile composition
 - `modules/services/tailscale.nix` for reusable service wiring

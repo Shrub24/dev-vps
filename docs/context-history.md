@@ -90,7 +90,10 @@ As of this planning update:
 - first host name is fixed: `oci-melb-1`
 - architecture direction is fleet-first, modular, and native-service-first
 - active host path is `hosts/oci-melb-1/default.nix`
+- active provider boundary is `modules/providers/oci/default.nix`
+- active storage boundary is `modules/storage/disko-root.nix`
 - active reusable module boundaries are `modules/core/base.nix`, `modules/profiles/base-server.nix`, and `modules/services/tailscale.nix`
+- legacy `nixos/configuration.nix`, `nixos/digitalocean.nix`, and `nixos/disko-config.nix` are retired from active architecture
 - decisions have been formalized in `docs/decisions.md`
 - strategic planning posture is maintained in `docs/plan.md`
 - architecture intent and boundaries are in `docs/architecture.md`
