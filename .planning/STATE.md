@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-21T03:29:15.196Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-21T03:34:15.444Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-21)
 ## Current Position
 
 Phase: 01 (repository-cutover) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Plan: 2 of 3
 - Trend: Stable
 
 | Phase 01 P01 | 10 min | 2 tasks | 5 files |
+| Phase 01 P02 | 5 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Recent decisions affecting current work:
 - Phase 4: Start with direct Syncthing-to-Navidrome media flow and safety controls.
 - [Phase 01]: Use oci-melb-1 as canonical flake output and host boundary now
 - [Phase 01]: Remove legacy package/Home Manager host wiring from active flake composition
+- [Phase 01]: Use neutral TARGET_HOST/TARGET_USER naming in operator command surface
+- [Phase 01]: CI builds only canonical oci-melb-1 host output
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T03:29:15.189Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-21T03:34:15.438Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
