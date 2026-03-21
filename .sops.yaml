@@ -1,9 +1,7 @@
 keys:
   - &owner_age age1w5asfm5rfncy4yvslj3az78kvn7hkrzq4vy0mzexf36w64a7e3nqamw3fp
-  - &vps-age age17ygcdry0l4ktsec4qpjufvvtm2q5rlefqgdsnvmax0m2a0elcefs3pslqf
 creation_rules:
   - path_regex: ^secrets/.*\.ya?ml$
     key_groups:
       - age:
           - *owner_age
-          - *vps-age
