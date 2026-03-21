@@ -46,6 +46,17 @@ Plans:
 - [ ] 01.1-01-PLAN.md - Modularize provider and storage contracts and rewire active flake composition.
 - [ ] 01.1-02-PLAN.md - Remove obsolete legacy `nixos` implementation files and reconcile canonical docs.
 
+### Phase 01.1.1: Legacy config migration cleanup (INSERTED)
+
+**Goal:** Residual legacy configuration surfaces are cleaned so operator defaults, secret scaffolding, and planning context all match the active `oci-melb-1` host-first architecture before secrets/bootstrap execution.
+**Requirements**: REPO-02, OPER-02
+**Depends on:** Phase 01.1
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01.1.1-01-PLAN.md - Remove legacy operator defaults and migrate secret template/rule scaffolding.
+- [ ] 01.1.1-02-PLAN.md - Reconcile canonical docs and planner codebase maps with post-migration architecture.
+
 ### Phase 2: Secrets Policy And Bootstrap
 **Goal**: Secret handling is explicitly scoped by blast radius and the first-host bootstrap path has a clear, safe ordering for secret material.
 **Depends on**: Phase 1
