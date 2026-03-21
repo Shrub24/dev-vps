@@ -28,7 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Operator can read the repository docs and understand the active architecture, decisions, and migration direction without relying on legacy `dev-vps` context.
   3. Operator can add a second host within the established layout instead of needing to restructure the repo again.
   4. Architecture, plan, and decision documents remain the authoritative place to update behavior or trust-boundary changes.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md - Cut over to host-plus-modules skeleton and canonical flake target.
+- [ ] 01-02-PLAN.md - Align operator commands and CI with the new canonical host output.
+- [ ] 01-03-PLAN.md - Reconcile docs authority so canonical docs and entrypoints stay in sync.
 
 ### Phase 2: Secrets Policy And Bootstrap
 **Goal**: Secret handling is explicitly scoped by blast radius and the first-host bootstrap path has a clear, safe ordering for secret material.
