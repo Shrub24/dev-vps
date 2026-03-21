@@ -34,7 +34,7 @@ build:
 vm-build:
   nix build --no-link --no-write-lock-file path:.#nixosConfigurations.oci-melb-1.config.system.build.vm
 
-logs unit="codenomad" lines="200":
+logs unit="tailscaled" lines="200":
   ssh {{target_user}}@{{target_host}} "sudo journalctl -u {{unit}} -n {{lines}} --no-pager"
 
 status:
