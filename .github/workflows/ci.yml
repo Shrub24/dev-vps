@@ -19,10 +19,4 @@ jobs:
         run: nix flake check --no-build
 
       - name: Build NixOS system
-        run: nix build --no-link path:.#nixosConfigurations.dev-vps.config.system.build.toplevel
-
-      - name: Build pinned packages
-        run: |
-          nix build --no-link path:.#packages.x86_64-linux.codenomad
-          nix build --no-link path:.#packages.x86_64-linux.opencode
-          nix build --no-link path:.#packages.x86_64-linux.repo-sync
+        run: nix build --no-link path:.#nixosConfigurations.oci-melb-1.config.system.build.toplevel
