@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01.1.1-01-PLAN.md
-last_updated: "2026-03-21T15:13:40.045Z"
+stopped_at: Completed 01.1.1-02-PLAN.md
+last_updated: "2026-03-21T15:21:57.431Z"
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -51,6 +51,7 @@ Plan: 2 of 2
 | Phase 01.1 P01 | 3 min | 2 tasks | 4 files |
 | Phase 01.1 P02 | 2 min | 2 tasks | 5 files |
 | Phase 01.1.1 P01 | 8 | 2 tasks | 4 files |
+| Phase 01.1.1 P02 | 13 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 01.1]: Keep docs/architecture.md and docs/context-history.md as canonical by updating active path references in the same cleanup plan.
 - [Phase 01.1.1]: Set just logs default to tailscaled to remove retired codenomad assumptions from operator commands.
 - [Phase 01.1.1]: Adopt transitional SOPS regex for secrets/common.yaml and secrets/secrets.yaml plus explicit hosts/<host>/secrets.yaml rule.
+- [Phase 01.1.1]: Keep canonical docs explicitly anchored on secrets/common.yaml plus hosts/<host>/secrets.yaml with common template guidance.
+- [Phase 01.1.1]: Rewrite planning codebase maps to match active flake->hosts->modules composition after legacy migration cleanup.
 
 ### Roadmap Evolution
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T15:13:40.035Z
-Stopped at: Completed 01.1.1-01-PLAN.md
+Last session: 2026-03-21T15:21:57.424Z
+Stopped at: Completed 01.1.1-02-PLAN.md
 Resume file: None
