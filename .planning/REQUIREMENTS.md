@@ -92,33 +92,33 @@ Which phases cover which requirements. This section is populated during roadmap 
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REPO-01 | TBD | Pending |
-| REPO-02 | TBD | Pending |
-| REPO-03 | TBD | Pending |
-| BOOT-01 | TBD | Pending |
-| BOOT-02 | TBD | Pending |
-| BOOT-03 | TBD | Pending |
-| SECR-01 | TBD | Pending |
-| SECR-02 | TBD | Pending |
-| SECR-03 | TBD | Pending |
-| SECR-04 | TBD | Pending |
-| ACCS-01 | TBD | Pending |
-| ACCS-02 | TBD | Pending |
-| STOR-01 | TBD | Pending |
-| STOR-02 | TBD | Pending |
-| SRVC-01 | TBD | Pending |
-| SRVC-02 | TBD | Pending |
-| SRVC-03 | TBD | Pending |
-| SRVC-04 | TBD | Pending |
-| SRVC-05 | TBD | Pending |
-| OPER-01 | TBD | Pending |
-| OPER-02 | TBD | Pending |
+| REPO-01 | Phase 1 | Pending |
+| REPO-02 | Phase 1 | Pending |
+| REPO-03 | Phase 1 | Pending |
+| BOOT-01 | Phase 3 | Pending |
+| BOOT-02 | Phase 3 | Pending |
+| BOOT-03 | Phase 3 | Pending |
+| SECR-01 | Phase 2 | Pending |
+| SECR-02 | Phase 2 | Pending |
+| SECR-03 | Phase 2 | Pending |
+| SECR-04 | Phase 2 | Pending |
+| ACCS-01 | Phase 3 | Pending |
+| ACCS-02 | Phase 3 | Pending |
+| STOR-01 | Phase 3 | Pending |
+| STOR-02 | Phase 3 | Pending |
+| SRVC-01 | Phase 3 | Pending |
+| SRVC-02 | Phase 4 | Pending |
+| SRVC-03 | Phase 4 | Pending |
+| SRVC-04 | Phase 4 | Pending |
+| SRVC-05 | Phase 4 | Pending |
+| OPER-01 | Phase 3 | Pending |
+| OPER-02 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after roadmap creation*
