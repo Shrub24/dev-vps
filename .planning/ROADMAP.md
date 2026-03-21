@@ -40,7 +40,7 @@ Plans:
 **Goal:** Active host composition uses provider-modular flake wiring and legacy `nixos/*.nix` implementation paths are fully retired from the repository's active architecture.
 **Requirements**: REPO-01, REPO-02, REPO-03, OPER-02
 **Depends on:** Phase 01
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 01.1-01-PLAN.md - Modularize provider and storage contracts and rewire active flake composition.
