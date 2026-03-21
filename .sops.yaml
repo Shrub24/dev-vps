@@ -1,7 +1,11 @@
 keys:
   - &owner_age age1w5asfm5rfncy4yvslj3az78kvn7hkrzq4vy0mzexf36w64a7e3nqamw3fp
 creation_rules:
-  - path_regex: ^secrets/.*\.ya?ml$
+  - path_regex: ^secrets/(common|secrets)\.ya?ml$
+    key_groups:
+      - age:
+          - *owner_age
+  - path_regex: ^hosts/[^/]+/secrets\.ya?ml$
     key_groups:
       - age:
           - *owner_age
