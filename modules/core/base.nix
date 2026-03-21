@@ -6,6 +6,12 @@
   ];
 
   nix.settings.auto-optimise-store = true;
+  nix.settings.trusted-users = [
+    "root"
+    "dev"
+  ];
+
+  time.timeZone = "UTC";
 
   services.openssh = {
     enable = true;
@@ -20,8 +26,9 @@
     enable = true;
     efiSupport = true;
     efiInstallAsRemovable = true;
-    devices = [ "/dev/vda" ];
   };
 
   boot.loader.efi.canTouchEfiVariables = false;
+
+  security.sudo.wheelNeedsPassword = false;
 }
