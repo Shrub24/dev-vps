@@ -1,0 +1,6 @@
+pre-commit:
+  commands:
+    regen-flake-lock:
+      glob: "flake.nix"
+      run: nix flake lock
+      stage_fixed: true
