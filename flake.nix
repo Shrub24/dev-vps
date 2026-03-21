@@ -1,52 +1,27 @@
 {
-  description = "Reproducible NixOS dev VPS with CodeNomad + Tailscale";
+  description = "Modular NixOS fleet infrastructure";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     disko.url = "github:nix-community/disko";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
     {
-      self,
       nixpkgs,
-      nixpkgs-unstable,
       disko,
       sops-nix,
-      home-manager,
       ...
     }:
     let
-      system = "x86_64-linux";
-
-      overlay = final: prev: {
-        codenomad = prev.callPackage ./pkgs/codenomad/package.nix { };
-        opencode = prev.callPackage ./pkgs/opencode/package.nix { };
-        repo-sync = prev.callPackage ./pkgs/repo-sync/package.nix { };
-      };
-
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ overlay ];
-      };
-
-      unstablePkgs = import nixpkgs-unstable {
-        inherit system;
-        overlays = [ overlay ];
-      };
+      system = "aarch64-linux";
+      pkgs = import nixpkgs { inherit system; };
     in
     {
-      packages.${system} = {
-        inherit (pkgs) codenomad opencode repo-sync;
-      };
-
-      devShells.${system}.default = unstablePkgs.mkShell {
-        packages = with unstablePkgs; [
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
           just
           git
           jq
@@ -60,22 +35,14 @@
         ];
       };
 
-      nixosConfigurations.dev-vps = nixpkgs.lib.nixosSystem {
-        inherit system;
+      nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
         modules = [
-          ./nixos/digitalocean.nix
-          { nixpkgs.overlays = [ overlay ]; }
+          ./nixos/disko-config.nix
           disko.nixosModules.disko
           { disko.devices.disk.main.device = "/dev/vda"; }
           sops-nix.nixosModules.sops
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "hm-bak";
-            home-manager.users.dev = import ./home/dev.nix;
-          }
-          ./nixos/configuration.nix
+          ./hosts/oci-melb-1/default.nix
         ];
       };
     };

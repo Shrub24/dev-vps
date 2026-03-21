@@ -15,4 +15,13 @@
       PermitRootLogin = "prohibit-password";
     };
   };
+
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    efiInstallAsRemovable = true;
+    devices = [ "/dev/vda" ];
+  };
+
+  boot.loader.efi.canTouchEfiVariables = false;
 }
