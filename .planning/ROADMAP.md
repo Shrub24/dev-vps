@@ -12,7 +12,7 @@ This roadmap repurposes the repository from legacy `dev-vps` usage into a modula
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Repository Cutover** - Establish the fleet-oriented repo shape, docs, and growth path.
+- [x] **Phase 1: Repository Cutover** - Establish the fleet-oriented repo shape, docs, and growth path. (completed 2026-03-21)
 - [ ] **Phase 2: Secrets Policy And Bootstrap** - Lock in scoped secret boundaries and the first-host bootstrap secret flow.
 - [ ] **Phase 3: OCI Host Bring-Up And Private Operations** - Make `oci-melb-1` installable, reachable privately, and maintainable from declared state.
 - [ ] **Phase 4: Service Baseline And Data Safety** - Run the initial private service baseline on persistent storage with the intended media flow.
@@ -31,9 +31,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Cut over to host-plus-modules skeleton and canonical flake target.
-- [ ] 01-02-PLAN.md - Align operator commands and CI with the new canonical host output.
-- [ ] 01-03-PLAN.md - Reconcile docs authority so canonical docs and entrypoints stay in sync.
+- [x] 01-01-PLAN.md - Cut over to host-plus-modules skeleton and canonical flake target.
+- [x] 01-02-PLAN.md - Align operator commands and CI with the new canonical host output.
+- [x] 01-03-PLAN.md - Reconcile docs authority so canonical docs and entrypoints stay in sync.
 
 ### Phase 2: Secrets Policy And Bootstrap
 **Goal**: Secret handling is explicitly scoped by blast radius and the first-host bootstrap path has a clear, safe ordering for secret material.
@@ -76,7 +76,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Repository Cutover | 0/TBD | Not started | - |
+| 1. Repository Cutover | 3/3 | Complete | 2026-03-21 |
 | 2. Secrets Policy And Bootstrap | 0/TBD | Not started | - |
 | 3. OCI Host Bring-Up And Private Operations | 0/TBD | Not started | - |
 | 4. Service Baseline And Data Safety | 0/TBD | Not started | - |

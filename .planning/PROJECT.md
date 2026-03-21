@@ -12,7 +12,9 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 
 ### Validated
 
-(None yet - ship to validate)
+- [x] Repository structure clearly reflects a fleet-oriented NixOS mission instead of the legacy `dev-vps` mission. *(Validated in Phase 1: Repository Cutover)*
+- [x] Operator-facing architecture/decision/migration docs are canonical and current under `docs/`. *(Validated in Phase 1: Repository Cutover)*
+- [x] The repository remains easy to extend to more hosts without another large structural rewrite. *(Validated in Phase 1: Repository Cutover)*
 
 ### Active
 
@@ -20,7 +22,6 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 - [ ] `oci-melb-1` can be bootstrapped repeatably with a reliable, debuggable first-host path.
 - [ ] Secrets management follows explicit blast-radius scoping across common and host-specific data.
 - [ ] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model.
-- [ ] The repository remains easy to extend to more hosts without another large structural rewrite.
 
 ### Out of Scope
 
@@ -53,8 +54,8 @@ Research and prior planning already converged on a practical first-host posture:
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Reposition the repository from `dev-vps` to modular fleet infrastructure | The active goal is reproducible multi-host NixOS infrastructure, not a single developer VPS workflow | Pending |
-| Anchor the first implementation around `oci-melb-1` | A concrete first host sharpens architecture, secrets policy, and bootstrap design | Pending |
+| Reposition the repository from `dev-vps` to modular fleet infrastructure | The active goal is reproducible multi-host NixOS infrastructure, not a single developer VPS workflow | Validated in Phase 1 |
+| Anchor the first implementation around `oci-melb-1` | A concrete first host sharpens architecture, secrets policy, and bootstrap design | Validated in Phase 1 |
 | Start with native services: `tailscale`, `syncthing`, `navidrome` | This validates the new direction faster and with lower operational complexity than early orchestration | Pending |
 | Use scoped secrets split between `secrets/common.yaml` and `hosts/<host>/secrets.yaml` | This minimizes blast radius and supports future host growth safely | Pending |
 | Default to two-step secret bootstrap | This lowers pre-install secret handling risk during early host bring-up | Pending |
@@ -80,4 +81,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after initialization*
+*Last updated: 2026-03-21 after Phase 1 completion*
