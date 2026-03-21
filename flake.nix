@@ -38,9 +38,7 @@
       nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
         modules = [
-          ./nixos/disko-config.nix
           disko.nixosModules.disko
-          { disko.devices.disk.main.device = "/dev/vda"; }
           sops-nix.nixosModules.sops
           ./hosts/oci-melb-1/default.nix
         ];
