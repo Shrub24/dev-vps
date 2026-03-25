@@ -1,5 +1,5 @@
 {
-  "model_profile": "custom",
+  "model_profile": "inherit",
   "commit_docs": true,
   "parallelization": false,
   "search_gitignored": false,
@@ -49,3 +49,4 @@
     "gsd-ui-auditor": "openai/gpt-5.4-mini"
   }
 }
+

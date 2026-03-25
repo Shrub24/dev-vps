@@ -98,4 +98,4 @@ None yet.
 
 Last session: 2026-03-22T09:25:08.963Z
 Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-secrets-policy-and-bootstrap/02-CONTEXT.md
+Resume file: .planning/phases/02-oci-bootstrap-and-service-readiness/02-CONTEXT.md

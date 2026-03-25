@@ -1,4 +1,4 @@
-# Phase 2: Secrets Policy And Bootstrap - Context
+# Phase 2: OCI Bootstrap And Service Readiness - Context
 
 **Gathered:** 2026-03-22
 **Status:** Ready for planning
@@ -123,11 +123,11 @@ User-corrected Phase 2 boundary: get NixOS running on OCI using `nixos-anywhere`
 - Backup automation and retention strategy.
 - Full break-glass recovery proofing across OCI console paths.
 - Implementing worker services themselves (only interface/boundary is in-scope now).
-- Roadmap label alignment follow-up: current Phase 2 title remains "Secrets Policy And Bootstrap" while this context reflects corrected bring-up-first intent.
+- None - roadmap phase title is aligned with the corrected bring-up-first scope.
 
 </deferred>
 
 ---
 
-*Phase: 02-secrets-policy-and-bootstrap*
+*Phase: 02-oci-bootstrap-and-service-readiness*
 *Context gathered: 2026-03-22*

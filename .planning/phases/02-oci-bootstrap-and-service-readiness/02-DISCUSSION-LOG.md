@@ -1,10 +1,10 @@
-# Phase 2: Secrets Policy And Bootstrap - Discussion Log
+# Phase 2: OCI Bootstrap And Service Readiness - Discussion Log
 
 > **Audit trail only.** Do not use as input to planning, research, or execution agents.
 > Decisions are captured in `02-CONTEXT.md`.
 
 **Date:** 2026-03-22
-**Phase:** 02-secrets-policy-and-bootstrap
+**Phase:** 02-oci-bootstrap-and-service-readiness
 **Areas discussed:** Bootstrap flow, Disk + mount model, Service readiness bar, Post-install ops, Architecture/technical goals
 
 ---
