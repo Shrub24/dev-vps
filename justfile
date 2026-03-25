@@ -28,6 +28,9 @@ redeploy:
 flake-check:
   nix flake check --no-build --no-write-lock-file path:.
 
+devshell-check:
+  nix develop --command just --list >/dev/null
+
 build:
   nix build --no-link --no-write-lock-file path:.#nixosConfigurations.oci-melb-1.config.system.build.toplevel
 
