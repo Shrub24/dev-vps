@@ -66,7 +66,12 @@ Plans:
   2. Operator can add a new host without that host gaining decryption access to existing host-scoped secrets.
   3. Operator can follow a documented two-step bootstrap flow for introducing secrets during new host bring-up.
   4. Operator can provision Tailscale enrollment material per host instead of reusing one shared credential across the fleet.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md - Establish secrets split, host-scoped recipient policy, and two-step bootstrap contract.
+- [ ] 02-02-PLAN.md - Define storage/data mount and private service module contracts with sequencing boundaries.
+- [ ] 02-03-PLAN.md - Wire host composition and canonical operator verification flow for readiness checks.
 
 ### Phase 3: OCI Host Bring-Up And Private Operations
 **Goal**: `oci-melb-1` can be installed, rebuilt, reached privately, and updated through a reliable host-targeted operating path backed by stable persistent storage.
