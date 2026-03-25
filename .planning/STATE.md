@@ -96,8 +96,15 @@ None yet.
 - Phase 3: Keep serial-console break-glass posture documented before Tailscale becomes the primary admin path.
 - Phase 4: Define acceptable Syncthing conflict/delete recovery posture before calling the baseline stable.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260325-ojg | Fix local direnv nix develop dev shell on x86 after repo switched target to aarch64 | 2026-03-25 | e0a224a | [260325-ojg-fix-local-direnv-nix-develop-dev-shell-o](./quick/260325-ojg-fix-local-direnv-nix-develop-dev-shell-o/) |
+
 ## Session Continuity
 
 Last session: 2026-03-25T21:57:10.792Z
+Last activity: 2026-03-25 - Completed quick task 260325-ojg: Fix local direnv nix develop dev shell on x86 after repo switched target to aarch64
 Stopped at: Completed quick-260325-ojg-PLAN.md
 Resume file: None
