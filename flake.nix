@@ -16,24 +16,34 @@
       ...
     }:
     let
-      system = "aarch64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      devShellSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      mkDevShell =
+        system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        pkgs.mkShell {
+          packages = with pkgs; [
+            just
+            git
+            jq
+            yq
+            sops
+            age
+            nixos-anywhere
+            nix-output-monitor
+            nixfmt
+            statix
+          ];
+        };
     in
     {
-      devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
-          just
-          git
-          jq
-          yq
-          sops
-          age
-          nixos-anywhere
-          nix-output-monitor
-          nixfmt
-          statix
-        ];
-      };
+      devShells = nixpkgs.lib.genAttrs devShellSystems (system: {
+        default = mkDevShell system;
+      });
 
       nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
