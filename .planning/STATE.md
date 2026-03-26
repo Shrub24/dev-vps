@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-26T02:43:11.350Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-26T15:37:17.172Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -56,6 +56,7 @@ Plan: 3 of 3 in current phase
 | Phase quick-260325-ojg-fix-local-direnv-nix-develop-dev-shell-o P01 | 3h 24m | 2 tasks | 2 files |
 | Phase 02 P01 | 177 min | 3 tasks | 4 files |
 | Phase 02 P02 | 39 min | 2 tasks | 5 files |
+| Phase 02 P03 | 20 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Use explicit .sops.yaml path rules for common, transitional legacy, and oci host secrets with a host-specific age recipient anchor.
 - [Phase 02]: Used ext4 mkfs extraArgs labels for rootfs and srv-data so disko storage contract evaluates cleanly.
 - [Phase 02]: Encoded navidrome and slskd startup ordering against network-online and syncthing in service modules.
+- [Phase 02]: Keep deploy.sh nixos-anywhere remote-build flags as the canonical OCI bootstrap contract.
+- [Phase 02]: Expose host contract checks through just verify-oci-contract for repeatable local validation.
+- [Phase 02]: Gate host-only SOPS secret declaration on file presence to preserve two-step bootstrap evaluation.
 
 ### Roadmap Evolution
 
@@ -111,7 +115,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T02:42:29.455Z
+Last session: 2026-03-26T15:37:17.168Z
 Last activity: 2026-03-26
-Stopped at: Completed 02-02-PLAN.md
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
