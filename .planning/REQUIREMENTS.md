@@ -15,8 +15,8 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Bootstrap
 
-- [ ] **BOOT-01**: Operator can bootstrap `oci-melb-1` from repository-defined state using a remote install flow.
-- [ ] **BOOT-02**: Operator can declare the `oci-melb-1` disk layout in code rather than manual partitioning steps.
+- [x] **BOOT-01**: Operator can bootstrap `oci-melb-1` from repository-defined state using a remote install flow.
+- [x] **BOOT-02**: Operator can declare the `oci-melb-1` disk layout in code rather than manual partitioning steps.
 - [ ] **BOOT-03**: Operator can rebuild `oci-melb-1` repeatably from the flake after initial installation.
 
 ### Secrets
@@ -33,7 +33,7 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Storage
 
-- [ ] **STOR-01**: Operator can mount one persistent data volume for `oci-melb-1` using stable identifiers.
+- [x] **STOR-01**: Operator can mount one persistent data volume for `oci-melb-1` using stable identifiers.
 - [ ] **STOR-02**: Operator can keep Syncthing, Navidrome, and related service data in predictable directories on that persistent mount.
 
 ### Services
@@ -95,8 +95,8 @@ Which phases cover which requirements. This section is populated during roadmap 
 | REPO-01 | Phase 1 | Complete |
 | REPO-02 | Phase 1 | Complete |
 | REPO-03 | Phase 1 | Complete |
-| BOOT-01 | Phase 3 | Pending |
-| BOOT-02 | Phase 3 | Pending |
+| BOOT-01 | Phase 3 | Complete |
+| BOOT-02 | Phase 3 | Complete |
 | BOOT-03 | Phase 3 | Pending |
 | SECR-01 | Phase 2 | Complete |
 | SECR-02 | Phase 2 | Complete |
@@ -104,7 +104,7 @@ Which phases cover which requirements. This section is populated during roadmap 
 | SECR-04 | Phase 2 | Complete |
 | ACCS-01 | Phase 3 | Pending |
 | ACCS-02 | Phase 3 | Pending |
-| STOR-01 | Phase 3 | Pending |
+| STOR-01 | Phase 3 | Complete |
 | STOR-02 | Phase 3 | Pending |
 | SRVC-01 | Phase 3 | Pending |
 | SRVC-02 | Phase 4 | Pending |

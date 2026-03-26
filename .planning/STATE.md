@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-03-26T15:37:17.172Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-26T18:24:40.543Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 13
+  completed_plans: 11
 ---
 
 # Project State
@@ -20,12 +20,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-21)
 
 **Core value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
-**Current focus:** Phase 2 — oci-bootstrap-and-service-readiness
+**Current focus:** Phase 03 — oci-host-bring-up-and-private-operations
 
 ## Current Position
 
-Phase: 2
-Plan: 3 of 3 in current phase
+Phase: 03 (oci-host-bring-up-and-private-operations) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Plan: 3 of 3 in current phase
 | Phase 02 P01 | 177 min | 3 tasks | 4 files |
 | Phase 02 P02 | 39 min | 2 tasks | 5 files |
 | Phase 02 P03 | 20 min | 2 tasks | 6 files |
+| Phase 03 P01 | 12 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 02]: Keep deploy.sh nixos-anywhere remote-build flags as the canonical OCI bootstrap contract.
 - [Phase 02]: Expose host contract checks through just verify-oci-contract for repeatable local validation.
 - [Phase 02]: Gate host-only SOPS secret declaration on file presence to preserve two-step bootstrap evaluation.
+- [Phase 03]: Enforce bootstrap and storage invariants with fixed-string contract assertions before host installs.
+- [Phase 03]: Keep bootstrap guidance limited to Tailscale-first private access with no public ingress steps.
 
 ### Roadmap Evolution
 
@@ -115,7 +118,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T15:37:17.168Z
+Last session: 2026-03-26T18:24:40.535Z
 Last activity: 2026-03-26
-Stopped at: Completed 02-03-PLAN.md
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None
