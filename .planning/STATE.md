@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-26T18:24:40.543Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-26T18:37:30.631Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-21)
 ## Current Position
 
 Phase: 03 (oci-host-bring-up-and-private-operations) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: 2 of 3
 | Phase 02 P02 | 39 min | 2 tasks | 5 files |
 | Phase 02 P03 | 20 min | 2 tasks | 6 files |
 | Phase 03 P01 | 12 min | 2 tasks | 2 files |
+| Phase 03 P02 | 10 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 02]: Gate host-only SOPS secret declaration on file presence to preserve two-step bootstrap evaluation.
 - [Phase 03]: Enforce bootstrap and storage invariants with fixed-string contract assertions before host installs.
 - [Phase 03]: Keep bootstrap guidance limited to Tailscale-first private access with no public ingress steps.
+- [Phase 03]: Declare tailscale openFirewall=false explicitly in module state instead of relying on implicit defaults.
+- [Phase 03]: Store break-glass recovery as a command-level serial-console runbook in phase artifacts.
 
 ### Roadmap Evolution
 
@@ -118,7 +121,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T18:24:40.535Z
+Last session: 2026-03-26T18:37:30.625Z
 Last activity: 2026-03-26
-Stopped at: Completed 03-01-PLAN.md
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

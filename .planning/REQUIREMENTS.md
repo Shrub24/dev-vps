@@ -28,8 +28,8 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Access
 
-- [ ] **ACCS-01**: Operator can reach `oci-melb-1` privately over Tailscale without making services public.
-- [ ] **ACCS-02**: Operator can use a documented break-glass recovery path if Tailscale or SSH configuration fails.
+- [x] **ACCS-01**: Operator can reach `oci-melb-1` privately over Tailscale without making services public.
+- [x] **ACCS-02**: Operator can use a documented break-glass recovery path if Tailscale or SSH configuration fails.
 
 ### Storage
 
@@ -38,7 +38,7 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Services
 
-- [ ] **SRVC-01**: Operator can enable `tailscale` declaratively through NixOS configuration.
+- [x] **SRVC-01**: Operator can enable `tailscale` declaratively through NixOS configuration.
 - [ ] **SRVC-02**: Operator can enable `syncthing` declaratively with persistent paths and explicit folder modes.
 - [ ] **SRVC-03**: Operator can enable `navidrome` declaratively with media paths rooted on the persistent mount.
 - [ ] **SRVC-04**: Operator can run Syncthing with versioning or conflict safeguards that reduce accidental delete and overwrite risk.
@@ -102,11 +102,11 @@ Which phases cover which requirements. This section is populated during roadmap 
 | SECR-02 | Phase 2 | Complete |
 | SECR-03 | Phase 2 | Complete |
 | SECR-04 | Phase 2 | Complete |
-| ACCS-01 | Phase 3 | Pending |
-| ACCS-02 | Phase 3 | Pending |
+| ACCS-01 | Phase 3 | Complete |
+| ACCS-02 | Phase 3 | Complete |
 | STOR-01 | Phase 3 | Complete |
 | STOR-02 | Phase 3 | Pending |
-| SRVC-01 | Phase 3 | Pending |
+| SRVC-01 | Phase 3 | Complete |
 | SRVC-02 | Phase 4 | Pending |
 | SRVC-03 | Phase 4 | Pending |
 | SRVC-04 | Phase 4 | Pending |
