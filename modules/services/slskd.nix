@@ -8,6 +8,9 @@
         downloads = "/srv/data/inbox/complete";
         incomplete = "/srv/data/inbox/incomplete";
       };
+      shares.directories = [
+        "/srv/data/media"
+      ];
     };
   };
 
@@ -18,7 +21,13 @@
   ];
 
   systemd.services.slskd = {
-    wants = [ "network-online.target" "syncthing.service" ];
-    after = [ "network-online.target" "syncthing.service" ];
+    wants = [
+      "network-online.target"
+      "syncthing.service"
+    ];
+    after = [
+      "network-online.target"
+      "syncthing.service"
+    ];
   };
 }

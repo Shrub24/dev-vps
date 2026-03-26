@@ -24,11 +24,13 @@
   sops.defaultSopsFile = ../../secrets/common.yaml;
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
-  sops.secrets.tailscale_auth_key = {
-    sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
-    key = "tailscale/auth_key";
-    path = "/run/secrets/tailscale.auth_key";
-    mode = "0400";
+  sops.secrets = lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
+    tailscale_auth_key = {
+      sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+      key = "tailscale/auth_key";
+      path = "/run/secrets/tailscale.auth_key";
+      mode = "0400";
+    };
   };
 
   services.tailscale = {
@@ -40,6 +42,13 @@
   // lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
     authKeyFile = "/run/secrets/tailscale.auth_key";
   };
+
+  services.slskd.domain = "oci-melb-1";
+  services.slskd.environmentFile = "/var/lib/slskd/environment";
+
+  systemd.tmpfiles.rules = [
+    "f /var/lib/slskd/environment 0640 slskd slskd - -"
+  ];
 
   systemd.services.tailscaled-autoconnect = {
     after = [ "sops-install-secrets.service" ];

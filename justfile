@@ -28,6 +28,13 @@ redeploy:
 flake-check:
   nix flake check --no-build --no-write-lock-file path:.
 
+verify-oci-contract:
+  nix flake check --no-build --no-write-lock-file path:.
+  nix eval --raw path:.#nixosConfigurations.oci-melb-1.config.networking.hostName
+  nix eval path:.#nixosConfigurations.oci-melb-1.config.services.tailscale.enable
+  nix eval path:.#nixosConfigurations.oci-melb-1.config.services.syncthing.enable
+  nix eval path:.#nixosConfigurations.oci-melb-1.config.services.navidrome.enable
+
 devshell-check:
   nix develop --command just --list >/dev/null
 
