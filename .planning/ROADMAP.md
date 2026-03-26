@@ -83,7 +83,12 @@ Plans:
   3. Operator can reach `oci-melb-1` privately over Tailscale with no public service exposure and can declaratively enable that connectivity through NixOS configuration.
   4. Operator can recover access with a documented break-glass path if Tailscale or SSH configuration fails.
   5. Operator can rely on one stable persistent data volume with predictable service directories for baseline workloads.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md - Lock OCI bootstrap and disko storage invariants with executable contract checks.
+- [ ] 03-02-PLAN.md - Enforce private Tailscale access posture and add break-glass recovery contract.
+- [ ] 03-03-PLAN.md - Consolidate host-targeted day-2 update workflow and storage path verification.
 
 ### Phase 4: Service Baseline And Data Safety
 **Goal**: The initial private service stack runs on `oci-melb-1` with the intended direct media flow and enough sync safety to operate confidently.
