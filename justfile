@@ -35,6 +35,12 @@ verify-oci-contract:
   nix eval path:.#nixosConfigurations.oci-melb-1.config.services.syncthing.enable
   nix eval path:.#nixosConfigurations.oci-melb-1.config.services.navidrome.enable
 
+verify-phase-03:
+  bash tests/phase-03-bootstrap-contract.sh
+  bash tests/phase-03-access-contract.sh
+  bash tests/phase-03-operations-contract.sh
+  just verify-oci-contract
+
 devshell-check:
   nix develop --command just --list >/dev/null
 
