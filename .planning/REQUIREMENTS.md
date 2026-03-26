@@ -17,7 +17,7 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 - [x] **BOOT-01**: Operator can bootstrap `oci-melb-1` from repository-defined state using a remote install flow.
 - [x] **BOOT-02**: Operator can declare the `oci-melb-1` disk layout in code rather than manual partitioning steps.
-- [ ] **BOOT-03**: Operator can rebuild `oci-melb-1` repeatably from the flake after initial installation.
+- [x] **BOOT-03**: Operator can rebuild `oci-melb-1` repeatably from the flake after initial installation.
 
 ### Secrets
 
@@ -34,7 +34,7 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 ### Storage
 
 - [x] **STOR-01**: Operator can mount one persistent data volume for `oci-melb-1` using stable identifiers.
-- [ ] **STOR-02**: Operator can keep Syncthing, Navidrome, and related service data in predictable directories on that persistent mount.
+- [x] **STOR-02**: Operator can keep Syncthing, Navidrome, and related service data in predictable directories on that persistent mount.
 
 ### Services
 
@@ -46,7 +46,7 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Operations
 
-- [ ] **OPER-01**: Operator can apply routine configuration changes to `oci-melb-1` through a straightforward host-targeted update workflow.
+- [x] **OPER-01**: Operator can apply routine configuration changes to `oci-melb-1` through a straightforward host-targeted update workflow.
 - [x] **OPER-02**: Operator can keep architecture, plan, and decision documents current when implementation changes behavior or trust boundaries.
 
 ## v2 Requirements
@@ -97,7 +97,7 @@ Which phases cover which requirements. This section is populated during roadmap 
 | REPO-03 | Phase 1 | Complete |
 | BOOT-01 | Phase 3 | Complete |
 | BOOT-02 | Phase 3 | Complete |
-| BOOT-03 | Phase 3 | Pending |
+| BOOT-03 | Phase 3 | Complete |
 | SECR-01 | Phase 2 | Complete |
 | SECR-02 | Phase 2 | Complete |
 | SECR-03 | Phase 2 | Complete |
@@ -105,13 +105,13 @@ Which phases cover which requirements. This section is populated during roadmap 
 | ACCS-01 | Phase 3 | Complete |
 | ACCS-02 | Phase 3 | Complete |
 | STOR-01 | Phase 3 | Complete |
-| STOR-02 | Phase 3 | Pending |
+| STOR-02 | Phase 3 | Complete |
 | SRVC-01 | Phase 3 | Complete |
 | SRVC-02 | Phase 4 | Pending |
 | SRVC-03 | Phase 4 | Pending |
 | SRVC-04 | Phase 4 | Pending |
 | SRVC-05 | Phase 4 | Pending |
-| OPER-01 | Phase 3 | Pending |
+| OPER-01 | Phase 3 | Complete |
 | OPER-02 | Phase 1 | Complete |
 
 **Coverage:**

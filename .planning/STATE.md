@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-26T18:37:30.631Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-03-26T18:59:40.937Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -59,6 +59,7 @@ Plan: 3 of 3
 | Phase 02 P03 | 20 min | 2 tasks | 6 files |
 | Phase 03 P01 | 12 min | 2 tasks | 2 files |
 | Phase 03 P02 | 10 min | 2 tasks | 3 files |
+| Phase 03 P03 | 15 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Keep bootstrap guidance limited to Tailscale-first private access with no public ingress steps.
 - [Phase 03]: Declare tailscale openFirewall=false explicitly in module state instead of relying on implicit defaults.
 - [Phase 03]: Store break-glass recovery as a command-level serial-console runbook in phase artifacts.
+- [Phase 03]: Expose a dedicated verify-phase-03 recipe to run all contract checks plus verify-oci-contract.
+- [Phase 03]: Keep day-2 deployment host-targeted and explicitly defer deploy-rs adoption.
 
 ### Roadmap Evolution
 
@@ -121,7 +124,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T18:37:30.625Z
+Last session: 2026-03-26T18:59:40.930Z
 Last activity: 2026-03-26
-Stopped at: Completed 03-02-PLAN.md
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
