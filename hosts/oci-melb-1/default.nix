@@ -2,7 +2,11 @@
 {
   imports = [
     ../../modules/profiles/base-server.nix
+    ../../modules/profiles/worker-interface.nix
     ../../modules/services/tailscale.nix
+    ../../modules/services/syncthing.nix
+    ../../modules/services/navidrome.nix
+    ../../modules/services/slskd.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
     ./users.nix
@@ -32,13 +36,36 @@
       "--hostname=oci-melb-1"
       "--advertise-tags=tag:oci-melb-1"
     ];
-  } // lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
+  }
+  // lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
     authKeyFile = "/run/secrets/tailscale.auth_key";
   };
 
   systemd.services.tailscaled-autoconnect = {
     after = [ "sops-install-secrets.service" ];
     wants = [ "sops-install-secrets.service" ];
+  };
+
+  systemd.services.navidrome = {
+    wants = [
+      "network-online.target"
+      "syncthing.service"
+    ];
+    after = [
+      "network-online.target"
+      "syncthing.service"
+    ];
+  };
+
+  systemd.services.slskd = {
+    wants = [
+      "network-online.target"
+      "syncthing.service"
+    ];
+    after = [
+      "network-online.target"
+      "syncthing.service"
+    ];
   };
 
   programs.nix-ld = {
