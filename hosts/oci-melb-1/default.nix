@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   imports = [
     ../../modules/profiles/base-server.nix
@@ -17,21 +17,23 @@
     wget
   ];
 
-  sops.defaultSopsFile = ../../secrets/secrets.yaml;
+  sops.defaultSopsFile = ../../secrets/common.yaml;
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
   sops.secrets.tailscale_auth_key = {
+    sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
     key = "tailscale/auth_key";
     path = "/run/secrets/tailscale.auth_key";
     mode = "0400";
   };
 
   services.tailscale = {
-    authKeyFile = "/run/secrets/tailscale.auth_key";
     extraUpFlags = [
       "--hostname=oci-melb-1"
       "--advertise-tags=tag:oci-melb-1"
     ];
+  } // lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
+    authKeyFile = "/run/secrets/tailscale.auth_key";
   };
 
   systemd.services.tailscaled-autoconnect = {
