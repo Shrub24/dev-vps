@@ -15,11 +15,11 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 - [x] Repository structure clearly reflects a fleet-oriented NixOS mission instead of the legacy `dev-vps` mission. *(Validated in Phase 1: Repository Cutover)*
 - [x] Operator-facing architecture/decision/migration docs are canonical and current under `docs/`. *(Validated in Phase 1: Repository Cutover)*
 - [x] The repository remains easy to extend to more hosts without another large structural rewrite. *(Validated in Phase 1: Repository Cutover)*
+- [x] `oci-melb-1` can be bootstrapped repeatably with a reliable, debuggable first-host path. *(Validated in Phase 03: oci-host-bring-up-and-private-operations)*
+- [x] Secrets management follows explicit blast-radius scoping across common and host-specific data. *(Validated in Phase 03: oci-host-bring-up-and-private-operations)*
 
 ### Active
 
-- [ ] `oci-melb-1` can be bootstrapped repeatably with a reliable, debuggable first-host path.
-- [ ] Secrets management follows explicit blast-radius scoping across common and host-specific data.
 - [ ] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model.
 
 ### Out of Scope
@@ -41,6 +41,8 @@ Research and prior planning already converged on a practical first-host posture:
 Phase 01.1 completed the provider/storage modularization cutover (`modules/providers/oci/default.nix`, `modules/storage/disko-root.nix`) and retired legacy `nixos/*.nix` implementation files, keeping docs and active architecture paths aligned.
 
 Phase 01.1.1 completed legacy config migration cleanup by removing retired operator defaults, migrating secret scaffold naming to `secrets/common.template.yaml`, and refreshing `.planning/codebase` architecture maps to the active `flake.nix` + `hosts/` + `modules/` structure.
+
+Phase 03 completed bootstrap, access, and operations contract locking with executable `tests/phase-03-*.sh` checks, Tailscale-first runbooks, and host-targeted day-2 workflow consolidation.
 
 ## Constraints
 
@@ -84,4 +86,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-21 after Phase 01.1.1 completion*
+*Last updated: 2026-03-26 after Phase 03 completion*
