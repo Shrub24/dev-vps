@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed quick-260325-ojg-PLAN.md
-last_updated: "2026-03-25T21:57:10.799Z"
+status: in_progress
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-26T02:01:13.498Z"
+last_activity: "2026-03-25 - Completed quick task 260325-ojg: Fix local direnv nix develop dev shell on x86 after repo switched target to aarch64"
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 8
 ---
 
 # Project State
@@ -19,12 +20,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-21)
 
 **Core value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
-**Current focus:** Phase 01.1.1 — legacy-config-migration-cleanup
+**Current focus:** Phase 2 — oci-bootstrap-and-service-readiness
 
 ## Current Position
 
 Phase: 2
-Plan: Not started
+Plan: 02-02-PLAN.md (next)
 
 ## Performance Metrics
 
@@ -53,6 +54,7 @@ Plan: Not started
 | Phase 01.1.1 P01 | 8 | 2 tasks | 4 files |
 | Phase 01.1.1 P02 | 13 | 2 tasks | 5 files |
 | Phase quick-260325-ojg-fix-local-direnv-nix-develop-dev-shell-o P01 | 3h 24m | 2 tasks | 2 files |
+| Phase 02 P01 | 177 min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -80,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 01.1.1]: Keep canonical docs explicitly anchored on secrets/common.yaml plus hosts/<host>/secrets.yaml with common template guidance.
 - [Phase 01.1.1]: Rewrite planning codebase maps to match active flake->hosts->modules composition after legacy migration cleanup.
 - [Phase quick-260325-ojg]: Use genAttrs for multi-system devShell outputs while keeping oci-melb-1 host pinned to aarch64-linux.
+- [Phase 02]: Set secrets/common.yaml as default SOPS source while loading tailscale auth material from hosts/oci-melb-1/secrets.yaml only when present.
+- [Phase 02]: Use explicit .sops.yaml path rules for common, transitional legacy, and oci host secrets with a host-specific age recipient anchor.
 
 ### Roadmap Evolution
 
@@ -104,7 +108,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T21:57:10.792Z
+Last session: 2026-03-26T02:01:13.493Z
 Last activity: 2026-03-25 - Completed quick task 260325-ojg: Fix local direnv nix develop dev shell on x86 after repo switched target to aarch64
-Stopped at: Completed quick-260325-ojg-PLAN.md
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None

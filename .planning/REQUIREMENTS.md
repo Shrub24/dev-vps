@@ -21,10 +21,10 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 
 ### Secrets
 
-- [ ] **SECR-01**: Operator can store fleet-shared secrets separately from host-specific secrets in encrypted files.
-- [ ] **SECR-02**: Operator can scope `.sops.yaml` recipients so adding a host does not expose existing host secrets.
-- [ ] **SECR-03**: Operator can follow a documented two-step secret bootstrap for new host bring-up.
-- [ ] **SECR-04**: Operator can keep Tailscale enrollment material host-scoped instead of using one reusable shared credential.
+- [x] **SECR-01**: Operator can store fleet-shared secrets separately from host-specific secrets in encrypted files.
+- [x] **SECR-02**: Operator can scope `.sops.yaml` recipients so adding a host does not expose existing host secrets.
+- [x] **SECR-03**: Operator can follow a documented two-step secret bootstrap for new host bring-up.
+- [x] **SECR-04**: Operator can keep Tailscale enrollment material host-scoped instead of using one reusable shared credential.
 
 ### Access
 
@@ -98,10 +98,10 @@ Which phases cover which requirements. This section is populated during roadmap 
 | BOOT-01 | Phase 3 | Pending |
 | BOOT-02 | Phase 3 | Pending |
 | BOOT-03 | Phase 3 | Pending |
-| SECR-01 | Phase 2 | Pending |
-| SECR-02 | Phase 2 | Pending |
-| SECR-03 | Phase 2 | Pending |
-| SECR-04 | Phase 2 | Pending |
+| SECR-01 | Phase 2 | Complete |
+| SECR-02 | Phase 2 | Complete |
+| SECR-03 | Phase 2 | Complete |
+| SECR-04 | Phase 2 | Complete |
 | ACCS-01 | Phase 3 | Pending |
 | ACCS-02 | Phase 3 | Pending |
 | STOR-01 | Phase 3 | Pending |

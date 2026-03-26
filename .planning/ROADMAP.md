@@ -69,7 +69,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - Establish secrets split, host-scoped recipient policy, and two-step bootstrap contract.
+- [x] 02-01-PLAN.md - Establish secrets split, host-scoped recipient policy, and two-step bootstrap contract.
 - [ ] 02-02-PLAN.md - Define storage/data mount and private service module contracts with sequencing boundaries.
 - [ ] 02-03-PLAN.md - Wire host composition and canonical operator verification flow for readiness checks.
 
@@ -104,6 +104,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Repository Cutover | 3/3 | Complete | 2026-03-21 |
-| 2. OCI Bootstrap And Service Readiness | 0/TBD | Not started | - |
+| 2. OCI Bootstrap And Service Readiness | 1/3 | In Progress | - |
 | 3. OCI Host Bring-Up And Private Operations | 0/TBD | Not started | - |
 | 4. Service Baseline And Data Safety | 0/TBD | Not started | - |
