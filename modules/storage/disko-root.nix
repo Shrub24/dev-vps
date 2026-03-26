@@ -22,11 +22,26 @@
         };
 
         root = {
+          size = "60G";
+          content = {
+            type = "filesystem";
+            format = "ext4";
+            extraArgs = [ "-L" "rootfs" ];
+            mountpoint = "/";
+          };
+        };
+
+        data = {
           size = "100%";
           content = {
             type = "filesystem";
             format = "ext4";
-            mountpoint = "/";
+            extraArgs = [ "-L" "srv-data" ];
+            mountpoint = "/srv/data";
+            mountOptions = [
+              "nofail"
+              "x-systemd.device-timeout=10s"
+            ];
           };
         };
       };
