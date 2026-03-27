@@ -13,8 +13,8 @@ This roadmap repurposes the repository from legacy `dev-vps` usage into a modula
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Repository Cutover** - Establish the fleet-oriented repo shape, docs, and growth path. (completed 2026-03-21)
-- [ ] **Phase 2: OCI Bootstrap And Service Readiness** - Bootstrap `oci-melb-1` with `nixos-anywhere`, establish baseline storage, and verify core services are installed and running.
-- [ ] **Phase 3: OCI Host Bring-Up And Private Operations** - Make `oci-melb-1` installable, reachable privately, and maintainable from declared state.
+- [x] **Phase 2: OCI Bootstrap And Service Readiness** - Bootstrap `oci-melb-1` with `nixos-anywhere`, establish baseline storage, and verify core services are installed and running. (completed 2026-03-26)
+- [x] **Phase 3: OCI Host Bring-Up And Private Operations** - Make `oci-melb-1` installable, reachable privately, and maintainable from declared state. (completed 2026-03-26)
 - [ ] **Phase 4: Service Baseline And Data Safety** - Run the initial private service baseline on persistent storage with the intended media flow.
 
 ## Phase Details
@@ -43,8 +43,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 01.1-01-PLAN.md - Modularize provider and storage contracts and rewire active flake composition.
-- [ ] 01.1-02-PLAN.md - Remove obsolete legacy `nixos` implementation files and reconcile canonical docs.
+- [x] 01.1-01-PLAN.md - Modularize provider and storage contracts and rewire active flake composition.
+- [x] 01.1-02-PLAN.md - Remove obsolete legacy `nixos` implementation files and reconcile canonical docs.
 
 ### Phase 01.1.1: Legacy config migration cleanup (INSERTED)
 
@@ -54,8 +54,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 01.1.1-01-PLAN.md - Remove legacy operator defaults and migrate secret template/rule scaffolding.
-- [ ] 01.1.1-02-PLAN.md - Reconcile canonical docs and planner codebase maps with post-migration architecture.
+- [x] 01.1.1-01-PLAN.md - Remove legacy operator defaults and migrate secret template/rule scaffolding.
+- [x] 01.1.1-02-PLAN.md - Reconcile canonical docs and planner codebase maps with post-migration architecture.
 
 ### Phase 2: OCI Bootstrap And Service Readiness
 **Goal**: `oci-melb-1` can be bootstrapped via `nixos-anywhere`, laid out with stable baseline storage, and brought to a Tailscale-private service-ready state for the initial stack.
@@ -70,8 +70,8 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md - Establish secrets split, host-scoped recipient policy, and two-step bootstrap contract.
-- [ ] 02-02-PLAN.md - Define storage/data mount and private service module contracts with sequencing boundaries.
-- [ ] 02-03-PLAN.md - Wire host composition and canonical operator verification flow for readiness checks.
+- [x] 02-02-PLAN.md - Define storage/data mount and private service module contracts with sequencing boundaries.
+- [x] 02-03-PLAN.md - Wire host composition and canonical operator verification flow for readiness checks.
 
 ### Phase 3: OCI Host Bring-Up And Private Operations
 **Goal**: `oci-melb-1` can be installed, rebuilt, reached privately, and updated through a reliable host-targeted operating path backed by stable persistent storage.
@@ -86,9 +86,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md - Lock OCI bootstrap and disko storage invariants with executable contract checks.
-- [ ] 03-02-PLAN.md - Enforce private Tailscale access posture and add break-glass recovery contract.
-- [ ] 03-03-PLAN.md - Consolidate host-targeted day-2 update workflow and storage path verification.
+- [x] 03-01-PLAN.md - Lock OCI bootstrap and disko storage invariants with executable contract checks.
+- [x] 03-02-PLAN.md - Enforce private Tailscale access posture and add break-glass recovery contract.
+- [x] 03-03-PLAN.md - Consolidate host-targeted day-2 update workflow and storage path verification.
 
 ### Phase 4: Service Baseline And Data Safety
 **Goal**: The initial private service stack runs on `oci-melb-1` with the intended direct media flow and enough sync safety to operate confidently.
@@ -109,6 +109,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Repository Cutover | 3/3 | Complete | 2026-03-21 |
-| 2. OCI Bootstrap And Service Readiness | 1/3 | In Progress | - |
-| 3. OCI Host Bring-Up And Private Operations | 0/TBD | Not started | - |
+| 2. OCI Bootstrap And Service Readiness | 3/3 | Complete | 2026-03-26 |
+| 3. OCI Host Bring-Up And Private Operations | 3/3 | Complete | 2026-03-26 |
 | 4. Service Baseline And Data Safety | 0/TBD | Not started | - |
