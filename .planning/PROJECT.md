@@ -17,10 +17,11 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 - [x] The repository remains easy to extend to more hosts without another large structural rewrite. *(Validated in Phase 1: Repository Cutover)*
 - [x] `oci-melb-1` can be bootstrapped repeatably with a reliable, debuggable first-host path. *(Validated in Phase 03: oci-host-bring-up-and-private-operations)*
 - [x] Secrets management follows explicit blast-radius scoping across common and host-specific data. *(Validated in Phase 03: oci-host-bring-up-and-private-operations)*
+- [x] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model. *(Validated in Phase 04: service-baseline-and-data-safety)*
 
 ### Active
 
-- [ ] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model.
+None currently.
 
 ### Out of Scope
 
@@ -43,6 +44,8 @@ Phase 01.1 completed the provider/storage modularization cutover (`modules/provi
 Phase 01.1.1 completed legacy config migration cleanup by removing retired operator defaults, migrating secret scaffold naming to `secrets/common.template.yaml`, and refreshing `.planning/codebase` architecture maps to the active `flake.nix` + `hosts/` + `modules/` structure.
 
 Phase 03 completed bootstrap, access, and operations contract locking with executable `tests/phase-03-*.sh` checks, Tailscale-first runbooks, and host-targeted day-2 workflow consolidation.
+
+Phase 04 completed direct Syncthing-to-Navidrome service-flow enforcement with explicit Syncthing mode/versioning safeguards, phase contract scripts, and a unified `verify-phase-04` operator verification command.
 
 ## Constraints
 
@@ -86,4 +89,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after Phase 03 completion*
+*Last updated: 2026-03-27 after Phase 04 completion*
