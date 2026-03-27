@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-03-26T19:01:30.066Z"
-last_activity: 2026-03-26
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-27T04:22:16.653Z"
+last_activity: 2026-03-27
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
+  completed_phases: 6
+  total_plans: 15
+  completed_plans: 15
 ---
 
 # Project State
@@ -20,11 +20,11 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-21)
 
 **Core value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
-**Current focus:** Phase 03 — oci-host-bring-up-and-private-operations
+**Current focus:** Phase 04 — service-baseline-and-data-safety
 
 ## Current Position
 
-Phase: 4
+Phase: 04
 Plan: Not started
 
 ## Performance Metrics
@@ -60,6 +60,8 @@ Plan: Not started
 | Phase 03 P01 | 12 min | 2 tasks | 2 files |
 | Phase 03 P02 | 10 min | 2 tasks | 3 files |
 | Phase 03 P03 | 15 min | 2 tasks | 3 files |
+| Phase 04 P01 | 11 | 2 tasks | 2 files |
+| Phase 04 P02 | 15 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -100,6 +102,10 @@ Recent decisions affecting current work:
 - [Phase 03]: Store break-glass recovery as a command-level serial-console runbook in phase artifacts.
 - [Phase 03]: Expose a dedicated verify-phase-03 recipe to run all contract checks plus verify-oci-contract.
 - [Phase 03]: Keep day-2 deployment host-targeted and explicitly defer deploy-rs adoption.
+- [Phase 04]: Keep path authority at /srv/data/media in both top-level dataDir and explicit folder settings.
+- [Phase 04]: Use fixed retention literals (cleanoutDays=30, cleanupIntervalS=86400) for predictable Syncthing safeguards.
+- [Phase 04]: Keep Navidrome direct-read rooted on /srv/data/media with no inbox staging path.
+- [Phase 04]: Expose one operator command verify-phase-04 to run both phase contracts before redeploy.
 
 ### Roadmap Evolution
 
@@ -124,7 +130,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T18:59:40.930Z
-Last activity: 2026-03-26
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-03-27T04:10:28.020Z
+Last activity: 2026-03-27
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

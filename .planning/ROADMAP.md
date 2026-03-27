@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Repository Cutover** - Establish the fleet-oriented repo shape, docs, and growth path. (completed 2026-03-21)
 - [x] **Phase 2: OCI Bootstrap And Service Readiness** - Bootstrap `oci-melb-1` with `nixos-anywhere`, establish baseline storage, and verify core services are installed and running. (completed 2026-03-26)
 - [x] **Phase 3: OCI Host Bring-Up And Private Operations** - Make `oci-melb-1` installable, reachable privately, and maintainable from declared state. (completed 2026-03-26)
-- [ ] **Phase 4: Service Baseline And Data Safety** - Run the initial private service baseline on persistent storage with the intended media flow.
+- [x] **Phase 4: Service Baseline And Data Safety** - Run the initial private service baseline on persistent storage with the intended media flow. (completed 2026-03-27)
 
 ## Phase Details
 
@@ -115,4 +115,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Repository Cutover | 3/3 | Complete | 2026-03-21 |
 | 2. OCI Bootstrap And Service Readiness | 3/3 | Complete | 2026-03-26 |
 | 3. OCI Host Bring-Up And Private Operations | 3/3 | Complete | 2026-03-26 |
-| 4. Service Baseline And Data Safety | 0/TBD | Not started | - |
+| 4. Service Baseline And Data Safety | 2/2 | Complete   | 2026-03-27 |

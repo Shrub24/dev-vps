@@ -39,10 +39,10 @@ Requirements for the initial release. Each maps to exactly one roadmap phase.
 ### Services
 
 - [x] **SRVC-01**: Operator can enable `tailscale` declaratively through NixOS configuration.
-- [ ] **SRVC-02**: Operator can enable `syncthing` declaratively with persistent paths and explicit folder modes.
-- [ ] **SRVC-03**: Operator can enable `navidrome` declaratively with media paths rooted on the persistent mount.
-- [ ] **SRVC-04**: Operator can run Syncthing with versioning or conflict safeguards that reduce accidental delete and overwrite risk.
-- [ ] **SRVC-05**: Operator can have Navidrome read directly from the Syncthing-managed media path without duplicate staging storage.
+- [x] **SRVC-02**: Operator can enable `syncthing` declaratively with persistent paths and explicit folder modes.
+- [x] **SRVC-03**: Operator can enable `navidrome` declaratively with media paths rooted on the persistent mount.
+- [x] **SRVC-04**: Operator can run Syncthing with versioning or conflict safeguards that reduce accidental delete and overwrite risk.
+- [x] **SRVC-05**: Operator can have Navidrome read directly from the Syncthing-managed media path without duplicate staging storage.
 
 ### Operations
 
@@ -107,10 +107,10 @@ Which phases cover which requirements. This section is populated during roadmap 
 | STOR-01 | Phase 3 | Complete |
 | STOR-02 | Phase 3 | Complete |
 | SRVC-01 | Phase 3 | Complete |
-| SRVC-02 | Phase 4 | Pending |
-| SRVC-03 | Phase 4 | Pending |
-| SRVC-04 | Phase 4 | Pending |
-| SRVC-05 | Phase 4 | Pending |
+| SRVC-02 | Phase 4 | Complete |
+| SRVC-03 | Phase 4 | Complete |
+| SRVC-04 | Phase 4 | Complete |
+| SRVC-05 | Phase 4 | Complete |
 | OPER-01 | Phase 3 | Complete |
 | OPER-02 | Phase 1 | Complete |
 
