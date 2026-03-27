@@ -5,6 +5,17 @@
     dataDir = "/srv/data/media";
     configDir = "/srv/data/syncthing/config";
     openDefaultPorts = false;
+    settings.folders."media" = {
+      path = "/srv/data/media";
+      type = "sendreceive";
+      versioning = {
+        type = "trashcan";
+        params = {
+          cleanoutDays = "30";
+          cleanupIntervalS = "86400";
+        };
+      };
+    };
   };
 
   systemd.tmpfiles.rules = [
