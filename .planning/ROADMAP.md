@@ -99,7 +99,11 @@ Plans:
   2. Operator can run Navidrome declaratively with media paths rooted on the persistent mount.
   3. Syncthing configuration includes conflict or versioning safeguards that reduce accidental delete and overwrite risk.
   4. Navidrome reads directly from the Syncthing-managed media path without requiring a duplicate staging dataset.
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md - Lock Syncthing folder mode and versioning safety contracts.
+- [ ] 04-02-PLAN.md - Lock Navidrome direct-read service flow and phase verification command.
 
 ## Progress
 
