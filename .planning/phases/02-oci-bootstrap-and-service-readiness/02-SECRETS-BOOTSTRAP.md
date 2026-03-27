@@ -7,7 +7,13 @@ This runbook defines the two-step secret bootstrap workflow for `oci-melb-1`.
 Use the canonical installer entrypoint to bootstrap NixOS without requiring `hosts/oci-melb-1/secrets.yaml`.
 
 ```bash
-./deploy.sh <target-ip>
+just bootstrap BOOTSTRAP_TARGET=<target-ip>
+```
+
+Direct script form (equivalent):
+
+```bash
+./deploy.sh --target <target-ip>
 ```
 
 Expected outcome:

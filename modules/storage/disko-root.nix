@@ -1,4 +1,7 @@
-{ ... }:
+{ lib, ... }:
+let
+  bootstrapConfig = import ../../hosts/oci-melb-1/bootstrap-config.nix;
+in
 {
   disko.devices.disk.main = {
     type = "disk";
@@ -22,11 +25,14 @@
         };
 
         root = {
-          size = "60G";
+          size = lib.mkDefault bootstrapConfig.rootPartitionSize;
           content = {
             type = "filesystem";
             format = "ext4";
-            extraArgs = [ "-L" "rootfs" ];
+            extraArgs = [
+              "-L"
+              "rootfs"
+            ];
             mountpoint = "/";
           };
         };
@@ -36,7 +42,10 @@
           content = {
             type = "filesystem";
             format = "ext4";
-            extraArgs = [ "-L" "srv-data" ];
+            extraArgs = [
+              "-L"
+              "srv-data"
+            ];
             mountpoint = "/srv/data";
             mountOptions = [
               "nofail"
