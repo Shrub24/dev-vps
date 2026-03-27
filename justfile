@@ -41,6 +41,11 @@ verify-phase-03:
   bash tests/phase-03-operations-contract.sh
   just verify-oci-contract
 
+verify-phase-04:
+  bash tests/phase-04-syncthing-contract.sh
+  bash tests/phase-04-service-flow-contract.sh
+  just verify-oci-contract
+
 devshell-check:
   nix develop --command just --list >/dev/null
 
