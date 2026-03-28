@@ -14,7 +14,7 @@
     ../../modules/applications/music.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
-    ./users.nix
+    ../../modules/core/users.nix
   ]
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
