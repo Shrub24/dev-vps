@@ -4,6 +4,15 @@ set -euo pipefail
 NAVIDROME_FILE="modules/services/navidrome.nix"
 SYNCTHING_FILE="modules/services/syncthing.nix"
 SLSKD_FILE="modules/services/slskd.nix"
+MUSIC_APP_FILE="modules/applications/music.nix"
+HOST_FILE="hosts/oci-melb-1/default.nix"
+
+rg --fixed-strings --quiet '../../modules/applications/music.nix' "$HOST_FILE"
+rg --fixed-strings --quiet '../../modules/services/syncthing.nix' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet '../../modules/services/navidrome.nix' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet '../../modules/services/slskd.nix' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet 'services.slskd.domain = "oci-melb-1";' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet 'services.slskd.environmentFile = "/var/lib/slskd/environment";' "$MUSIC_APP_FILE"
 
 rg --fixed-strings --quiet 'MusicFolder = "/srv/data/media";' "$NAVIDROME_FILE"
 rg --fixed-strings --quiet 'DataFolder = "/srv/data/navidrome";' "$NAVIDROME_FILE"

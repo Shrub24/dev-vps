@@ -81,7 +81,10 @@ The exact file tree can evolve, but the intended shape is:
 - `modules/storage/disko-root.nix` for active declarative root disk layout
 - `modules/core/base.nix` for shared baseline policy
 - `modules/profiles/base-server.nix` for host profile composition
+- `modules/applications/music.nix` for first-pass Syncthing/Navidrome/slskd composition
+- `modules/applications/admin.nix` for first-pass private admin composition
 - `modules/services/tailscale.nix` for reusable service wiring
+- `modules/services/termix.nix` for low-level Termix + guacd container wiring
 - `modules/services/*.nix` for reusable service modules with enable flags
 - `modules/profiles/*.nix` for shared profile-level composition
 - `secrets/common.yaml` for tightly-scoped fleet-shared secrets
@@ -149,6 +152,7 @@ Current model:
 
 - Tailscale is the private connectivity and access fabric
 - services remain private/Tailscale-only in the near term
+- Termix is exposed as a private admin application over Tailscale only (no new public firewall opening)
 
 Potential later model:
 

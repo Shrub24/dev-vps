@@ -223,6 +223,36 @@ Rationale:
 - prevents conflicting migration narratives during aggressive cutover
 - keeps implementation and operator guidance synchronized
 
+## D-017: Add a narrow applications composition layer for current host systems
+
+Status: Accepted
+
+Decision:
+
+- add `modules/applications/music.nix` to compose Syncthing, Navidrome, and slskd for `oci-melb-1`
+- add `modules/applications/admin.nix` to compose private admin access through Tailscale plus Termix
+- keep low-level implementation in `modules/services/*.nix` and avoid broad repository reorganization
+
+Rationale:
+
+- introduces an explicit logical application boundary without disrupting existing host behavior
+- preserves service-level reuse while making host composition easier to reason about
+
+## D-018: Termix runs as a Tailscale-only admin application on oci-melb-1
+
+Status: Accepted
+
+Decision:
+
+- implement Termix with a dedicated low-level module `modules/services/termix.nix` using Podman OCI containers (`termix` + `guacd`)
+- persist Termix state under `/srv/data/termix`
+- keep public exposure unchanged (no new firewall openings)
+
+Rationale:
+
+- adds private remote admin capability while keeping the project's Tailscale-first posture intact
+- keeps runtime/container specifics isolated from host composition and canonical docs
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

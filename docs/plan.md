@@ -67,6 +67,8 @@ Track D: Service baseline
 - deploy private-only Tailscale access model
 - deploy bidirectional Syncthing with safety controls
 - deploy Navidrome reading direct sync path
+- keep music service composition explicit through `modules/applications/music.nix`
+- keep private admin service composition explicit through `modules/applications/admin.nix`
 
 Track E: Future-ready evolution
 
@@ -103,8 +105,11 @@ These documents are intended to remain current and drive implementation, not tra
 Active implementation anchor paths that must stay reflected in docs:
 
 - `hosts/oci-melb-1/default.nix`
+- `modules/applications/music.nix`
+- `modules/applications/admin.nix`
 - `modules/core/base.nix`
 - `modules/profiles/base-server.nix`
 - `modules/services/tailscale.nix`
+- `modules/services/termix.nix`
 
 Maintenance requirement: changes to active architecture paths, trust boundaries, or operator/CI commands must update canonical docs in the same change window.

@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick-260328-17w-PLAN.md
-last_updated: "2026-03-28T01:05:53Z"
+stopped_at: Completed quick-260328-fax-PLAN.md
+last_updated: "2026-03-28T11:34:25.360Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 6
@@ -64,6 +64,7 @@ Plan: Not started
 | Phase 04 P02 | 15 | 3 tasks | 3 files |
 | Phase quick-260328-0gu-add-break-glass-access-guarantees-as-abo P01 | 6 min | 2 tasks | 4 files |
 | Phase quick-260328-17w-implement-post-reboot-oci-console-access P01 | 6 min | 2 tasks | 5 files |
+| Phase quick-260328-fax-make-application-groups-and-add-termix P01 | 5 min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,8 @@ Recent decisions affecting current work:
 - [Phase quick-260328-0gu]: Treat break-glass command coverage as part of tests/phase-03-access-contract.sh so drift fails verification early.
 - [Phase quick-260328-17w]: Enforce phase-03 access verification against both declarative sshKeys ownership and OCI console hardening contracts.
 - [Phase quick-260328-17w]: Declare ttyAMA0 serial console kernel/getty wiring in the OCI provider module to keep post-reboot console recovery explicit.
+- [Phase quick-260328-fax]: Add a narrow applications composition boundary via modules/applications/music.nix and modules/applications/admin.nix
+- [Phase quick-260328-fax]: Keep Termix Tailscale-only by introducing modules/services/termix.nix without new public firewall openings
 
 ### Roadmap Evolution
 
@@ -136,10 +139,11 @@ None yet.
 | 260328-0gu | Add break-glass access guarantees as above | 2026-03-28 | 46e0297 | [260328-0gu-add-break-glass-access-guarantees-as-abo](./quick/260328-0gu-add-break-glass-access-guarantees-as-abo/) |
 | 260328-17w | Implement post-reboot OCI console access | 2026-03-28 | f241fae | [260328-17w-implement-post-reboot-oci-console-access](./quick/260328-17w-implement-post-reboot-oci-console-access/) |
 | fast-260328-ssh22 | Implement the open 22 port | 2026-03-28 | 2078d28 | [n/a](./) |
+| 260328-fax | Make application groups and add Termix | 2026-03-28 | 22ff075 | [260328-fax-make-application-groups-and-add-termix](./quick/260328-fax-make-application-groups-and-add-termix/) |
 
 ## Session Continuity
 
-Last session: 2026-03-28T01:05:53Z
+Last session: 2026-03-28T11:34:25.355Z
 Last activity: 2026-03-27
-Stopped at: Completed quick-260328-17w-PLAN.md
+Stopped at: Completed quick-260328-fax-PLAN.md
 Resume file: None

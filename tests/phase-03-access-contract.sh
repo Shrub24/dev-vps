@@ -2,6 +2,8 @@
 set -euo pipefail
 
 TAILSCALE_FILE="modules/services/tailscale.nix"
+TERMIX_FILE="modules/services/termix.nix"
+ADMIN_APP_FILE="modules/applications/admin.nix"
 HOST_FILE="hosts/oci-melb-1/default.nix"
 USERS_FILE="hosts/oci-melb-1/users.nix"
 OCI_PROVIDER_FILE="modules/providers/oci/default.nix"
@@ -14,6 +16,22 @@ BREAKGLASS_FILE=".planning/phases/03-oci-host-bring-up-and-private-operations/03
 rg --fixed-strings --quiet 'services.tailscale = {' "$TAILSCALE_FILE"
 rg --fixed-strings --quiet 'enable = true;' "$TAILSCALE_FILE"
 rg --fixed-strings --quiet 'openFirewall = false;' "$TAILSCALE_FILE"
+
+rg --fixed-strings --quiet '../../modules/applications/admin.nix' "$HOST_FILE"
+rg --fixed-strings --quiet 'modules/services/termix.nix' "$ADMIN_APP_FILE"
+rg --fixed-strings --quiet '/srv/data/termix' "$TERMIX_FILE"
+rg --fixed-strings --quiet 'ports = [' "$TERMIX_FILE"
+rg --fixed-strings --quiet '"8083:8080"' "$TERMIX_FILE"
+
+if rg --fixed-strings --quiet 'networking.firewall.allowedTCPPorts' "$TERMIX_FILE"; then
+  echo 'termix module introduced explicit public firewall opening'
+  exit 1
+fi
+
+if rg --fixed-strings --quiet '8083' "$HOST_FILE"; then
+  echo 'termix port leaked into host-level firewall surface'
+  exit 1
+fi
 
 rg --fixed-strings --quiet 'trustedInterfaces = [ "tailscale0" ]' "$HOST_FILE"
 rg --fixed-strings --quiet 'allowedTCPPorts = [ 22 ];' "$HOST_FILE"

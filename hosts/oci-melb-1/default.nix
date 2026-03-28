@@ -10,10 +10,8 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
-    ../../modules/services/tailscale.nix
-    ../../modules/services/syncthing.nix
-    ../../modules/services/navidrome.nix
-    ../../modules/services/slskd.nix
+    ../../modules/applications/admin.nix
+    ../../modules/applications/music.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
     ./users.nix
@@ -50,38 +48,9 @@
     authKeyFile = "/run/secrets/tailscale.auth_key";
   };
 
-  services.slskd.domain = "oci-melb-1";
-  services.slskd.environmentFile = "/var/lib/slskd/environment";
-
-  systemd.tmpfiles.rules = [
-    "f /var/lib/slskd/environment 0640 slskd slskd - -"
-  ];
-
   systemd.services.tailscaled-autoconnect = {
     after = [ "sops-install-secrets.service" ];
     wants = [ "sops-install-secrets.service" ];
-  };
-
-  systemd.services.navidrome = {
-    wants = [
-      "network-online.target"
-      "syncthing.service"
-    ];
-    after = [
-      "network-online.target"
-      "syncthing.service"
-    ];
-  };
-
-  systemd.services.slskd = {
-    wants = [
-      "network-online.target"
-      "syncthing.service"
-    ];
-    after = [
-      "network-online.target"
-      "syncthing.service"
-    ];
   };
 
   programs.nix-ld = {
