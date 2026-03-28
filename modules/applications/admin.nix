@@ -20,6 +20,19 @@
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
+      partOf = [
+        "tailscaled.service"
+        "podman-termix.service"
+      ];
+      after = [
+        "tailscaled.service"
+        "podman-termix.service"
+      ];
+      wants = [
+        "tailscaled.service"
+        "podman-termix.service"
+      ];
+      stopIfChanged = true;
       ExecStart = ''
         ${pkgs.tailscale}/bin/tailscale serve --yes --bg --https=8443 http://127.0.0.1:8083
       '';
