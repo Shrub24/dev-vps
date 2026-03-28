@@ -32,7 +32,10 @@ Use this sequence for routine updates after initial host bootstrap.
 
    ```bash
    just tailscale-status
+   tailscale serve status
    ```
+
+   Expect the Serve table to include a `/termix` HTTPS path route that reverse proxies to local `http://127.0.0.1:8083`.
 
 ## Rollback Pointer
 
