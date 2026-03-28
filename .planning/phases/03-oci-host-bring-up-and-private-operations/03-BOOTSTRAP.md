@@ -32,11 +32,37 @@ This runbook defines the canonical OCI bootstrap sequence aligned to the enforce
      BOOTSTRAP_EXTRA_FILES=<extra-files-path>
    ```
 
+   Hardware config generation is enabled by default and writes to
+   `hosts/oci-melb-1/hardware-configuration.nix` using `nixos-generate-config`.
+
+   Optional hardware generation controls:
+
+   ```bash
+   just bootstrap \
+     BOOTSTRAP_TARGET=<oci_public_ip_or_dns> \
+     BOOTSTRAP_HARDWARE_CONFIG_GENERATOR=nixos-generate-config \
+     BOOTSTRAP_HARDWARE_CONFIG_PATH=hosts/oci-melb-1/hardware-configuration.nix
+   ```
+
+   To skip hardware generation entirely:
+
+   ```bash
+   just bootstrap \
+     BOOTSTRAP_TARGET=<oci_public_ip_or_dns> \
+     BOOTSTRAP_SKIP_HARDWARE_CONFIG=true
+   ```
+
    Equivalent direct script usage remains available:
 
    ```bash
    ./deploy.sh --target <oci_public_ip_or_dns> --bootstrap-user <bootstrap_user> --flake path:.#oci-melb-1 --extra-files <extra-files-path>
    ```
+
+   Direct script flags for hardware generation are also available:
+
+   - `--hardware-config-generator <name>`
+   - `--hardware-config-path <path>`
+   - `--skip-hardware-config`
 
 4. Validate expected hostname output from flake:
 
@@ -74,3 +100,5 @@ This file currently pins:
 - `bootstrapUser = "ubuntu"` (OCI image bootstrap user)
 - `bootstrapDisk = "/dev/sda"`
 - `flake = "path:.#oci-melb-1"`
+- `hardwareConfigGenerator = "nixos-generate-config"`
+- `hardwareConfigPath = "hosts/oci-melb-1/hardware-configuration.nix"`

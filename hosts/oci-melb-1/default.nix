@@ -1,6 +1,13 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
 {
   imports = [
+    (modulesPath + "/installer/scan/not-detected.nix")
+    (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
     ../../modules/services/tailscale.nix
@@ -10,7 +17,8 @@
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
     ./users.nix
-  ];
+  ]
+  ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
   networking.hostName = "oci-melb-1";
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
