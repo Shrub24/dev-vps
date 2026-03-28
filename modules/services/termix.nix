@@ -13,17 +13,17 @@
 
     termix = {
       autoStart = true;
-      image = "ghcr.io/termix-official/termix:latest";
+      image = "ghcr.io/lukegus/termix:latest";
       dependsOn = [ "guacd" ];
       environment = {
-        TERMIX_GUACD_HOST = "127.0.0.1";
-        TERMIX_GUACD_PORT = "4822";
+        GUACD_HOST = "127.0.0.1";
+        GUACD_PORT = "4822";
       };
       ports = [
         "8083:8080"
       ];
       volumes = [
-        "/srv/data/termix/data:/var/lib/termix"
+        "/srv/data/termix/data:/app/data"
       ];
     };
   };

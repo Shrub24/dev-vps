@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick-260328-fax-PLAN.md
-last_updated: "2026-03-28T11:34:25.360Z"
+stopped_at: Completed quick-260328-gij-PLAN.md
+last_updated: "2026-03-28T12:18:30.386Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 6
@@ -65,6 +65,7 @@ Plan: Not started
 | Phase quick-260328-0gu-add-break-glass-access-guarantees-as-abo P01 | 6 min | 2 tasks | 4 files |
 | Phase quick-260328-17w-implement-post-reboot-oci-console-access P01 | 6 min | 2 tasks | 5 files |
 | Phase quick-260328-fax-make-application-groups-and-add-termix P01 | 5 min | 2 tasks | 9 files |
+| Phase quick-260328-gij-fix-termix-container-wiring-and-startup P01 | 10 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Recent decisions affecting current work:
 - [Phase quick-260328-17w]: Declare ttyAMA0 serial console kernel/getty wiring in the OCI provider module to keep post-reboot console recovery explicit.
 - [Phase quick-260328-fax]: Add a narrow applications composition boundary via modules/applications/music.nix and modules/applications/admin.nix
 - [Phase quick-260328-fax]: Keep Termix Tailscale-only by introducing modules/services/termix.nix without new public firewall openings
+- [Phase quick-260328-gij]: Preserve Termix ownership in modules/services/termix.nix and composition through modules/applications/admin.nix while fixing runtime wiring only.
+- [Phase quick-260328-gij]: Enforce Termix upstream runtime contract in phase-03 access checks and fail on legacy termix-official/TERMIX_GUACD_/var/lib wiring strings.
 
 ### Roadmap Evolution
 
@@ -140,10 +143,11 @@ None yet.
 | 260328-17w | Implement post-reboot OCI console access | 2026-03-28 | f241fae | [260328-17w-implement-post-reboot-oci-console-access](./quick/260328-17w-implement-post-reboot-oci-console-access/) |
 | fast-260328-ssh22 | Implement the open 22 port | 2026-03-28 | 2078d28 | [n/a](./) |
 | 260328-fax | Make application groups and add Termix | 2026-03-28 | 22ff075 | [260328-fax-make-application-groups-and-add-termix](./quick/260328-fax-make-application-groups-and-add-termix/) |
+| 260328-gij | Fix Termix container wiring and startup | 2026-03-28 | d5e35f4 | [260328-gij-fix-termix-container-wiring-and-startup](./quick/260328-gij-fix-termix-container-wiring-and-startup/) |
 
 ## Session Continuity
 
-Last session: 2026-03-28T11:34:25.355Z
+Last session: 2026-03-28T12:18:30.382Z
 Last activity: 2026-03-27
-Stopped at: Completed quick-260328-fax-PLAN.md
+Stopped at: Completed quick-260328-gij-PLAN.md
 Resume file: None

@@ -20,8 +20,27 @@ rg --fixed-strings --quiet 'openFirewall = false;' "$TAILSCALE_FILE"
 rg --fixed-strings --quiet '../../modules/applications/admin.nix' "$HOST_FILE"
 rg --fixed-strings --quiet 'modules/services/termix.nix' "$ADMIN_APP_FILE"
 rg --fixed-strings --quiet '/srv/data/termix' "$TERMIX_FILE"
+rg --fixed-strings --quiet 'ghcr.io/lukegus/termix:latest' "$TERMIX_FILE"
+rg --fixed-strings --quiet '/srv/data/termix/data:/app/data' "$TERMIX_FILE"
+rg --fixed-strings --quiet 'GUACD_HOST = "127.0.0.1";' "$TERMIX_FILE"
+rg --fixed-strings --quiet 'GUACD_PORT = "4822";' "$TERMIX_FILE"
 rg --fixed-strings --quiet 'ports = [' "$TERMIX_FILE"
 rg --fixed-strings --quiet '"8083:8080"' "$TERMIX_FILE"
+
+if rg --fixed-strings --quiet 'termix-official/termix' "$TERMIX_FILE"; then
+  echo 'legacy termix image wiring reintroduced'
+  exit 1
+fi
+
+if rg --fixed-strings --quiet 'TERMIX_GUACD_' "$TERMIX_FILE"; then
+  echo 'legacy termix guacd env contract reintroduced'
+  exit 1
+fi
+
+if rg --fixed-strings --quiet '/var/lib/termix' "$TERMIX_FILE"; then
+  echo 'legacy termix data mount target reintroduced'
+  exit 1
+fi
 
 if rg --fixed-strings --quiet 'networking.firewall.allowedTCPPorts' "$TERMIX_FILE"; then
   echo 'termix module introduced explicit public firewall opening'
