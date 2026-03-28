@@ -135,6 +135,7 @@ None yet.
 | 260325-ojg | Fix local direnv nix develop dev shell on x86 after repo switched target to aarch64 | 2026-03-25 | e0a224a | [260325-ojg-fix-local-direnv-nix-develop-dev-shell-o](./quick/260325-ojg-fix-local-direnv-nix-develop-dev-shell-o/) |
 | 260328-0gu | Add break-glass access guarantees as above | 2026-03-28 | 46e0297 | [260328-0gu-add-break-glass-access-guarantees-as-abo](./quick/260328-0gu-add-break-glass-access-guarantees-as-abo/) |
 | 260328-17w | Implement post-reboot OCI console access | 2026-03-28 | f241fae | [260328-17w-implement-post-reboot-oci-console-access](./quick/260328-17w-implement-post-reboot-oci-console-access/) |
+| fast-260328-ssh22 | Implement the open 22 port | 2026-03-28 | 2078d28 | [n/a](./) |
 
 ## Session Continuity
 
