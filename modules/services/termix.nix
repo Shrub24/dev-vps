@@ -5,7 +5,7 @@
   virtualisation.oci-containers.containers = {
     guacd = {
       autoStart = true;
-      image = "docker.io/guacamole/guacd:1.5.5";
+      image = "docker.io/guacamole/guacd:1.6.0";
       volumes = [
         "/srv/data/termix/guacd:/var/lib/guacd"
       ];
