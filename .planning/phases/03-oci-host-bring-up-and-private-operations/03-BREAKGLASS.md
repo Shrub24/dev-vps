@@ -6,6 +6,7 @@ Use this runbook when private access fails and normal SSH-over-Tailscale operati
 
 - Tailscale appears down or disconnected on the host.
 - SSH is unreachable from the operator machine.
+- A pre-change baseline was captured with `just breakglass-baseline` before redeploy.
 
 ## Serial Console Access (OCI)
 
@@ -21,13 +22,15 @@ Use this runbook when private access fails and normal SSH-over-Tailscale operati
    nix-env -p /nix/var/nix/profiles/system --list-generations
    ```
 
-2. Roll back to a known-good generation:
+2. Identify the generation recorded as known-good during the pre-change `just breakglass-baseline` step.
+
+3. Roll back to that recorded known-good generation:
 
    ```bash
    sudo /nix/var/nix/profiles/system-<generation>-link/bin/switch-to-configuration switch
    ```
 
-3. Restart Tailscale service and verify runtime state:
+4. Restart Tailscale service and verify runtime state:
 
    ```bash
    sudo systemctl restart tailscaled

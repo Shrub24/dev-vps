@@ -7,6 +7,9 @@ bootstrap_user := env_var_or_default("BOOTSTRAP_USER", "ubuntu")
 bootstrap_flake := env_var_or_default("BOOTSTRAP_FLAKE", "path:.#oci-melb-1")
 bootstrap_host_config := env_var_or_default("BOOTSTRAP_HOST_CONFIG", "hosts/oci-melb-1/bootstrap-config.nix")
 bootstrap_extra_files := env_var_or_default("BOOTSTRAP_EXTRA_FILES", "")
+bootstrap_hardware_config_generator := env_var_or_default("BOOTSTRAP_HARDWARE_CONFIG_GENERATOR", "")
+bootstrap_hardware_config_path := env_var_or_default("BOOTSTRAP_HARDWARE_CONFIG_PATH", "")
+bootstrap_skip_hardware_config := env_var_or_default("BOOTSTRAP_SKIP_HARDWARE_CONFIG", "false")
 
 default:
   @just --list
@@ -30,8 +33,11 @@ ssh-root:
 redeploy:
   nix run nixpkgs#nixos-rebuild -- switch --flake path:.#oci-melb-1 --sudo --target-host {{target_user}}@{{target_host}} --build-host {{target_user}}@{{target_host}}
 
-bootstrap target=bootstrap_target user=bootstrap_user flake=bootstrap_flake host_config=bootstrap_host_config extra_files=bootstrap_extra_files:
-  if [[ -n "{{extra_files}}" ]]; then ./deploy.sh --host-config "{{host_config}}" --target "{{target}}" --bootstrap-user "{{user}}" --flake "{{flake}}" --extra-files "{{extra_files}}"; else ./deploy.sh --host-config "{{host_config}}" --target "{{target}}" --bootstrap-user "{{user}}" --flake "{{flake}}"; fi
+breakglass-baseline:
+  ssh {{target_user}}@{{target_host}} "set -euo pipefail; echo 'Break-glass baseline capture for {{target_user}}@{{target_host}}'; hostnamectl; echo; echo 'System profile target:'; readlink -f /nix/var/nix/profiles/system; echo; echo 'System generations (record the generation marked current as the known-good generation):'; sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
+
+bootstrap target=bootstrap_target user=bootstrap_user flake=bootstrap_flake host_config=bootstrap_host_config extra_files=bootstrap_extra_files hardware_config_generator=bootstrap_hardware_config_generator hardware_config_path=bootstrap_hardware_config_path skip_hardware_config=bootstrap_skip_hardware_config:
+  CMD=(./deploy.sh --host-config "{{host_config}}" --target "{{target}}" --bootstrap-user "{{user}}" --flake "{{flake}}"); if [[ -n "{{extra_files}}" ]]; then CMD+=(--extra-files "{{extra_files}}"); fi; if [[ -n "{{hardware_config_generator}}" ]]; then CMD+=(--hardware-config-generator "{{hardware_config_generator}}"); fi; if [[ -n "{{hardware_config_path}}" ]]; then CMD+=(--hardware-config-path "{{hardware_config_path}}"); fi; if [[ "{{skip_hardware_config}}" == "true" ]]; then CMD+=(--skip-hardware-config); fi; "${CMD[@]}"
 
 flake-check:
   nix flake check --no-build --no-write-lock-file path:.

@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-27T04:22:16.653Z"
+stopped_at: Completed quick-260328-0gu-PLAN.md
+last_updated: "2026-03-28T00:34:18.230Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 6
@@ -62,6 +62,7 @@ Plan: Not started
 | Phase 03 P03 | 15 min | 2 tasks | 3 files |
 | Phase 04 P01 | 11 | 2 tasks | 2 files |
 | Phase 04 P02 | 15 | 3 tasks | 3 files |
+| Phase quick-260328-0gu-add-break-glass-access-guarantees-as-abo P01 | 6 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 04]: Use fixed retention literals (cleanoutDays=30, cleanupIntervalS=86400) for predictable Syncthing safeguards.
 - [Phase 04]: Keep Navidrome direct-read rooted on /srv/data/media with no inbox staging path.
 - [Phase 04]: Expose one operator command verify-phase-04 to run both phase contracts before redeploy.
+- [Phase quick-260328-0gu]: Require just breakglass-baseline immediately before just redeploy so rollback anchors are captured pre-change.
+- [Phase quick-260328-0gu]: Treat break-glass command coverage as part of tests/phase-03-access-contract.sh so drift fails verification early.
 
 ### Roadmap Evolution
 
@@ -127,10 +130,11 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260325-ojg | Fix local direnv nix develop dev shell on x86 after repo switched target to aarch64 | 2026-03-25 | e0a224a | [260325-ojg-fix-local-direnv-nix-develop-dev-shell-o](./quick/260325-ojg-fix-local-direnv-nix-develop-dev-shell-o/) |
+| 260328-0gu | Add break-glass access guarantees as above | 2026-03-28 | 46e0297 | [260328-0gu-add-break-glass-access-guarantees-as-abo](./quick/260328-0gu-add-break-glass-access-guarantees-as-abo/) |
 
 ## Session Continuity
 
-Last session: 2026-03-27T04:10:28.020Z
+Last session: 2026-03-28T00:34:18.223Z
 Last activity: 2026-03-27
-Stopped at: Completed 04-02-PLAN.md
+Stopped at: Completed quick-260328-0gu-PLAN.md
 Resume file: None

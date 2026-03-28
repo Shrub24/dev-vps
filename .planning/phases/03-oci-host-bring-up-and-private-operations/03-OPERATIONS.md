@@ -7,22 +7,28 @@ Use this sequence for routine updates after initial host bootstrap.
 1. Run phase verification before update:
 
    ```bash
-   just verify-phase-03
+    just verify-phase-03
+    ```
+
+2. Capture pre-change break-glass baseline (record the current generation as known-good):
+
+   ```bash
+   just breakglass-baseline
    ```
 
-2. Apply host-targeted rebuild:
+3. Apply host-targeted rebuild:
 
    ```bash
    just redeploy
    ```
 
-3. Confirm host health:
+4. Confirm host health:
 
    ```bash
    just status
    ```
 
-4. Confirm private network state:
+5. Confirm private network state:
 
    ```bash
    just tailscale-status
