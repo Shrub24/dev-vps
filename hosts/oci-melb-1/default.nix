@@ -22,7 +22,6 @@
 
   networking.hostName = "oci-melb-1";
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
-  networking.firewall.allowedTCPPorts = [ 22 ];
 
   environment.systemPackages = with pkgs; [
     git
@@ -31,7 +30,6 @@
   ];
 
   sops.defaultSopsFile = ../../secrets/common.yaml;
-  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
   sops.secrets = lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
     tailscale_auth_key = {

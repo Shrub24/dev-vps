@@ -1,6 +1,6 @@
 keys:
   - &owner_age age1w5asfm5rfncy4yvslj3az78kvn7hkrzq4vy0mzexf36w64a7e3nqamw3fp
-  - &oci_melb_1_age age17ygcdry0l4ktsec4qpjufvvtm2q5rlefqgdsnvmax0m2a0elcefs3pslqf
+  - &oci_melb_1_age age1lg45rhdn6mp856f97sdwxu7rpzyyz7edqwnldnpj67r6curnkqws7nn42a
 creation_rules:
   - path_regex: ^secrets/common\.ya?ml$
     key_groups:

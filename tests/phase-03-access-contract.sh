@@ -32,9 +32,15 @@ rg --fixed-strings --quiet 'openFirewall = false;' "$SLSKD_FILE"
 
 rg --fixed-strings --quiet 'breakglass-baseline:' "$JUSTFILE"
 rg --fixed-strings --quiet 'nix-env -p /nix/var/nix/profiles/system --list-generations' "$JUSTFILE"
+rg --fixed-strings --quiet 'derive-host-age host=target_host port="22" key_alias="oci_melb_1_age" sops_file=".sops.yaml" update="false":' "$JUSTFILE"
+rg --fixed-strings --quiet 'ssh-keyscan -p "{{port}}" -t ed25519 "{{host}}"' "$JUSTFILE"
+rg --fixed-strings --quiet 'Preview only. Re-run with update=true to write to {{sops_file}} anchor &{{key_alias}}.' "$JUSTFILE"
 
 rg --fixed-strings --quiet 'just breakglass-baseline' "$OPERATIONS_FILE"
 rg --fixed-strings --quiet '03-BREAKGLASS.md' "$OPERATIONS_FILE"
+
+rg --fixed-strings --quiet 'just derive-host-age host=<target-ip-or-dns>' ".planning/phases/02-oci-bootstrap-and-service-readiness/02-SECRETS-BOOTSTRAP.md"
+rg --fixed-strings --quiet 'just derive-host-age host=<target-ip-or-dns> update=true' ".planning/phases/02-oci-bootstrap-and-service-readiness/02-SECRETS-BOOTSTRAP.md"
 
 rg --fixed-strings --quiet '**serial console**' "$BREAKGLASS_FILE"
 rg --fixed-strings --quiet '`modules/providers/oci/default.nix`' "$BREAKGLASS_FILE"

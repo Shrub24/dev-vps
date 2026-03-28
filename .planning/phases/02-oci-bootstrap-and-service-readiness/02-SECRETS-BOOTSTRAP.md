@@ -25,6 +25,18 @@ Expected outcome:
 
 After base install is complete, add encrypted host-scoped secret material and redeploy.
 
+First, derive the host `age` recipient from the live SSH host key (preview by default):
+
+```bash
+just derive-host-age host=<target-ip-or-dns>
+```
+
+If the derived recipient looks correct, update `.sops.yaml` anchor `&oci_melb_1_age`:
+
+```bash
+just derive-host-age host=<target-ip-or-dns> update=true
+```
+
 ```bash
 sops --encrypt --in-place hosts/oci-melb-1/secrets.yaml
 just redeploy TARGET_HOST=<tailscale-name-or-ip> TARGET_USER=dev
