@@ -22,6 +22,7 @@
 
   networking.hostName = "oci-melb-1";
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  networking.firewall.allowedTCPPorts = [ 22 ];
 
   environment.systemPackages = with pkgs; [
     git

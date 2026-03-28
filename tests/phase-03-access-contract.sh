@@ -16,6 +16,7 @@ rg --fixed-strings --quiet 'enable = true;' "$TAILSCALE_FILE"
 rg --fixed-strings --quiet 'openFirewall = false;' "$TAILSCALE_FILE"
 
 rg --fixed-strings --quiet 'trustedInterfaces = [ "tailscale0" ]' "$HOST_FILE"
+rg --fixed-strings --quiet 'allowedTCPPorts = [ 22 ];' "$HOST_FILE"
 
 rg --fixed-strings --quiet 'users.mutableUsers = false;' "$USERS_FILE"
 rg --fixed-strings --quiet 'sshKeys = [' "$USERS_FILE"
