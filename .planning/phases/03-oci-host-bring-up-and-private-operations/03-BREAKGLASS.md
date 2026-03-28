@@ -8,10 +8,23 @@ Use this runbook when private access fails and normal SSH-over-Tailscale operati
 - SSH is unreachable from the operator machine.
 - A pre-change baseline was captured with `just breakglass-baseline` before redeploy.
 
+## Declared Access Contracts (post-reboot)
+
+Break-glass recovery for `oci-melb-1` depends on **both** declarative contracts staying true:
+
+1. OCI console path remains explicitly configured in `modules/providers/oci/default.nix`:
+   - `boot.kernelParams = [ "console=ttyAMA0,115200n8" ];`
+   - `systemd.services."serial-getty@ttyAMA0"`
+2. Recovery SSH keys stay Nix-managed in `hosts/oci-melb-1/users.nix`:
+   - `openssh.authorizedKeys.keys = sshKeys;` for both `dev` and `root`
+   - `users.mutableUsers = false;`
+
+If either contract drifts, treat it as a break-glass regression and run `just verify-phase-03` before making further host changes.
+
 ## Serial Console Access (OCI)
 
 1. Open Oracle Cloud console for the `oci-melb-1` instance.
-2. Connect using the **serial console** for out-of-band recovery access.
+2. Connect using the **serial console** (ttyAMA0) for out-of-band recovery access.
 3. Authenticate as root or use available emergency credentials.
 
 ## Single-User / Recovery Flow

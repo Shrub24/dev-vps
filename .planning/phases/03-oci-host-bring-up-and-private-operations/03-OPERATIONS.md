@@ -40,6 +40,8 @@ If update verification fails or host access regresses, follow:
 
 - `.planning/phases/03-oci-host-bring-up-and-private-operations/03-BREAKGLASS.md`
 
+Routine operations rely on the same declared console and key contracts in `03-BREAKGLASS.md`; treat any drift there as a blocker before continuing day-2 changes.
+
 ## Scope Guard
 
 This phase keeps deployment workflow host-targeted and **no deploy-rs adoption yet**.

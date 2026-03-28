@@ -3,6 +3,8 @@ set -euo pipefail
 
 TAILSCALE_FILE="modules/services/tailscale.nix"
 HOST_FILE="hosts/oci-melb-1/default.nix"
+USERS_FILE="hosts/oci-melb-1/users.nix"
+OCI_PROVIDER_FILE="modules/providers/oci/default.nix"
 NAVIDROME_FILE="modules/services/navidrome.nix"
 SLSKD_FILE="modules/services/slskd.nix"
 JUSTFILE="justfile"
@@ -15,6 +17,15 @@ rg --fixed-strings --quiet 'openFirewall = false;' "$TAILSCALE_FILE"
 
 rg --fixed-strings --quiet 'trustedInterfaces = [ "tailscale0" ]' "$HOST_FILE"
 
+rg --fixed-strings --quiet 'users.mutableUsers = false;' "$USERS_FILE"
+rg --fixed-strings --quiet 'sshKeys = [' "$USERS_FILE"
+rg --fixed-strings --quiet 'users.users.dev.openssh.authorizedKeys.keys = sshKeys;' "$USERS_FILE"
+rg --fixed-strings --quiet 'users.users.root.openssh.authorizedKeys.keys = sshKeys;' "$USERS_FILE"
+
+rg --fixed-strings --quiet 'boot.kernelParams = [ "console=ttyAMA0,115200n8" ];' "$OCI_PROVIDER_FILE"
+rg --fixed-strings --quiet 'systemd.services."serial-getty@ttyAMA0" = {' "$OCI_PROVIDER_FILE"
+rg --fixed-strings --quiet 'wantedBy = [ "multi-user.target" ];' "$OCI_PROVIDER_FILE"
+
 rg --fixed-strings --quiet 'openFirewall = false;' "$NAVIDROME_FILE"
 rg --fixed-strings --quiet 'openFirewall = false;' "$SLSKD_FILE"
 
@@ -25,8 +36,16 @@ rg --fixed-strings --quiet 'just breakglass-baseline' "$OPERATIONS_FILE"
 rg --fixed-strings --quiet '03-BREAKGLASS.md' "$OPERATIONS_FILE"
 
 rg --fixed-strings --quiet '**serial console**' "$BREAKGLASS_FILE"
+rg --fixed-strings --quiet '`modules/providers/oci/default.nix`' "$BREAKGLASS_FILE"
+rg --fixed-strings --quiet '`boot.kernelParams = [ "console=ttyAMA0,115200n8" ];`' "$BREAKGLASS_FILE"
+rg --fixed-strings --quiet '`systemd.services."serial-getty@ttyAMA0"`' "$BREAKGLASS_FILE"
+rg --fixed-strings --quiet '`hosts/oci-melb-1/users.nix`' "$BREAKGLASS_FILE"
+rg --fixed-strings --quiet '`openssh.authorizedKeys.keys = sshKeys;`' "$BREAKGLASS_FILE"
+rg --fixed-strings --quiet '`users.mutableUsers = false;`' "$BREAKGLASS_FILE"
 rg --fixed-strings --quiet 'nix-env -p /nix/var/nix/profiles/system --list-generations' "$BREAKGLASS_FILE"
 rg --fixed-strings --quiet '/nix/var/nix/profiles/system-<generation>-link/bin/switch-to-configuration switch' "$BREAKGLASS_FILE"
 rg --fixed-strings --quiet 'sudo systemctl restart tailscaled' "$BREAKGLASS_FILE"
 rg --fixed-strings --quiet 'sudo tailscale status' "$BREAKGLASS_FILE"
 rg --fixed-strings --quiet 'just tailscale-status' "$BREAKGLASS_FILE"
+
+rg --fixed-strings --quiet 'declared console and key contracts in `03-BREAKGLASS.md`' "$OPERATIONS_FILE"
