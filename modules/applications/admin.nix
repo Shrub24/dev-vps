@@ -6,7 +6,7 @@
   ];
 
   systemd.services.tailscale-serve-termix = {
-    description = "Expose Termix via Tailscale HTTPS /termix";
+    description = "Expose Termix via dedicated Tailscale HTTPS port";
     wants = [
       "tailscaled.service"
       "podman-termix.service"
@@ -21,10 +21,10 @@
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStart = ''
-        ${pkgs.tailscale}/bin/tailscale serve --yes --bg --https=443 --set-path /termix http://127.0.0.1:8083
+        ${pkgs.tailscale}/bin/tailscale serve --yes --bg --https=8443 http://127.0.0.1:8083
       '';
       ExecStop = ''
-        ${pkgs.tailscale}/bin/tailscale serve --https=443 off /termix
+        ${pkgs.tailscale}/bin/tailscale serve --https=8443 off
       '';
     };
   };

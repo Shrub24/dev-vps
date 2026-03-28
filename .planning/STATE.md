@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick-260328-ivn-PLAN.md
-last_updated: "2026-03-28T14:02:04.548Z"
-last_activity: 2026-03-27
+stopped_at: Completed quick-260328-lf9-PLAN.md
+last_updated: "2026-03-28T15:51:44.196Z"
+last_activity: "2026-03-28 - Completed quick task 260328-lf9: Switch Termix Tailscale Serve from path route to dedicated 8443 port"
 progress:
   total_phases: 6
   completed_phases: 6
@@ -67,6 +67,7 @@ Plan: Not started
 | Phase quick-260328-fax-make-application-groups-and-add-termix P01 | 5 min | 2 tasks | 9 files |
 | Phase quick-260328-gij-fix-termix-container-wiring-and-startup P01 | 10 min | 2 tasks | 2 files |
 | Phase quick-260328-ivn-serve-termix-over-tailscale-serve-https- P01 | 3 min | 2 tasks | 4 files |
+| Phase quick-260328-lf9-switch-termix-tailscale-serve-from-path- P01 | 11 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,8 @@ Recent decisions affecting current work:
 - [Phase quick-260328-gij]: Enforce Termix upstream runtime contract in phase-03 access checks and fail on legacy termix-official/TERMIX_GUACD_/var/lib wiring strings.
 - [Phase quick-260328-ivn]: Keep Termix private by binding container publish to 127.0.0.1:8083 and exposing it only via admin-layer tailscale serve /termix.
 - [Phase quick-260328-ivn]: Preserve reusable tailscale module neutrality by placing Serve ownership in modules/applications/admin.nix and asserting this in phase-03 access contracts.
+- [Phase quick-260328-lf9]: Replace /termix path assertions with dedicated-port regression and runbook checks while preserving tailscale module agnosticism and private-only posture.
+- [Phase quick-260328-lf9]: Move Termix Tailscale Serve contract to dedicated HTTPS port 8443 while keeping backend target on local HTTP 127.0.0.1:8083.
 
 ### Roadmap Evolution
 
@@ -148,10 +151,11 @@ None yet.
 | 260328-fax | Make application groups and add Termix | 2026-03-28 | 22ff075 | [260328-fax-make-application-groups-and-add-termix](./quick/260328-fax-make-application-groups-and-add-termix/) |
 | 260328-gij | Fix Termix container wiring and startup | 2026-03-28 | d5e35f4 | [260328-gij-fix-termix-container-wiring-and-startup](./quick/260328-gij-fix-termix-container-wiring-and-startup/) |
 | 260328-ivn | Serve Termix over Tailscale Serve HTTPS | 2026-03-28 | 5a1028d | [260328-ivn-serve-termix-over-tailscale-serve-https-](./quick/260328-ivn-serve-termix-over-tailscale-serve-https-/) |
+| 260328-lf9 | Switch Termix Tailscale Serve from path route to dedicated 8443 port | 2026-03-28 | 6ce542b | [260328-lf9-switch-termix-tailscale-serve-from-path-](./quick/260328-lf9-switch-termix-tailscale-serve-from-path-/) |
 
 ## Session Continuity
 
-Last session: 2026-03-28T14:02:04.544Z
-Last activity: 2026-03-28 - Completed quick task 260328-ivn: Serve Termix over Tailscale Serve HTTPS
-Stopped at: Completed quick-260328-ivn-PLAN.md
+Last session: 2026-03-28T15:51:13.252Z
+Last activity: 2026-03-28 - Completed quick task 260328-lf9: Switch Termix Tailscale Serve from path route to dedicated 8443 port
+Stopped at: Completed quick-260328-lf9-PLAN.md
 Resume file: None
