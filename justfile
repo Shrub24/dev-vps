@@ -21,20 +21,20 @@ check:
   just flake-check
   just build
 
-ping:
-  ping -c 3 {{target_host}}
+ping host=target_host:
+  HOST="{{host}}"; HOST="${HOST#host=}"; ping -c 3 "$HOST"
 
-ssh:
-  ssh {{target_user}}@{{target_host}} || true
+ssh host=target_host user=target_user:
+  HOST="{{host}}"; USER="{{user}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; ssh "$USER@$HOST" || true
 
-ssh-root:
-  ssh root@{{target_host}} || true
+ssh-root host=target_host:
+  HOST="{{host}}"; HOST="${HOST#host=}"; ssh "root@$HOST" || true
 
-redeploy:
-  nix run nixpkgs#nixos-rebuild -- switch --flake path:.#oci-melb-1 --sudo --target-host {{target_user}}@{{target_host}} --build-host {{target_user}}@{{target_host}}
+redeploy host=target_host user=target_user flake="path:.#oci-melb-1":
+  HOST="{{host}}"; USER="{{user}}"; FLAKE="{{flake}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; FLAKE="${FLAKE#flake=}"; nix run nixpkgs#nixos-rebuild -- switch --flake "$FLAKE" --sudo --target-host "$USER@$HOST" --build-host "$USER@$HOST"
 
-breakglass-baseline:
-  ssh {{target_user}}@{{target_host}} "set -euo pipefail; echo 'Break-glass baseline capture for {{target_user}}@{{target_host}}'; hostnamectl; echo; echo 'System profile target:'; readlink -f /nix/var/nix/profiles/system; echo; echo 'System generations (record the generation marked current as the known-good generation):'; sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
+breakglass-baseline host=target_host user=target_user:
+  HOST="{{host}}"; USER="{{user}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; ssh "$USER@$HOST" "set -euo pipefail; echo 'Break-glass baseline capture for $USER@$HOST'; hostnamectl; echo; echo 'System profile target:'; readlink -f /nix/var/nix/profiles/system; echo; echo 'System generations (record the generation marked current as the known-good generation):'; sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
 
 bootstrap target=bootstrap_target user=bootstrap_user flake=bootstrap_flake host_config=bootstrap_host_config extra_files=bootstrap_extra_files hardware_config_generator=bootstrap_hardware_config_generator hardware_config_path=bootstrap_hardware_config_path skip_hardware_config=bootstrap_skip_hardware_config:
   CMD=(./deploy.sh --host-config "{{host_config}}" --target "{{target}}" --bootstrap-user "{{user}}" --flake "{{flake}}"); if [[ -n "{{extra_files}}" ]]; then CMD+=(--extra-files "{{extra_files}}"); fi; if [[ -n "{{hardware_config_generator}}" ]]; then CMD+=(--hardware-config-generator "{{hardware_config_generator}}"); fi; if [[ -n "{{hardware_config_path}}" ]]; then CMD+=(--hardware-config-path "{{hardware_config_path}}"); fi; if [[ "{{skip_hardware_config}}" == "true" ]]; then CMD+=(--skip-hardware-config); fi; "${CMD[@]}"
@@ -69,11 +69,11 @@ build:
 vm-build:
   nix build --no-link --no-write-lock-file path:.#nixosConfigurations.oci-melb-1.config.system.build.vm
 
-logs unit="tailscaled" lines="200":
-  ssh {{target_user}}@{{target_host}} "sudo journalctl -u {{unit}} -n {{lines}} --no-pager"
+logs host=target_host user=target_user unit="tailscaled" lines="200":
+  HOST="{{host}}"; USER="{{user}}"; UNIT="{{unit}}"; LINES="{{lines}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; UNIT="${UNIT#unit=}"; LINES="${LINES#lines=}"; ssh "$USER@$HOST" "sudo journalctl -u $UNIT -n $LINES --no-pager"
 
-status:
-  ssh {{target_user}}@{{target_host}} "hostnamectl; echo; sudo systemctl --no-pager --full status tailscaled"
+status host=target_host user=target_user:
+  HOST="{{host}}"; USER="{{user}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; ssh "$USER@$HOST" "hostnamectl; echo; sudo systemctl --no-pager --full status tailscaled"
 
-tailscale-status:
-  ssh {{target_user}}@{{target_host}} "sudo tailscale status"
+tailscale-status host=target_host user=target_user:
+  HOST="{{host}}"; USER="{{user}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; ssh "$USER@$HOST" "sudo tailscale status"

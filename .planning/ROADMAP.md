@@ -116,3 +116,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 2. OCI Bootstrap And Service Readiness | 3/3 | Complete | 2026-03-26 |
 | 3. OCI Host Bring-Up And Private Operations | 3/3 | Complete | 2026-03-26 |
 | 4. Service Baseline And Data Safety | 2/2 | Complete   | 2026-03-27 |
+
+### Phase 5: deploy rework, add deploy-rs and root access hardening
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 5 to break down)
