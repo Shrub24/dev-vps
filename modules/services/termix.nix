@@ -13,7 +13,7 @@
 
     termix = {
       autoStart = true;
-      image = "ghcr.io/lukegus/termix:latest";
+      image = "ghcr.io/lukegus/termix:release-2.0.0";
       dependsOn = [ "guacd" ];
       environment = {
         GUACD_HOST = "127.0.0.1";
