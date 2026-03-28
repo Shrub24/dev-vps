@@ -153,7 +153,7 @@ None yet.
 | 260328-gij | Fix Termix container wiring and startup | 2026-03-28 | d5e35f4 | [260328-gij-fix-termix-container-wiring-and-startup](./quick/260328-gij-fix-termix-container-wiring-and-startup/) |
 | 260328-ivn | Serve Termix over Tailscale Serve HTTPS | 2026-03-28 | 5a1028d | [260328-ivn-serve-termix-over-tailscale-serve-https-](./quick/260328-ivn-serve-termix-over-tailscale-serve-https-/) |
 | 260328-lf9 | Switch Termix Tailscale Serve from path route to dedicated 8443 port | 2026-03-28 | 6ce542b | [260328-lf9-switch-termix-tailscale-serve-from-path-](./quick/260328-lf9-switch-termix-tailscale-serve-from-path-/) |
-| fast-260328-justargs | Fix just CLI to accept named args for day-2 host commands | 2026-03-28 | [pending] | [n/a](./) |
+| fast-260328-justargs | Fix just CLI to accept named args for day-2 host commands | 2026-03-28 | 172094b | [n/a](./) |
 
 ## Session Continuity
 
