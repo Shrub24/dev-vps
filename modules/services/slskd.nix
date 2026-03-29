@@ -5,19 +5,19 @@
     openFirewall = false;
     settings = {
       directories = {
-        downloads = "/srv/data/inbox/slskd/complete";
-        incomplete = "/srv/data/inbox/slskd/incomplete";
+        downloads = "/srv/data/inbox/slskd";
+        incomplete = "/srv/data/slskd/incomplete";
       };
       shares.directories = [
-        "/srv/data/media"
+        "/srv/media"
       ];
     };
   };
 
   systemd.tmpfiles.rules = [
     "d /srv/data/inbox/slskd 0775 slskd music-ingest - -"
-    "d /srv/data/inbox/slskd/complete 0775 slskd music-ingest - -"
-    "d /srv/data/inbox/slskd/incomplete 0775 slskd music-ingest - -"
+    "d /srv/data/slskd 0775 slskd music-ingest - -"
+    "d /srv/data/slskd/incomplete 0775 slskd music-ingest - -"
   ];
 
   systemd.services.slskd = {

@@ -14,27 +14,28 @@ rg --fixed-strings --quiet '../../modules/services/slskd.nix' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet 'domain = "oci-melb-1";' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet 'environmentFile = "/var/lib/slskd/environment";' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet 'users.groups.music-ingest = { };' "$MUSIC_APP_FILE"
-rg --fixed-strings --quiet 'users.users.slskd.extraGroups = [ "music-ingest" ];' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet 'users.users.dev.extraGroups = lib.mkAfter [ "music-ingest" ];' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet '"d /srv/data/inbox 2775 root music-ingest - -"' "$MUSIC_APP_FILE"
 
-rg --fixed-strings --quiet 'MusicFolder = "/srv/data/media";' "$NAVIDROME_FILE"
+rg --fixed-strings --quiet 'MusicFolder = "/srv/media";' "$NAVIDROME_FILE"
 rg --fixed-strings --quiet 'DataFolder = "/srv/data/navidrome";' "$NAVIDROME_FILE"
 
-rg --fixed-strings --quiet 'path = "/srv/data/media";' "$SYNCTHING_FILE"
+rg --fixed-strings --quiet 'dataDir = "/srv/media";' "$SYNCTHING_FILE"
+rg --fixed-strings --quiet 'path = "/srv/media";' "$SYNCTHING_FILE"
 rg --fixed-strings --quiet 'type = "sendreceive";' "$SYNCTHING_FILE"
 if rg --fixed-strings --quiet '/srv/data/inbox' "$SYNCTHING_FILE"; then
 	echo 'syncthing must not claim generic /srv/data/inbox ownership'
 	exit 1
 fi
 
-rg --fixed-strings --quiet '/srv/data/inbox/slskd/complete' "$SLSKD_FILE"
-rg --fixed-strings --quiet '/srv/data/inbox/slskd/incomplete' "$SLSKD_FILE"
-rg --fixed-strings --quiet '/srv/data/media' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/data/inbox/slskd' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/data/slskd/incomplete' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/media' "$SLSKD_FILE"
 if rg --fixed-strings --quiet '/srv/data/inbox/complete' "$SLSKD_FILE"; then
 	echo 'slskd downloads path escaped confinement boundary'
 	exit 1
 fi
-if rg --fixed-strings --quiet '/srv/data/inbox/incomplete' "$SLSKD_FILE"; then
+if rg --fixed-strings --quiet '/srv/data/inbox/slskd/incomplete' "$SLSKD_FILE"; then
 	echo 'slskd incomplete path escaped confinement boundary'
 	exit 1
 fi

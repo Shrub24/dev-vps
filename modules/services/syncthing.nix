@@ -2,11 +2,11 @@
 {
   services.syncthing = {
     enable = true;
-    dataDir = "/srv/data/media";
+    dataDir = "/srv/media";
     configDir = "/srv/data/syncthing/config";
     openDefaultPorts = false;
     settings.folders."media" = {
-      path = "/srv/data/media";
+      path = "/srv/media";
       type = "sendreceive";
       versioning = {
         type = "trashcan";
@@ -21,6 +21,6 @@
   systemd.tmpfiles.rules = [
     "d /srv/data/syncthing 0750 syncthing syncthing - -"
     "d /srv/data/syncthing/config 0750 syncthing syncthing - -"
-    "d /srv/data/media 0775 syncthing syncthing - -"
+    "d /srv/media 0775 syncthing syncthing - -"
   ];
 }

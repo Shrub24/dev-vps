@@ -13,7 +13,8 @@ rg --fixed-strings --quiet -- '--target-host {{target_user}}@{{target_host}}' "$
 rg --fixed-strings --quiet -- '--build-host {{target_user}}@{{target_host}}' "$JUSTFILE"
 
 rg --fixed-strings --quiet '/srv/data/syncthing/config' "$SYNCTHING_FILE"
-rg --fixed-strings --quiet '/srv/data/media' "$SYNCTHING_FILE"
+rg --fixed-strings --quiet '/srv/media' "$SYNCTHING_FILE"
 rg --fixed-strings --quiet '/srv/data/navidrome' "$NAVIDROME_FILE"
-rg --fixed-strings --quiet '/srv/data/inbox/complete' "$SLSKD_FILE"
-rg --fixed-strings --quiet '/srv/data/inbox/incomplete' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/media' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/data/inbox/slskd' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/data/slskd/incomplete' "$SLSKD_FILE"

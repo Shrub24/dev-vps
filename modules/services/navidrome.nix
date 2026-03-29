@@ -4,7 +4,7 @@
     enable = true;
     openFirewall = false;
     settings = {
-      MusicFolder = "/srv/data/media";
+      MusicFolder = "/srv/media";
       DataFolder = "/srv/data/navidrome";
       Address = "0.0.0.0";
     };
