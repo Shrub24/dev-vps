@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick-260329-2hf-PLAN.md
-last_updated: "2026-03-29T02:09:41.593Z"
+stopped_at: Phase 04.1 context gathered
+last_updated: "2026-03-29T18:30:55.547Z"
 last_activity: "2026-03-29 - Completed quick task 260329-2hf: Define /dev/sdb /srv/media mount and move media paths"
 progress:
-  total_phases: 7
+  total_phases: 9
   completed_phases: 6
   total_plans: 15
   completed_plans: 15
@@ -135,6 +135,9 @@ Recent decisions affecting current work:
 - Phase 01.1 inserted after Phase 01: modular provider flakes + integrate and remove legacy nixos flakes (URGENT)
 - Phase 01.1.1 inserted after Phase 01.1: Legacy config migration cleanup (URGENT)
 - Phase 5 added: deploy rework, add deploy-rs and root access hardening
+- Phase 6 added: traktor nml m3u syncing
+- Phase 5 and Phase 6 swapped: traktor nml m3u syncing now Phase 5; deploy rework, add deploy-rs and root access hardening now Phase 6
+- Phase 04.1 inserted after Phase 4: Add Beets inbox-only singleton ingestion phase (URGENT)
 
 ### Pending Todos
 
@@ -165,7 +168,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T02:09:41.590Z
+Last session: 2026-03-29T18:30:55.538Z
 Last activity: 2026-03-29 - Completed quick task 260329-2hf: Define /dev/sdb /srv/media mount and move media paths
-Stopped at: Completed quick-260329-2hf-PLAN.md
-Resume file: None
+Stopped at: Phase 04.1 context gathered
+Resume file: .planning/phases/04.1-add-beets-inbox-only-singleton-ingestion-phase/04.1-CONTEXT.md
