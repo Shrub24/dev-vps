@@ -8,7 +8,11 @@ Syncthing /srv/data/media (authoritative) -> Navidrome MusicFolder /srv/data/med
 
 Navidrome must not read /srv/data/inbox.
 
-/srv/data/inbox remains slskd-only staging (`/srv/data/inbox/complete` and `/srv/data/inbox/incomplete`).
+/srv/data/inbox is the app-owned generic ingest boundary from `modules/applications/music.nix` via `music-ingest`.
+
+slskd is confined to `/srv/data/inbox/slskd/{complete,incomplete}`.
+
+/srv/data/media remains the authoritative library path for Syncthing and Navidrome.
 
 ## Verification commands
 

@@ -139,7 +139,10 @@ Initial media/data flow:
 
 - Syncthing manages the library directly
 - Navidrome reads from that same direct path
-- no duplicate staging area yet to avoid storage waste
+- `/srv/data/media` remains the authoritative library path
+- `modules/applications/music.nix` owns the generic ingest boundary at `/srv/data/inbox` through `music-ingest`
+- `slskd` writes only under `/srv/data/inbox/slskd/{complete,incomplete}`
+- no duplicate media staging dataset is introduced
 
 Future evolution:
 

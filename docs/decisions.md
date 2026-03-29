@@ -253,6 +253,22 @@ Rationale:
 - adds private remote admin capability while keeping the project's Tailscale-first posture intact
 - keeps runtime/container specifics isolated from host composition and canonical docs
 
+## D-019: Music app owns generic ingest boundary and slskd is confined to service subtree
+
+Status: Accepted
+
+Decision:
+
+- `modules/applications/music.nix` owns `/srv/data/inbox` as a generic ingest boundary through `music-ingest`
+- `slskd` is confined to `/srv/data/inbox/slskd/{complete,incomplete}`
+- Syncthing and Navidrome remain anchored on `/srv/data/media` as the authoritative library path
+
+Rationale:
+
+- keeps cross-service ingest ownership at the application layer instead of expanding core user/module scope
+- allows future ingest producers to share one boundary while preventing slskd path sprawl
+- preserves the direct authoritative media flow without reintroducing duplicate staging ownership
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.
