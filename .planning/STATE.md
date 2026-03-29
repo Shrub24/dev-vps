@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick-260329-1cm-PLAN.md
-last_updated: "2026-03-29T01:16:53.459Z"
-last_activity: "2026-03-29 - Completed quick task 260329-1cm: Implement long-term dual-import inbox ownership model"
+stopped_at: Completed quick-260329-2hf-PLAN.md
+last_updated: "2026-03-29T02:09:41.593Z"
+last_activity: "2026-03-29 - Completed quick task 260329-2hf: Define /dev/sdb /srv/media mount and move media paths"
 progress:
   total_phases: 7
   completed_phases: 6
@@ -68,6 +68,7 @@ Plan: Not started
 | Phase quick-260328-gij-fix-termix-container-wiring-and-startup P01 | 10 min | 2 tasks | 2 files |
 | Phase quick-260328-ivn-serve-termix-over-tailscale-serve-https- P01 | 3 min | 2 tasks | 4 files |
 | Phase quick-260328-lf9-switch-termix-tailscale-serve-from-path- P01 | 11 min | 2 tasks | 4 files |
+| Phase quick-260329-2hf-define-sdb-mount-srv-media-and-move-medi P01 | 1 min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,8 @@ Recent decisions affecting current work:
 - [Phase quick-260328-lf9]: Move Termix Tailscale Serve contract to dedicated HTTPS port 8443 while keeping backend target on local HTTP 127.0.0.1:8083.
 - [Phase quick-260329-1cm]: Own /srv/data/inbox at modules/applications/music.nix using music-ingest and keep modules/core/users.nix unchanged.
 - [Phase quick-260329-1cm]: Confine slskd to /srv/data/inbox/slskd/{complete,incomplete} while keeping /srv/data/media authoritative for Syncthing and Navidrome.
+- [Phase quick-260329-2hf]: Declare dedicated oci-melb-1 mediaDisk /dev/sdb and bind it to disko media filesystem mounted at /srv/media.
+- [Phase quick-260329-2hf]: Move Syncthing, Navidrome, and slskd shared-library authority to /srv/media while preserving /srv/data inbox/service-state paths.
 
 ### Roadmap Evolution
 
@@ -158,10 +161,11 @@ None yet.
 | fast-260328-justargs | Fix just CLI to accept named args for day-2 host commands | 2026-03-28 | 172094b | [n/a](./) |
 | fast-260328-userscore | Add shared users core module for SSH keys | 2026-03-28 | 9d6dea2 | [n/a](./) |
 | 260329-1cm | Implement the long-term dual-import inbox ownership model | 2026-03-29 | 79fdb70 | [260329-1cm-implement-the-long-term-dual-import-inbo](./quick/260329-1cm-implement-the-long-term-dual-import-inbo/) |
+| 260329-2hf | Define /dev/sdb media mount at /srv/media and move media consumers | 2026-03-29 | 4ba5199 | [260329-2hf-define-sdb-mount-srv-media-and-move-medi](./quick/260329-2hf-define-sdb-mount-srv-media-and-move-medi/) |
 
 ## Session Continuity
 
-Last session: 2026-03-29T01:16:53.321Z
-Last activity: 2026-03-29 - Completed quick task 260329-1cm: Implement long-term dual-import inbox ownership model
-Stopped at: Completed quick-260329-1cm-PLAN.md
+Last session: 2026-03-29T02:09:41.590Z
+Last activity: 2026-03-29 - Completed quick task 260329-2hf: Define /dev/sdb /srv/media mount and move media paths
+Stopped at: Completed quick-260329-2hf-PLAN.md
 Resume file: None
