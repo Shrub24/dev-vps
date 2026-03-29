@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick-260328-lf9-PLAN.md
-last_updated: "2026-03-28T15:51:44.196Z"
-last_activity: "2026-03-28 - Completed quick task 260328-lf9: Switch Termix Tailscale Serve from path route to dedicated 8443 port"
+stopped_at: Completed quick-260329-1cm-PLAN.md
+last_updated: "2026-03-29T01:16:53.459Z"
+last_activity: "2026-03-29 - Completed quick task 260329-1cm: Implement long-term dual-import inbox ownership model"
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 6
   total_plans: 15
   completed_plans: 15
@@ -124,6 +124,8 @@ Recent decisions affecting current work:
 - [Phase quick-260328-ivn]: Preserve reusable tailscale module neutrality by placing Serve ownership in modules/applications/admin.nix and asserting this in phase-03 access contracts.
 - [Phase quick-260328-lf9]: Replace /termix path assertions with dedicated-port regression and runbook checks while preserving tailscale module agnosticism and private-only posture.
 - [Phase quick-260328-lf9]: Move Termix Tailscale Serve contract to dedicated HTTPS port 8443 while keeping backend target on local HTTP 127.0.0.1:8083.
+- [Phase quick-260329-1cm]: Own /srv/data/inbox at modules/applications/music.nix using music-ingest and keep modules/core/users.nix unchanged.
+- [Phase quick-260329-1cm]: Confine slskd to /srv/data/inbox/slskd/{complete,incomplete} while keeping /srv/data/media authoritative for Syncthing and Navidrome.
 
 ### Roadmap Evolution
 
@@ -155,10 +157,11 @@ None yet.
 | 260328-lf9 | Switch Termix Tailscale Serve from path route to dedicated 8443 port | 2026-03-28 | 6ce542b | [260328-lf9-switch-termix-tailscale-serve-from-path-](./quick/260328-lf9-switch-termix-tailscale-serve-from-path-/) |
 | fast-260328-justargs | Fix just CLI to accept named args for day-2 host commands | 2026-03-28 | 172094b | [n/a](./) |
 | fast-260328-userscore | Add shared users core module for SSH keys | 2026-03-28 | 9d6dea2 | [n/a](./) |
+| 260329-1cm | Implement the long-term dual-import inbox ownership model | 2026-03-29 | 79fdb70 | [260329-1cm-implement-the-long-term-dual-import-inbo](./quick/260329-1cm-implement-the-long-term-dual-import-inbo/) |
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:51:13.252Z
-Last activity: 2026-03-28 - Completed quick task 260328-lf9: Switch Termix Tailscale Serve from path route to dedicated 8443 port
-Stopped at: Completed quick-260328-lf9-PLAN.md
+Last session: 2026-03-29T01:16:53.321Z
+Last activity: 2026-03-29 - Completed quick task 260329-1cm: Implement long-term dual-import inbox ownership model
+Stopped at: Completed quick-260329-1cm-PLAN.md
 Resume file: None
