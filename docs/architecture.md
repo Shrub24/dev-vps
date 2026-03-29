@@ -132,16 +132,18 @@ Accepted advanced alternative:
 
 Current decision:
 
-- one persistent data mount on the host
-- service state organized under subdirectories on that mount
+- one persistent service-state mount on the host (`/srv/data`)
+- one dedicated media filesystem mounted at `/srv/media`
+- service state organized under subdirectories on `/srv/data`
 
 Initial media/data flow:
 
 - Syncthing manages the library directly
 - Navidrome reads from that same direct path
-- `/srv/data/media` remains the authoritative library path
+- `/srv/media` is the authoritative shared media library path
+- `/srv/data` remains the service-state/inbox mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/slskd`, `/srv/data/inbox`)
 - `modules/applications/music.nix` owns the generic ingest boundary at `/srv/data/inbox` through `music-ingest`
-- `slskd` writes only under `/srv/data/inbox/slskd/{complete,incomplete}`
+- `slskd` keeps downloads and incomplete state under `/srv/data` (`/srv/data/inbox/slskd` and `/srv/data/slskd/incomplete`)
 - no duplicate media staging dataset is introduced
 
 Future evolution:

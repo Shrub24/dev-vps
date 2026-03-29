@@ -2,7 +2,7 @@
 
 ## Direct media flow contract
 
-Syncthing /srv/data/media (authoritative) -> Navidrome MusicFolder /srv/data/media
+Syncthing /srv/media (authoritative) -> Navidrome MusicFolder /srv/media
 
 ## No duplicate staging rule
 
@@ -10,9 +10,11 @@ Navidrome must not read /srv/data/inbox.
 
 /srv/data/inbox is the app-owned generic ingest boundary from `modules/applications/music.nix` via `music-ingest`.
 
-slskd is confined to `/srv/data/inbox/slskd/{complete,incomplete}`.
+slskd is confined to `/srv/data/inbox/slskd` for completed downloads and `/srv/data/slskd/incomplete` for partial data.
 
-/srv/data/media remains the authoritative library path for Syncthing and Navidrome.
+`/srv/media` is the dedicated media mount and remains the authoritative library path for Syncthing and Navidrome.
+
+`/srv/data/inbox` and `/srv/data/slskd/incomplete` remain separate ingest and service-state paths on `/srv/data`.
 
 ## Verification commands
 

@@ -269,6 +269,24 @@ Rationale:
 - allows future ingest producers to share one boundary while preventing slskd path sprawl
 - preserves the direct authoritative media flow without reintroducing duplicate staging ownership
 
+## D-020: OCI media authority moves to dedicated `/srv/media` mount
+
+Status: Accepted
+
+Decision:
+
+- `hosts/oci-melb-1/bootstrap-config.nix` declares a dedicated `mediaDisk = "/dev/sdb"`
+- OCI provider defaults bind `bootstrapConfig.mediaDisk` into `disko.devices.disk.media.device`
+- `modules/storage/disko-root.nix` mounts the media filesystem at `/srv/media`
+- Syncthing, Navidrome, and slskd shared-library references move from `/srv/data/media` to `/srv/media`
+- `/srv/data` remains responsible for inbox and service-state paths (`/srv/data/inbox`, `/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/slskd`)
+
+Rationale:
+
+- separates authoritative media storage from service-state and ingest data to reduce path-coupling drift
+- keeps the existing app-owned ingest boundary and state layout stable while introducing explicit media disk contract checks
+- aligns phase-03/phase-04 contracts and canonical docs with the storage split so regressions fail quickly
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.
