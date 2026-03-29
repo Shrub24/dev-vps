@@ -56,4 +56,29 @@ in
       };
     };
   };
+
+  disko.devices.disk.media = {
+    type = "disk";
+    content = {
+      type = "gpt";
+      partitions = {
+        media = {
+          size = "100%";
+          content = {
+            type = "filesystem";
+            format = "ext4";
+            extraArgs = [
+              "-L"
+              "srv-media"
+            ];
+            mountpoint = "/srv/media";
+            mountOptions = [
+              "nofail"
+              "x-systemd.device-timeout=10s"
+            ];
+          };
+        };
+      };
+    };
+  };
 }

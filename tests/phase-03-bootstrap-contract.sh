@@ -24,12 +24,14 @@ rg --fixed-strings --quiet -- '--generate-hardware-config "$HARDWARE_CONFIG_GENE
 
 rg --fixed-strings --quiet 'bootstrapUser = "ubuntu";' "$BOOTSTRAP_CONFIG_FILE"
 rg --fixed-strings --quiet 'bootstrapDisk = "/dev/sda";' "$BOOTSTRAP_CONFIG_FILE"
+rg --fixed-strings --quiet 'mediaDisk = "/dev/sdb";' "$BOOTSTRAP_CONFIG_FILE"
 rg --fixed-strings --quiet 'rootPartitionSize = "20G";' "$BOOTSTRAP_CONFIG_FILE"
 rg --fixed-strings --quiet 'flake = "path:.#oci-melb-1";' "$BOOTSTRAP_CONFIG_FILE"
 rg --fixed-strings --quiet 'hardwareConfigGenerator = "nixos-generate-config";' "$BOOTSTRAP_CONFIG_FILE"
 rg --fixed-strings --quiet 'hardwareConfigPath = "hosts/oci-melb-1/hardware-configuration.nix";' "$BOOTSTRAP_CONFIG_FILE"
 rg --fixed-strings --quiet 'bootstrapConfig = import ../../../hosts/oci-melb-1/bootstrap-config.nix;' "$OCI_PROVIDER_FILE"
 rg --fixed-strings --quiet 'disko.devices.disk.main.device = lib.mkDefault bootstrapConfig.bootstrapDisk;' "$OCI_PROVIDER_FILE"
+rg --fixed-strings --quiet 'disko.devices.disk.media.device = lib.mkDefault bootstrapConfig.mediaDisk;' "$OCI_PROVIDER_FILE"
 rg --fixed-strings --quiet 'boot.loader.grub.devices = [ bootstrapConfig.bootstrapDisk ];' "$OCI_PROVIDER_FILE"
 
 rg --fixed-strings --quiet 'bootstrap target=bootstrap_target user=bootstrap_user flake=bootstrap_flake host_config=bootstrap_host_config extra_files=bootstrap_extra_files hardware_config_generator=bootstrap_hardware_config_generator hardware_config_path=bootstrap_hardware_config_path skip_hardware_config=bootstrap_skip_hardware_config:' "$JUSTFILE"
@@ -44,5 +46,7 @@ rg --fixed-strings --quiet '++ lib.optional (builtins.pathExists ./hardware-conf
 
 rg --fixed-strings --quiet 'mountpoint = "/"' "$DISKO_FILE"
 rg --fixed-strings --quiet 'mountpoint = "/srv/data"' "$DISKO_FILE"
+rg --fixed-strings --quiet 'mountpoint = "/srv/media"' "$DISKO_FILE"
 rg --fixed-strings --quiet '"rootfs"' "$DISKO_FILE"
 rg --fixed-strings --quiet '"srv-data"' "$DISKO_FILE"
+rg --fixed-strings --quiet '"srv-media"' "$DISKO_FILE"

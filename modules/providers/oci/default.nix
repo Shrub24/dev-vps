@@ -4,6 +4,7 @@ let
 in
 {
   disko.devices.disk.main.device = lib.mkDefault bootstrapConfig.bootstrapDisk;
+  disko.devices.disk.media.device = lib.mkDefault bootstrapConfig.mediaDisk;
 
   boot.loader.grub.devices = [ bootstrapConfig.bootstrapDisk ];
 
