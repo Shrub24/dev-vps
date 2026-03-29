@@ -141,9 +141,10 @@ Initial media/data flow:
 - Syncthing manages the library directly
 - Navidrome reads from that same direct path
 - `/srv/media` is the authoritative shared media library path
-- `/srv/data` remains the service-state/inbox mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/slskd`, `/srv/data/inbox`)
-- `modules/applications/music.nix` owns the generic ingest boundary at `/srv/data/inbox` through `music-ingest`
-- `slskd` keeps downloads and incomplete state under `/srv/data` (`/srv/data/inbox/slskd` and `/srv/data/slskd/incomplete`)
+- `/srv/data` remains the service-state mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`)
+- `modules/applications/music.nix` owns the generic ingest boundary at `/srv/media/inbox` through `music-ingest`
+- `modules/applications/music.nix` also defines `music-library` so `dev` and Syncthing share controlled library access
+- `slskd` keeps downloads and incomplete state under `/srv/media` (`/srv/media/inbox/slskd` and `/srv/media/slskd/incomplete`)
 - no duplicate media staging dataset is introduced
 
 Future evolution:

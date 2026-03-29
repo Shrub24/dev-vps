@@ -14,8 +14,10 @@ rg --fixed-strings --quiet '../../modules/services/slskd.nix' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet 'domain = "oci-melb-1";' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet 'environmentFile = "/var/lib/slskd/environment";' "$MUSIC_APP_FILE"
 rg --fixed-strings --quiet 'users.groups.music-ingest = { };' "$MUSIC_APP_FILE"
-rg --fixed-strings --quiet 'users.users.dev.extraGroups = lib.mkAfter [ "music-ingest" ];' "$MUSIC_APP_FILE"
-rg --fixed-strings --quiet '"d /srv/data/inbox 2775 root music-ingest - -"' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet 'users.groups.music-library = { };' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet '"music-ingest"' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet '"music-library"' "$MUSIC_APP_FILE"
+rg --fixed-strings --quiet '"d /srv/media/inbox 2775 root music-ingest - -"' "$MUSIC_APP_FILE"
 
 rg --fixed-strings --quiet 'MusicFolder = "/srv/media";' "$NAVIDROME_FILE"
 rg --fixed-strings --quiet 'DataFolder = "/srv/data/navidrome";' "$NAVIDROME_FILE"
@@ -23,20 +25,21 @@ rg --fixed-strings --quiet 'DataFolder = "/srv/data/navidrome";' "$NAVIDROME_FIL
 rg --fixed-strings --quiet 'dataDir = "/srv/media";' "$SYNCTHING_FILE"
 rg --fixed-strings --quiet 'path = "/srv/media";' "$SYNCTHING_FILE"
 rg --fixed-strings --quiet 'type = "sendreceive";' "$SYNCTHING_FILE"
+rg --fixed-strings --quiet '"d /srv/media 2775 syncthing music-library - -"' "$SYNCTHING_FILE"
 if rg --fixed-strings --quiet '/srv/data/inbox' "$SYNCTHING_FILE"; then
 	echo 'syncthing must not claim generic /srv/data/inbox ownership'
 	exit 1
 fi
 
-rg --fixed-strings --quiet '/srv/data/inbox/slskd' "$SLSKD_FILE"
-rg --fixed-strings --quiet '/srv/data/slskd/incomplete' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/media/inbox/slskd' "$SLSKD_FILE"
+rg --fixed-strings --quiet '/srv/media/slskd/incomplete' "$SLSKD_FILE"
 rg --fixed-strings --quiet '/srv/media' "$SLSKD_FILE"
-if rg --fixed-strings --quiet '/srv/data/inbox/complete' "$SLSKD_FILE"; then
-	echo 'slskd downloads path escaped confinement boundary'
+if rg --fixed-strings --quiet '/srv/data/inbox/slskd' "$SLSKD_FILE"; then
+	echo 'slskd downloads path still points at /srv/data'
 	exit 1
 fi
-if rg --fixed-strings --quiet '/srv/data/inbox/slskd/incomplete' "$SLSKD_FILE"; then
-	echo 'slskd incomplete path escaped confinement boundary'
+if rg --fixed-strings --quiet '/srv/data/slskd/incomplete' "$SLSKD_FILE"; then
+	echo 'slskd incomplete path still points at /srv/data'
 	exit 1
 fi
 

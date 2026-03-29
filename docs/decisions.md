@@ -259,8 +259,8 @@ Status: Accepted
 
 Decision:
 
-- `modules/applications/music.nix` owns `/srv/data/inbox` as a generic ingest boundary through `music-ingest`
-- `slskd` is confined to `/srv/data/inbox/slskd/{complete,incomplete}`
+- `modules/applications/music.nix` owns `/srv/media/inbox` as a generic ingest boundary through `music-ingest`
+- `slskd` is confined to `/srv/media/inbox/slskd` for completed downloads and `/srv/media/slskd/incomplete` for partial data
 - Syncthing and Navidrome remain anchored on `/srv/data/media` as the authoritative library path
 
 Rationale:
@@ -279,7 +279,9 @@ Decision:
 - OCI provider defaults bind `bootstrapConfig.mediaDisk` into `disko.devices.disk.media.device`
 - `modules/storage/disko-root.nix` mounts the media filesystem at `/srv/media`
 - Syncthing, Navidrome, and slskd shared-library references move from `/srv/data/media` to `/srv/media`
-- `/srv/data` remains responsible for inbox and service-state paths (`/srv/data/inbox`, `/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/slskd`)
+- `/srv/data` remains responsible for service-state paths (`/srv/data/syncthing/config`, `/srv/data/navidrome`)
+- `/srv/media` now owns the media library plus ingest/download paths (`/srv/media`, `/srv/media/inbox`, `/srv/media/slskd`)
+- introduce `music-library` group so `/srv/media` is writable by Syncthing and the `dev` operator account without changing service ownership to a human user
 
 Rationale:
 
