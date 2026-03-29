@@ -1,7 +1,8 @@
 { lib, ... }:
 let
   sshKeys = [
-    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCcCrrwmxabl1/fnYTkrlMLa+I4ucauph3GMtTvDg4B/EyzsEFUB+sOEf9sLpdnocsxOaUu4e6qE2sZRWJHafIo8gidE3JB/Ogf9aeddWjukeYH3EddJDd0iPqCL2JMPdVpNi/Ly/RAcxi2ENSZf5eoX30EEkC3s2kzxJ1znlhS6YOjG1XFdmjtf5bMnj4JFxXNhEa5mpzR6G5Qua2lcaA53+J20mldyRGYSrQAnR2E0x0k0XS95/jJ7xo7pCqPyCkT2zBTzRoEb1A+4ulHsuW9d6nk6W61nUX3QDj4gNGcq9jUmtHVd+OdZPKU1ILWWHm8x2YDPron3wihe072VWEhwG8ojmfqeKUceF41/ymN1ws9DhxNaF+ofJwuGR8J9afPXeYfV1qxOvpSwKHvLCNsPP88HApd+0q5JADeclUGtrnfNxNolnTowA6dFJ1tqXE7doYiyaoitnHmR8DO/k0SQ21wnScfJUSdkD/Ifcz8M+36qB2/SkdUG788hpIObs0= saurabhj@Saurabh-fedora"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFBqFsxbrn6SVOHXi4+LS5olKxEW8JlZ5V+irA18/586 saurabhj@arch"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMrzW7nXTeKqejlnIYmccciDJ4/PfjV6ek4Wvo7v86/a termix"
   ];
 in
 {
