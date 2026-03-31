@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 04.1 context gathered
-last_updated: "2026-03-29T18:30:55.547Z"
-last_activity: "2026-03-29 - Completed quick task 260329-2hf: Define /dev/sdb /srv/media mount and move media paths"
+stopped_at: Completed 04.1 execution and verification
+last_updated: "2026-03-31T12:41:44.706Z"
+last_activity: 2026-03-31
 progress:
   total_phases: 9
-  completed_phases: 6
-  total_plans: 15
-  completed_plans: 15
+  completed_phases: 7
+  total_plans: 17
+  completed_plans: 17
 ---
 
 # Project State
@@ -20,11 +20,11 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-21)
 
 **Core value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
-**Current focus:** Phase 04 — service-baseline-and-data-safety
+**Current focus:** Phase 04.1 — add-beets-inbox-only-singleton-ingestion-phase
 
 ## Current Position
 
-Phase: 04
+Phase: 05
 Plan: Not started
 
 ## Performance Metrics
@@ -69,6 +69,8 @@ Plan: Not started
 | Phase quick-260328-ivn-serve-termix-over-tailscale-serve-https- P01 | 3 min | 2 tasks | 4 files |
 | Phase quick-260328-lf9-switch-termix-tailscale-serve-from-path- P01 | 11 min | 2 tasks | 4 files |
 | Phase quick-260329-2hf-define-sdb-mount-srv-media-and-move-medi P01 | 1 min | 3 tasks | 13 files |
+| Phase 04.1 P01 | 3m | 2 tasks | 3 files |
+| Phase 04.1 P02 | 2m | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -129,6 +131,8 @@ Recent decisions affecting current work:
 - [Phase quick-260329-1cm]: Confine slskd to /srv/data/inbox/slskd/{complete,incomplete} while keeping /srv/data/media authoritative for Syncthing and Navidrome.
 - [Phase quick-260329-2hf]: Declare dedicated oci-melb-1 mediaDisk /dev/sdb and bind it to disko media filesystem mounted at /srv/media.
 - [Phase quick-260329-2hf]: Move Syncthing, Navidrome, and slskd shared-library authority to /srv/media while preserving /srv/data inbox/service-state paths.
+- [Phase 04.1]: Keep Beets as an inbox-only singleton worker triggered by systemd.path on /srv/media/inbox/slskd with no promotion behavior.
+- [Phase 04.1]: Persist Beets runtime config/state/report artifacts under /srv/data/beets while preserving /srv/media as media authority.
 
 ### Roadmap Evolution
 
@@ -168,7 +172,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T18:30:55.538Z
-Last activity: 2026-03-29 - Completed quick task 260329-2hf: Define /dev/sdb /srv/media mount and move media paths
-Stopped at: Phase 04.1 context gathered
-Resume file: .planning/phases/04.1-add-beets-inbox-only-singleton-ingestion-phase/04.1-CONTEXT.md
+Last session: 2026-03-31T12:41:44.699Z
+Last activity: 2026-03-31
+Stopped at: Completed 04.1 execution and verification
+Resume file: None

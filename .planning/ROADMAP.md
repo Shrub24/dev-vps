@@ -122,11 +122,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 **Goal:** `oci-melb-1` can run Beets as an inbox-only singleton tagging worker against `/srv/media/inbox`, auto-triggered from new `slskd` arrivals, while keeping unmatched files in place and all Beets state/reporting under `/srv/data/beets`.
 **Requirements**: MEDI-02, MEDI-03, MEDI-04
 **Depends on:** Phase 4
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 04.1-01-PLAN.md - Add the Beets inbox-only worker module, runner, and contract test.
-- [ ] 04.1-02-PLAN.md - Add phase verification, operator runbook, and canonical Beets boundary docs.
+- [x] 04.1-01-PLAN.md - Add the Beets inbox-only worker module, runner, and contract test.
+- [x] 04.1-02-PLAN.md - Add phase verification, operator runbook, and canonical Beets boundary docs.
 
 ### Phase 5: traktor nml m3u syncing
 
