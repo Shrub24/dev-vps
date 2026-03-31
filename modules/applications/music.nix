@@ -4,6 +4,7 @@
     ../../modules/services/syncthing.nix
     ../../modules/services/navidrome.nix
     ../../modules/services/slskd.nix
+    ../../modules/services/beets-inbox.nix
   ];
 
   users.groups.music-ingest = { };

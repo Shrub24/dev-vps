@@ -31,7 +31,7 @@ if rg --fixed-strings --quiet 'soundcloud' "$BEETS_FILE"; then
   exit 1
 fi
 
-if rg --fixed-strings --quiet 'directory: /srv/media' "$BEETS_FILE"; then
+if rg --quiet '^\s*directory: /srv/media$' "$BEETS_FILE"; then
   echo 'beets import scope must stay inbox-only, not global /srv/media'
   exit 1
 fi
