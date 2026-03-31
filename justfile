@@ -60,6 +60,11 @@ verify-phase-04:
   bash tests/phase-04-service-flow-contract.sh
   just verify-oci-contract
 
+# verify-phase-04.1:
+verify-phase-04-1:
+  just verify-phase-04
+  bash tests/phase-04.1-beets-contract.sh
+
 devshell-check:
   nix develop --command just --list >/dev/null
 
