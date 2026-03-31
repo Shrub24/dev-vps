@@ -289,6 +289,23 @@ Rationale:
 - keeps the existing app-owned ingest boundary and state layout stable while introducing explicit media disk contract checks
 - aligns phase-03/phase-04 contracts and canonical docs with the storage split so regressions fail quickly
 
+## D-021: Beets remains inbox-only singleton worker with no promotion behavior
+
+Status: Accepted
+
+Decision:
+
+- add an inbox-only Beets worker for `oci-melb-1` that runs singleton imports against `/srv/media/inbox/slskd`
+- trigger routine runs automatically through `systemd.path` file events
+- keep all Beets runtime state and reports under `/srv/data/beets`
+- enforce no promotion behavior: no copy/move/link/hardlink flow out of inbox
+
+Rationale:
+
+- satisfies MEDI-02, MEDI-03, and MEDI-04 without changing established `/srv/media` authority
+- keeps ingestion automation conservative so unmatched/weak candidates remain in place for manual follow-up
+- avoids accidental scope creep into a future authority/promotion pipeline before that phase is explicitly planned
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.
