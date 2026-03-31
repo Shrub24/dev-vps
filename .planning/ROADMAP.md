@@ -117,7 +117,18 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 3. OCI Host Bring-Up And Private Operations | 3/3 | Complete | 2026-03-26 |
 | 4. Service Baseline And Data Safety | 2/2 | Complete   | 2026-03-27 |
 
-### Phase 5: deploy rework, add deploy-rs and root access hardening
+### Phase 04.1: Add Beets inbox-only singleton ingestion phase (INSERTED)
+
+**Goal:** `oci-melb-1` can run Beets as an inbox-only singleton tagging worker against `/srv/media/inbox`, auto-triggered from new `slskd` arrivals, while keeping unmatched files in place and all Beets state/reporting under `/srv/data/beets`.
+**Requirements**: MEDI-02, MEDI-03, MEDI-04
+**Depends on:** Phase 4
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04.1-01-PLAN.md - Add the Beets inbox-only worker module, runner, and contract test.
+- [ ] 04.1-02-PLAN.md - Add phase verification, operator runbook, and canonical Beets boundary docs.
+
+### Phase 5: traktor nml m3u syncing
 
 **Goal:** [To be planned]
 **Requirements**: TBD
@@ -126,3 +137,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 5 to break down)
+
+### Phase 6: deploy rework, add deploy-rs and root access hardening
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 6 to break down)
