@@ -21,6 +21,13 @@ rg --fixed-strings --quiet '"d /srv/media/inbox 2775 root music-ingest - -"' "$M
 
 rg --fixed-strings --quiet 'MusicFolder = "/srv/media";' "$NAVIDROME_FILE"
 rg --fixed-strings --quiet 'DataFolder = "/srv/data/navidrome";' "$NAVIDROME_FILE"
+if rg --fixed-strings --quiet 'MusicFolder = "/srv/media/library";' "$NAVIDROME_FILE"; then
+	echo 'navidrome music root must remain /srv/media, not /srv/media/library'
+	exit 1
+fi
+
+# /srv/media/library is an allowed promoted subtree elsewhere in the stack.
+rg --fixed-strings --quiet '/srv/media/library' modules/services/beets-inbox.nix
 
 rg --fixed-strings --quiet 'dataDir = "/srv/media";' "$SYNCTHING_FILE"
 rg --fixed-strings --quiet 'path = "/srv/media";' "$SYNCTHING_FILE"
