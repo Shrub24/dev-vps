@@ -65,6 +65,11 @@ verify-phase-04-1:
   just verify-phase-04
   bash tests/phase-04.1-beets-contract.sh
 
+# verify-phase-04.2:
+verify-phase-04-2:
+  just verify-phase-04
+  bash tests/phase-04.2-beets-promotion-contract.sh
+
 devshell-check:
   nix develop --command just --list >/dev/null
 
