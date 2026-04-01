@@ -69,12 +69,14 @@ Track D: Service baseline
 - deploy Navidrome reading direct sync path
 - keep music service composition explicit through `modules/applications/music.nix`
 - keep private admin service composition explicit through `modules/applications/admin.nix`
+- evolve Beets via native systemd-based inbox-to-library promotion under `/srv/media/library` while keeping `/srv/media` playback visibility
 
 Track E: Future-ready evolution
 
 - keep layout compatible with later fleet deployment tooling
 - reserve integration points for future media processing hooks
 - reserve path for later `rclone`/VFS transition
+- defer app-based review UX and higher-complexity orchestration while report-first promotion remains sufficient
 
 ## Success Criteria (Strategic)
 

@@ -291,7 +291,7 @@ Rationale:
 
 ## D-021: Beets remains inbox-only singleton worker with no promotion behavior
 
-Status: Accepted
+Status: Superseded by D-022
 
 Decision:
 
@@ -305,6 +305,24 @@ Rationale:
 - satisfies MEDI-02, MEDI-03, and MEDI-04 without changing established `/srv/media` authority
 - keeps ingestion automation conservative so unmatched/weak candidates remain in place for manual follow-up
 - avoids accidental scope creep into a future authority/promotion pipeline before that phase is explicitly planned
+
+## D-022: Beets runs all-inbox singleton auto-promotion into /srv/media/library
+
+Status: Accepted
+
+Decision:
+
+- evolve the Beets singleton worker to scan `/srv/media/inbox` broadly and process files independently
+- auto-promote successful files into `/srv/media/library/<top-level>/<release>/<original filename>`
+- keep filename preservation as a strict contract during move/promotion
+- keep fallback and hard-failure reporting under `/srv/data/beets`
+- preserve broad playback visibility by keeping Navidrome rooted on `/srv/media`
+
+Rationale:
+
+- advances MEDI-01 with a native systemd and Beets-based promotion path without introducing app-based review complexity
+- keeps hard failures visible and playable from inbox while successful files become canonical library entries
+- maintains the `/srv/media` authority model and service-state/report separation under `/srv/data`
 
 ## Open Questions (Intentional)
 
