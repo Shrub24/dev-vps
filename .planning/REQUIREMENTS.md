@@ -71,7 +71,7 @@ Deferred until the baseline is proven.
 
 ### Media Evolution
 
-- **MEDI-01**: Operator can migrate from direct Syncthing-managed media paths to an authority-based ingest flow when operational pressure justifies it.
+- [x] **MEDI-01**: Operator can migrate from direct Syncthing-managed media paths to an authority-based ingest flow when operational pressure justifies it.
 - **MEDI-02**: Operator can run Beets against `/srv/media/inbox` as an inbox-only singleton tagger without copying, moving, or linking files out of inbox.
 - **MEDI-03**: Operator can trigger Beets tagging automatically from new `slskd` inbox arrivals while keeping reports and unresolved outcomes under `/srv/data/beets`.
 - **MEDI-04**: Operator can use Discogs, Beatport, and Bandcamp metadata sources for inbox tagging while leaving low-confidence files untouched for manual follow-up.
@@ -116,6 +116,7 @@ Which phases cover which requirements. This section is populated during roadmap 
 | SRVC-05 | Phase 4 | Complete |
 | OPER-01 | Phase 3 | Complete |
 | OPER-02 | Phase 1 | Complete |
+| MEDI-01 | Phase 04.2 | Complete |
 | MEDI-02 | Phase 04.1 | Complete |
 | MEDI-03 | Phase 04.1 | Complete |
 | MEDI-04 | Phase 04.1 | Complete |

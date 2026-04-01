@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 04.2 context gathered
-last_updated: "2026-04-01T03:30:48.137Z"
-last_activity: 2026-03-31
+stopped_at: Completed 04.2 execution and phase verification
+last_updated: "2026-04-01T04:34:48.240Z"
+last_activity: 2026-04-01
 progress:
   total_phases: 10
-  completed_phases: 7
-  total_plans: 17
-  completed_plans: 17
+  completed_phases: 8
+  total_plans: 19
+  completed_plans: 19
 ---
 
 # Project State
@@ -20,7 +20,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-21)
 
 **Core value:** Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
-**Current focus:** Phase 04.1 — add-beets-inbox-only-singleton-ingestion-phase
+**Current focus:** Phase 04.2 — all-inbox-beets-preprocessing-with-singleton-auto-promotion
 
 ## Current Position
 
@@ -71,6 +71,8 @@ Plan: Not started
 | Phase quick-260329-2hf-define-sdb-mount-srv-media-and-move-medi P01 | 1 min | 3 tasks | 13 files |
 | Phase 04.1 P01 | 3m | 2 tasks | 3 files |
 | Phase 04.1 P02 | 2m | 2 tasks | 3 files |
+| Phase 04.2 P01 | 17m | 2 tasks | 3 files |
+| Phase 04.2 P02 | 9m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -133,6 +135,8 @@ Recent decisions affecting current work:
 - [Phase quick-260329-2hf]: Move Syncthing, Navidrome, and slskd shared-library authority to /srv/media while preserving /srv/data inbox/service-state paths.
 - [Phase 04.1]: Keep Beets as an inbox-only singleton worker triggered by systemd.path on /srv/media/inbox/slskd with no promotion behavior.
 - [Phase 04.1]: Persist Beets runtime config/state/report artifacts under /srv/data/beets while preserving /srv/media as media authority.
+- [Phase 04.2]: Promote successful all-inbox Beets imports into /srv/media/library while preserving original filenames and logging fallback/hard-failure outcomes under /srv/data/beets.
+- [Phase 04.2]: Supersede D-021 with D-022 and keep Navidrome rooted at /srv/media so inbox failures remain visible while promoted files land in /srv/media/library.
 
 ### Roadmap Evolution
 
@@ -153,6 +157,7 @@ None yet.
 - Phase 3: Validate OCI ARM bootstrap specifics and stable device mapping before execution.
 - Phase 3: Keep serial-console break-glass posture documented before Tailscale becomes the primary admin path.
 - Phase 4: Define acceptable Syncthing conflict/delete recovery posture before calling the baseline stable.
+- Regression gate reported pre-existing out-of-scope failures in tests/phase-03-access-contract.sh, tests/phase-03-operations-contract.sh, tests/phase-02-03-host-contract.sh, and intentionally superseded tests/phase-04.1-beets-contract.sh; tracked in phase 04.2 deferred-items.md.
 
 ### Quick Tasks Completed
 
@@ -173,7 +178,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T03:30:48.113Z
-Last activity: 2026-03-31
-Stopped at: Phase 04.2 context gathered
-Resume file: .planning/phases/04.2-all-inbox-beets-preprocessing-with-singleton-auto-promotion/04.2-CONTEXT.md
+Last session: 2026-04-01T04:33:15.834Z
+Last activity: 2026-04-01
+Stopped at: Completed 04.2 execution and phase verification
+Resume file: None

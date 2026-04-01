@@ -19,6 +19,7 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 - [x] Secrets management follows explicit blast-radius scoping across common and host-specific data. *(Validated in Phase 03: oci-host-bring-up-and-private-operations)*
 - [x] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model. *(Validated in Phase 04: service-baseline-and-data-safety)*
 - [x] Beets can run as an inbox-only singleton tagger on `/srv/media/inbox` with automatic `slskd` trigger flow and `/srv/data/beets` reporting/state boundaries. *(Validated in Phase 04.1: add-beets-inbox-only-singleton-ingestion-phase)*
+- [x] Beets can auto-promote successful all-inbox candidates into `/srv/media/library` while preserving filenames and keeping hard failures/reporting visibility rooted on `/srv/media` and `/srv/data/beets`. *(Validated in Phase 04.2: all-inbox-beets-preprocessing-with-singleton-auto-promotion)*
 
 ### Active
 
@@ -49,6 +50,8 @@ Phase 03 completed bootstrap, access, and operations contract locking with execu
 Phase 04 completed direct Syncthing-to-Navidrome service-flow enforcement with explicit Syncthing mode/versioning safeguards, phase contract scripts, and a unified `verify-phase-04` operator verification command.
 
 Phase 04.1 completed Beets inbox-only singleton ingestion with automatic file-event-driven execution from `/srv/media/inbox/slskd`, conservative non-promoting import behavior, and `/srv/data/beets` state/report ownership documented and enforced by contract tests.
+
+Phase 04.2 completed all-inbox singleton auto-promotion by moving successful files into `/srv/media/library` with basename preservation, per-file failure isolation, and report-first fallback/hard-failure tracking under `/srv/data/beets` while keeping Navidrome visibility rooted on `/srv/media`.
 
 ## Constraints
 
@@ -92,4 +95,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 after Phase 04.1 completion*
+*Last updated: 2026-04-01 after Phase 04.2 completion*

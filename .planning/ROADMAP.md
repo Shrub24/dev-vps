@@ -128,6 +128,17 @@ Plans:
 - [x] 04.1-01-PLAN.md - Add the Beets inbox-only worker module, runner, and contract test.
 - [x] 04.1-02-PLAN.md - Add phase verification, operator runbook, and canonical Beets boundary docs.
 
+### Phase 04.2: All-inbox Beets preprocessing with singleton auto-promotion (INSERTED)
+
+**Goal:** `oci-melb-1` can preprocess tracks from any `/srv/media/inbox` source with a singleton Beets worker that auto-promotes successful files into `/srv/media/library`, preserves filenames, leaves only hard failures in inbox, and keeps playback/reporting visibility rooted on `/srv/media` and `/srv/data/beets`.
+**Requirements**: MEDI-01
+**Depends on:** Phase 4
+**Plans:** 2/2 plans complete
+
+Plans:
+- [x] 04.2-01-PLAN.md - Expand the Beets worker to all-inbox per-file promotion with preserved filenames and report-first failure handling.
+- [x] 04.2-02-PLAN.md - Add phase verification, operator runbook, and canonical docs for the promotion flow.
+
 ### Phase 5: traktor nml m3u syncing
 
 **Goal:** [To be planned]
