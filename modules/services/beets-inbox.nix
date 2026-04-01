@@ -28,8 +28,6 @@ let
 
     ROOT_INBOX="/srv/media/inbox"
     LIBRARY_ROOT="/srv/media/library"
-    # Canonical default target for key-link verification:
-    # TARGET_PATH="${1:-/srv/media/inbox}"
     TARGET_PATH="''${1:-/srv/media/inbox}"
     CANONICAL_TARGET="$(realpath -m "$TARGET_PATH")"
 
@@ -62,7 +60,7 @@ let
     FALLBACK_FILE="/srv/data/beets/reports/$TIMESTAMP-promoted-with-fallback.tsv"
     HARD_FAILURES_FILE="/srv/data/beets/unresolved/$TIMESTAMP-hard-failures.tsv"
 
-    mapfile -d '' -t CANDIDATES < <(find "$CANONICAL_TARGET" -type f -mmin +2 \
+    mapfile -d $'\\0' -t CANDIDATES < <(find "$CANONICAL_TARGET" -type f -mmin +2 \
       \( -iname '*.mp3' -o -iname '*.flac' -o -iname '*.m4a' -o -iname '*.aac' -o -iname '*.ogg' -o -iname '*.opus' -o -iname '*.wav' \) \
       -print0 | sort -z)
 
