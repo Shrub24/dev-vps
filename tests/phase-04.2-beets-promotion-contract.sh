@@ -8,10 +8,14 @@ BEETS_CONFIG="scripts/beets-config.yaml"
 SERVICE_FLOW_CONTRACT="tests/phase-04-service-flow-contract.sh"
 NAVIDROME_FILE="modules/services/navidrome.nix"
 
-rg --fixed-strings --quiet 'import ./beets-inbox-runtime.nix { inherit pkgs; };' "$BEETS_MODULE"
-rg --fixed-strings --quiet 'ps.beets.override {' "$BEETS_RUNTIME"
+rg --fixed-strings --quiet 'import ./beets-inbox-runtime.nix {' "$BEETS_MODULE"
+rg --fixed-strings --quiet '{ pkgs, inputs, ... }:' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; };' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'inherit pkgsUnstable;' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'pkgsUnstable.python3Packages.beets.override {' "$BEETS_RUNTIME"
+rg --fixed-strings --quiet '{ pkgsUnstable }:' "$BEETS_RUNTIME"
 rg --fixed-strings --quiet 'bandcamp = {' "$BEETS_RUNTIME"
-rg --fixed-strings --quiet 'propagatedBuildInputs = [ ps.beetcamp ];' "$BEETS_RUNTIME"
+rg --fixed-strings --quiet 'propagatedBuildInputs = [ pkgsUnstable.python3Packages.beetcamp ];' "$BEETS_RUNTIME"
 rg --fixed-strings --quiet 'users.users.beets = {' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'extraGroups = [' "$BEETS_MODULE"
 rg --fixed-strings --quiet '"music-ingest"' "$BEETS_MODULE"
@@ -34,8 +38,22 @@ rg --fixed-strings --quiet '/srv/data/beets/logs' "$BEETS_RUNNER"
 rg --fixed-strings --quiet 'systemd.timers.beets-inbox-backstop' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'OnUnitActiveSec = "15m"' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'pathConfig.PathModified = "/srv/media/inbox";' "$BEETS_MODULE"
-rg --fixed-strings --quiet 'd /srv/media/untagged 2775 syncthing music-library - -' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/inbox - - - - group:music-ingest:rwx' "modules/applications/music.nix"
+rg --fixed-strings --quiet 'a+ /srv/media/inbox - - - - group:music-library:r-x' "modules/applications/music.nix"
+rg --fixed-strings --quiet 'a+ /srv/media/inbox - - - - default:group:music-ingest:rwx' "modules/applications/music.nix"
+rg --fixed-strings --quiet 'a+ /srv/media/inbox - - - - default:group:music-library:r-x' "modules/applications/music.nix"
+rg --fixed-strings --quiet 'a+ /srv/media/library - - - - group:music-ingest:rwx' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/library - - - - group:music-library:r-x' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/library - - - - default:group:music-ingest:rwx' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/library - - - - default:group:music-library:r-x' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'd /srv/media/untagged 2755 syncthing music-library - -' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/untagged - - - - group:music-ingest:rwx' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/untagged - - - - group:music-library:r-x' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/untagged - - - - default:group:music-ingest:rwx' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'a+ /srv/media/untagged - - - - default:group:music-library:r-x' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'demote_and_record_unresolved()' "$BEETS_RUNNER"
+rg --fixed-strings --quiet 'collect_audio_files "$CANONICAL_TARGET" LEFTOVER_AUDIO' "$BEETS_RUNNER"
+rg --fixed-strings --quiet 'mv "$file" "$destination_file" || echo "beets-inbox-runner: failed to demote $file"' "$BEETS_RUNNER"
 rg --fixed-strings --quiet 'mv "$file" "$destination_file"' "$BEETS_RUNNER"
 rg --fixed-strings --quiet 'IMPORT_LOG_FILE="/srv/data/beets/logs/' "$BEETS_RUNNER"
 rg --fixed-strings --quiet 'beet -c /srv/data/beets/config.yaml import -q -C -l "$IMPORT_LOG_FILE"' "$BEETS_RUNNER"
@@ -61,9 +79,20 @@ if rg --fixed-strings --quiet 'PathExistsGlob = "/srv/media/inbox/*"' "$BEETS_MO
 	exit 1
 fi
 
+if rg --fixed-strings --quiet 'a+ /srv/media - - - - ' "$BEETS_MODULE" ||
+	rg --fixed-strings --quiet 'a+ /srv/media - - - - ' "modules/applications/music.nix"; then
+	echo 'root /srv/media must not carry blanket ACL entries'
+	exit 1
+fi
+
 if rg --fixed-strings --quiet 'runner.lock' "$BEETS_RUNNER" ||
 	rg --fixed-strings --quiet 'flock -n' "$BEETS_RUNNER"; then
 	echo 'runner must rely on native systemd single-instance semantics, not custom lockfiles'
+	exit 1
+fi
+
+if rg --fixed-strings --quiet 'pythonCatchConflicts = false;' "$BEETS_RUNTIME"; then
+	echo 'runtime must not rely on temporary pythonCatchConflicts workaround'
 	exit 1
 fi
 
@@ -85,7 +114,6 @@ if rg --fixed-strings --quiet 'MusicFolder = "/srv/media/library"' "$NAVIDROME_F
 fi
 
 for disallowed in \
-	'move: yes' \
 	'copy: yes' \
 	'link: yes' \
 	'hardlink: yes' \

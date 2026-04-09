@@ -21,9 +21,13 @@
   };
 
   systemd.tmpfiles.rules = [
-    "z /srv/media 2775 syncthing music-library - -"
+    "d /srv/media 0755 root root - -"
     "d /srv/media/inbox 2775 root music-ingest - -"
     "z /srv/media/inbox 2775 root music-ingest - -"
+    "a+ /srv/media/inbox - - - - group:music-ingest:rwx"
+    "a+ /srv/media/inbox - - - - group:music-library:r-x"
+    "a+ /srv/media/inbox - - - - default:group:music-ingest:rwx"
+    "a+ /srv/media/inbox - - - - default:group:music-library:r-x"
     "f /var/lib/slskd/environment 0640 slskd slskd - -"
   ];
 }

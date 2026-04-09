@@ -1,6 +1,9 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 let
-  beetsRuntime = import ./beets-inbox-runtime.nix { inherit pkgs; };
+  pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; };
+  beetsRuntime = import ./beets-inbox-runtime.nix {
+    inherit pkgsUnstable;
+  };
 
   beetsConfig = pkgs.writeText "beets-config.yaml" (
     builtins.readFile ../../scripts/beets-config.yaml
@@ -42,7 +45,17 @@ in
     "d /srv/data/beets/state 0750 beets beets - -"
     "d /srv/data/beets/logs 0750 beets beets - -"
     "d /srv/media/library 2775 syncthing music-library - -"
-    "d /srv/media/untagged 2775 syncthing music-library - -"
+    "z /srv/media/library 2775 syncthing music-library - -"
+    "a+ /srv/media/library - - - - group:music-ingest:rwx"
+    "a+ /srv/media/library - - - - group:music-library:r-x"
+    "a+ /srv/media/library - - - - default:group:music-ingest:rwx"
+    "a+ /srv/media/library - - - - default:group:music-library:r-x"
+    "d /srv/media/untagged 2755 syncthing music-library - -"
+    "z /srv/media/untagged 2755 syncthing music-library - -"
+    "a+ /srv/media/untagged - - - - group:music-ingest:rwx"
+    "a+ /srv/media/untagged - - - - group:music-library:r-x"
+    "a+ /srv/media/untagged - - - - default:group:music-ingest:rwx"
+    "a+ /srv/media/untagged - - - - default:group:music-library:r-x"
   ];
 
   systemd.services.beets-inbox-run = {

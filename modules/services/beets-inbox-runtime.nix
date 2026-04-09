@@ -1,11 +1,9 @@
-{ pkgs }:
-pkgs.python3.withPackages (ps: [
-  (ps.beets.override {
-    pluginOverrides = {
-      bandcamp = {
-        enable = true;
-        propagatedBuildInputs = [ ps.beetcamp ];
-      };
+{ pkgsUnstable }:
+(pkgsUnstable.python3Packages.beets.override {
+  pluginOverrides = {
+    bandcamp = {
+      enable = true;
+      propagatedBuildInputs = [ pkgsUnstable.python3Packages.beetcamp ];
     };
-  })
-])
+  };
+})

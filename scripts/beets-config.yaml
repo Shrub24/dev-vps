@@ -11,7 +11,7 @@ item_fields:
 import:
   write: yes
   copy: no
-  move: no
+  move: yes
   link: no
   hardlink: no
   quiet: yes
