@@ -135,8 +135,9 @@ Recent decisions affecting current work:
 - [Phase quick-260329-2hf]: Move Syncthing, Navidrome, and slskd shared-library authority to /srv/media while preserving /srv/data inbox/service-state paths.
 - [Phase 04.1]: Keep Beets as an inbox-only singleton worker triggered by systemd.path on /srv/media/inbox/slskd with no promotion behavior.
 - [Phase 04.1]: Persist Beets runtime config/state/report artifacts under /srv/data/beets while preserving /srv/media as media authority.
-- [Phase 04.2]: Promote successful all-inbox Beets imports into /srv/media/library while preserving original filenames and logging fallback/hard-failure outcomes under /srv/data/beets.
+- [Phase 04.2]: Promote successful all-inbox Beets imports into /srv/media/library using native album import (`singletons: no`, `group_albums: yes`) and path templates while preserving original filenames and logging unresolved outcomes under /srv/data/beets.
 - [Phase 04.2]: Supersede D-021 with D-022 and keep Navidrome rooted at /srv/media so inbox failures remain visible while promoted files land in /srv/media/library.
+- [Phase quick-260409-15o]: Tighten Beets acceptance criteria to require PathModified trigger, .tmp transfer lockout, settle/debounce delay, native systemd single-instance behavior, and post-run demotion sweep from /srv/media/inbox to /srv/media/untagged.
 
 ### Roadmap Evolution
 

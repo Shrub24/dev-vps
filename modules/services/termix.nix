@@ -20,7 +20,7 @@
         GUACD_PORT = "4822";
       };
       ports = [
-        "127.0.0.1:8083:8080"
+        "0.0.0.0:8083:8080"
       ];
       volumes = [
         "/srv/data/termix/data:/app/data"

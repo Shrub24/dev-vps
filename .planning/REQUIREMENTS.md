@@ -71,10 +71,9 @@ Deferred until the baseline is proven.
 
 ### Media Evolution
 
-- [x] **MEDI-01**: Operator can migrate from direct Syncthing-managed media paths to an authority-based ingest flow when operational pressure justifies it.
-- **MEDI-02**: Operator can run Beets against `/srv/media/inbox` as an inbox-only singleton tagger without copying, moving, or linking files out of inbox.
-- **MEDI-03**: Operator can trigger Beets tagging automatically from new `slskd` inbox arrivals while keeping reports and unresolved outcomes under `/srv/data/beets`.
-- **MEDI-04**: Operator can use Discogs, Beatport, and Bandcamp metadata sources for inbox tagging while leaving low-confidence files untouched for manual follow-up.
+- [x] **MEDI-01**: Operator can run all-inbox Beets native album import (`singletons: no`, `group_albums: yes`) that auto-promotes successful files to `/srv/media/library` via Beets paths, preserves original filenames, and keeps playback visibility rooted on `/srv/media`.
+- [ ] **MEDI-05**: Operator can run transfer-safe inbox automation where `.tmp` presence blocks execution, a settle/debounce delay is applied before import, and post-run leftovers are demoted from `/srv/media/inbox` to `/srv/media/untagged`.
+- [ ] **MEDI-06**: Operator can guarantee Beets worker idempotency with native systemd single-instance behavior, empty-inbox fast exit, and zero-state cleanup for eligible inbox audio after successful runs.
 
 ## Out of Scope
 
@@ -117,9 +116,8 @@ Which phases cover which requirements. This section is populated during roadmap 
 | OPER-01 | Phase 3 | Complete |
 | OPER-02 | Phase 1 | Complete |
 | MEDI-01 | Phase 04.2 | Complete |
-| MEDI-02 | Phase 04.1 | Complete |
-| MEDI-03 | Phase 04.1 | Complete |
-| MEDI-04 | Phase 04.1 | Complete |
+| MEDI-05 | Phase 05 | Planned |
+| MEDI-06 | Phase 05 | Planned |
 
 **Coverage:**
 - v1 requirements: 21 total

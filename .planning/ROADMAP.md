@@ -130,7 +130,7 @@ Plans:
 
 ### Phase 04.2: All-inbox Beets preprocessing with singleton auto-promotion (INSERTED)
 
-**Goal:** `oci-melb-1` can preprocess tracks from any `/srv/media/inbox` source with a singleton Beets worker that auto-promotes successful files into `/srv/media/library`, preserves filenames, leaves only hard failures in inbox, and keeps playback/reporting visibility rooted on `/srv/media` and `/srv/data/beets`.
+**Goal:** `oci-melb-1` can preprocess tracks from any `/srv/media/inbox` source with native Beets album import (`singletons: no`, `group_albums: yes`) and path-based placement that auto-promotes successful files into `/srv/media/library`, preserves filenames, and performs transfer-safe post-run demotion of remaining inbox audio into `/srv/media/untagged` while keeping playback/reporting visibility rooted on `/srv/media` and `/srv/data/beets`.
 **Requirements**: MEDI-01
 **Depends on:** Phase 4
 **Plans:** 2/2 plans complete

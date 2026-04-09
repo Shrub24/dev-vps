@@ -19,11 +19,10 @@ Bring up and operate a clear, reproducible, low-complexity first NixOS host that
 - [x] Secrets management follows explicit blast-radius scoping across common and host-specific data. *(Validated in Phase 03: oci-host-bring-up-and-private-operations)*
 - [x] The initial private service baseline (`tailscale`, `syncthing`, `navidrome`) works with the intended storage and access model. *(Validated in Phase 04: service-baseline-and-data-safety)*
 - [x] Beets can run as an inbox-only singleton tagger on `/srv/media/inbox` with automatic `slskd` trigger flow and `/srv/data/beets` reporting/state boundaries. *(Validated in Phase 04.1: add-beets-inbox-only-singleton-ingestion-phase)*
-- [x] Beets can auto-promote successful all-inbox candidates into `/srv/media/library` while preserving filenames and keeping hard failures/reporting visibility rooted on `/srv/media` and `/srv/data/beets`. *(Validated in Phase 04.2: all-inbox-beets-preprocessing-with-singleton-auto-promotion)*
 
 ### Active
 
-None currently.
+- [ ] Beets inbox automation must satisfy the updated acceptance criteria: trigger on inbox modification, skip while `.tmp` transfer files exist, apply a settle/debounce window, run quiet native album import (`singletons: no`, `group_albums: yes`) with Beets path templates preserving original filenames, rely on native systemd single-instance execution, then sweep remaining inbox audio into `/srv/media/untagged`.
 
 ### Out of Scope
 
@@ -51,7 +50,7 @@ Phase 04 completed direct Syncthing-to-Navidrome service-flow enforcement with e
 
 Phase 04.1 completed Beets inbox-only singleton ingestion with automatic file-event-driven execution from `/srv/media/inbox/slskd`, conservative non-promoting import behavior, and `/srv/data/beets` state/report ownership documented and enforced by contract tests.
 
-Phase 04.2 completed all-inbox singleton auto-promotion by moving successful files into `/srv/media/library` with basename preservation, per-file failure isolation, and report-first fallback/hard-failure tracking under `/srv/data/beets` while keeping Navidrome visibility rooted on `/srv/media`.
+Phase 04.2 completed all-inbox Beets auto-promotion by moving successful files into `/srv/media/library` with filename preservation, transfer-safe demotion sweep into `/srv/media/untagged`, and report-first unresolved tracking under `/srv/data/beets` while keeping Navidrome visibility rooted on `/srv/media`.
 
 ## Constraints
 

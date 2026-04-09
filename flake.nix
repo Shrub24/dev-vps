@@ -9,7 +9,8 @@
   };
 
   outputs =
-    {
+    inputs@{
+      self,
       nixpkgs,
       disko,
       sops-nix,
@@ -52,6 +53,7 @@
           sops-nix.nixosModules.sops
           ./hosts/oci-melb-1/default.nix
         ];
+        specialArgs = { inherit self inputs; };
       };
     };
 }

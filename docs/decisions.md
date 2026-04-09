@@ -306,23 +306,42 @@ Rationale:
 - keeps ingestion automation conservative so unmatched/weak candidates remain in place for manual follow-up
 - avoids accidental scope creep into a future authority/promotion pipeline before that phase is explicitly planned
 
-## D-022: Beets runs all-inbox singleton auto-promotion into /srv/media/library
+## D-022: Beets runs all-inbox native auto-promotion into /srv/media/library
 
 Status: Accepted
 
 Decision:
 
-- evolve the Beets singleton worker to scan `/srv/media/inbox` broadly and process files independently
+- evolve the Beets worker to scan `/srv/media/inbox` broadly using native album import semantics
 - auto-promote successful files into `/srv/media/library/<top-level>/<release>/<original filename>`
 - keep filename preservation as a strict contract during move/promotion
-- keep fallback and hard-failure reporting under `/srv/data/beets`
+- keep Beets runtime state and built-in import logs under `/srv/data/beets`
 - preserve broad playback visibility by keeping Navidrome rooted on `/srv/media`
 
 Rationale:
 
-- advances MEDI-01 with a native systemd and Beets-based promotion path without introducing app-based review complexity
+- advances MEDI-01 with a native systemd and Beets-based promotion path (`singletons: no`, `group_albums: yes`) without introducing app-based review complexity
 - keeps hard failures visible and playable from inbox while successful files become canonical library entries
 - maintains the `/srv/media` authority model and service-state/report separation under `/srv/data`
+
+## D-023: Beets worker is transfer-safe, serialized, and performs post-run demotion sweep
+
+Status: Accepted
+
+Decision:
+
+- trigger Beets worker from inbox modification events under `/srv/media/inbox`
+- require transfer-lock behavior: if any `.tmp` file exists under inbox, worker exits without invoking Beets
+- apply a fixed settle/debounce delay after transfer lock clears before import starts
+- rely on native systemd single-instance service behavior so overlapping path/timer triggers do not create concurrent workers
+- keep Beets headless album import execution (`-q`, `singletons: no`, `group_albums: yes`) and preserve original filenames via native Beets path templating
+- after Beets completes, sweep any remaining inbox audio into `/srv/media/untagged` to prevent recursive loops and restore zero-state inbox for eligible files
+
+Rationale:
+
+- aligns implementation with operational acceptance criteria for robust mobile-first ingest automation
+- avoids partial-transfer races and repeated loop triggers caused by residual inbox files
+- preserves playlist safety by keeping downloaded basenames unchanged during both promotion and demotion
 
 ## Open Questions (Intentional)
 

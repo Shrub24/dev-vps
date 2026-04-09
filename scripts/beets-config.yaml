@@ -1,0 +1,32 @@
+directory: /srv/media/library
+library: /srv/data/beets/state/library.db
+plugins: discogs beatport bandcamp fromfilename inline
+
+item_fields:
+  filename: |
+    import os
+    from beets.util import bytestring_path
+    return bytestring_path(os.path.basename(path))
+
+import:
+  write: yes
+  copy: no
+  move: no
+  link: no
+  hardlink: no
+  quiet: yes
+  quiet_fallback: asis
+  incremental: no
+  incremental_skip_later: no
+  singletons: no
+  group_albums: yes
+
+match:
+  distance_weights:
+    missing_tracks: 0.1
+    unmatched_tracks: 0.1
+
+paths:
+  default: $albumartist/$album%aunique{}/$filename
+  comp: Compilations/$album%aunique{}/$filename
+  singleton: Singles/$artist/$filename
