@@ -139,14 +139,21 @@ Current decision:
 Initial media/data flow:
 
 - Syncthing manages the library directly
+- Syncthing manages both `/srv/media/library` and `/srv/media/quarantine` directly
 - Navidrome reads from that same direct path
 - `/srv/media` is the authoritative shared media library path
 - `/srv/data` remains the service-state mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`)
 - `modules/applications/music.nix` owns the generic ingest boundary at `/srv/media/inbox` through `music-ingest`
 - `/srv/media/inbox` is the ingest boundary scanned by the Beets native album-import worker
 - `/srv/media/library` is the promoted canonical subtree for successful inbox candidates
-- `/srv/media/untagged` is the demotion/quarantine subtree for inbox leftovers and hard failures
+- `/srv/media/quarantine/untagged` is the demotion subtree for inbox leftovers and hard failures
+- `/srv/media/quarantine/approved` is the curated quarantine subtree for manually approved items and secondary promotion attempts
+- quarantine ownership is `music-ingest`; ACL grants explicit `media` read-only (`r-x`/`r-X`) access and `syncthing` write access for review and sync workflows
+- Syncthing folder markers are codified with tmpfiles at `/srv/media/library/.stfolder` and `/srv/media/quarantine/.stfolder` owned by `syncthing:syncthing`
 - Beets worker executes transfer-safe automation: inbox modification trigger, `.tmp` lockout, settle/debounce delay, native systemd single-instance execution, native Beets album import + `paths:` placement, then post-run sweep from inbox to untagged
+- secondary Beets promotion runner targets `/srv/media/quarantine/approved` with a dedicated approved-flow Beets config and without re-demoting leftovers
+- Navidrome stays rooted on `/srv/media` so quarantine and promoted-library content remain visible by default
+- Navidrome playlist injection hacks are removed; quarantine remains visible via media root scan only
 - `modules/applications/music.nix` also defines `music-library` so `dev` and Syncthing share controlled library access
 - `slskd` keeps downloads and incomplete state under `/srv/media` (`/srv/media/inbox/slskd` and `/srv/media/slskd/incomplete`)
 - Beets state and import logs remain under `/srv/data/beets` (`/srv/data/beets/state`, `/srv/data/beets/logs`)

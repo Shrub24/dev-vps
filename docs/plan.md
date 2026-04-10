@@ -67,9 +67,11 @@ Track D: Service baseline
 - deploy private-only Tailscale access model
 - deploy bidirectional Syncthing with safety controls
 - deploy Navidrome reading direct sync path
+- keep quarantine in synced scope and visible playback surface while library remains canonical promotion target
 - keep music service composition explicit through `modules/applications/music.nix`
 - keep private admin service composition explicit through `modules/applications/admin.nix`
 - evolve Beets via native systemd-based inbox-to-library promotion under `/srv/media/library` while keeping `/srv/media` playback visibility
+- support a secondary approved-quarantine promotion runner for manual re-attempt workflows
 
 Track E: Future-ready evolution
 

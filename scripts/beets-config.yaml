@@ -1,6 +1,6 @@
-directory: /srv/media/library/tagged
+directory: /srv/media/library
 library: /srv/data/beets/state/library.db
-plugins: bandcamp discogs importfeeds fetchart embedart fromfilename inline
+plugins: bandcamp discogs fetchart embedart fromfilename inline
 item_fields:
   source_filename: |
     import os
@@ -18,7 +18,6 @@ import:
   move: yes
   link: no
   hardlink: no
-  quiet: yes
   quiet_fallback: skip
   incremental: no
   incremental_skip_later: no
@@ -55,7 +54,3 @@ discogs:
 beetcamp:
   include_digital_only_tracks: true
   art: true
-importfeeds:
-  formats: [m3u]
-  dir: /srv/data/beets/importfeeds
-  m3u_name: imported.m3u

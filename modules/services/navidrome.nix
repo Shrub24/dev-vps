@@ -1,4 +1,9 @@
-{ lib, config, pkgs, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 let
   cfg = config.services.navidrome;
 in
@@ -7,10 +12,8 @@ in
     enable = true;
     openFirewall = false;
     settings = {
-      MusicFolder = "/srv/media/library";
+      MusicFolder = "/srv/media";
       DataFolder = "/srv/data/navidrome";
-      PlaylistsPath = "playlists";
-      AutoImportPlaylists = false;
       ScanSchedule = "15m";
       EnableTranscodingConfig = true;
       DefaultDownsamplingFormat = "opus";
@@ -20,12 +23,7 @@ in
     };
   };
 
-  systemd.tmpfiles.rules = [
-    "d /srv/media/library/playlists 0775 root media - -"
-    "C /srv/media/library/playlists/needs-attention-untagged.nsp 0644 root media - ${../../scripts/navidrome-needs-attention-untagged.nsp}"
-  ];
-
-  # Override nixpkgs-generated navidromeDirs so MusicFolder (/srv/media/library)
+  # Override nixpkgs-generated navidromeDirs so MusicFolder (/srv/media)
   # is not tmpfiles-managed by navidrome.
   systemd.tmpfiles.settings.navidromeDirs = lib.mkForce {
     "${cfg.settings.DataFolder or "/var/lib/navidrome"}"."d" = {

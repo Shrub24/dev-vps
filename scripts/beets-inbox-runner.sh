@@ -1,15 +1,21 @@
 set -euo pipefail
 
 ROOT_INBOX="/srv/media/inbox"
-UNTAGGED_ROOT="/srv/media/library/untagged"
+UNTAGGED_ROOT="/srv/media/quarantine/untagged"
 TARGET_PATH="${1:-/srv/media/inbox}"
 CANONICAL_TARGET="$(realpath -m "$TARGET_PATH")"
 SETTLE_SECONDS="${BEETS_SETTLE_SECONDS:-10}"
+DEMOTE_LEFTOVERS=0
 
 case "$CANONICAL_TARGET" in
-/srv/media/inbox | /srv/media/inbox/*) ;;
+/srv/media/inbox | /srv/media/inbox/*)
+	DEMOTE_LEFTOVERS=1
+	;;
+/srv/media/quarantine/approved | /srv/media/quarantine/approved/*)
+	DEMOTE_LEFTOVERS=0
+	;;
 *)
-	echo "Target must stay under /srv/media/inbox"
+	echo "Target must stay under /srv/media/inbox or /srv/media/quarantine/approved"
 	exit 1
 	;;
 esac
@@ -90,20 +96,16 @@ demote_and_record_unresolved() {
 	fi
 
 	if [[ -e "$destination_file" ]]; then
-		local filename
-		local base
-		local extension
-		filename="$(basename "$destination_file")"
-		base="${filename%.*}"
-		extension="${filename##*.}"
-		if [[ "$base" == "$filename" ]]; then
-			destination_file="$destination_dir/${filename}.$TIMESTAMP"
-		else
-			destination_file="$destination_dir/${base}.$TIMESTAMP.${extension}"
-		fi
+		echo "beets-inbox-runner: skipping demotion because destination already exists source=$file destination=$destination_file"
+		return 1
 	fi
 
-	mv "$file" "$destination_file" || echo "beets-inbox-runner: failed to demote $file"
+	if ! mv "$file" "$destination_file"; then
+		echo "beets-inbox-runner: failed to demote $file"
+		return 1
+	fi
+
+	return 0
 }
 
 if [[ "${BEETS_DRY_RUN:-0}" == "1" ]]; then
@@ -122,17 +124,20 @@ mapfile -d $'\0' -t LEFTOVER_AUDIO < <(find "$CANONICAL_TARGET" -type f \
 	-print0 | sort -z)
 
 demoted_count=0
-for file in "${LEFTOVER_AUDIO[@]}"; do
-	if [[ ! -f "$file" ]]; then
-		continue
-	fi
-	demote_and_record_unresolved "$file"
-	((demoted_count += 1))
-done
+if ((DEMOTE_LEFTOVERS == 1)); then
+	for file in "${LEFTOVER_AUDIO[@]}"; do
+		if [[ ! -f "$file" ]]; then
+			continue
+		fi
+		if demote_and_record_unresolved "$file"; then
+			((demoted_count += 1))
+		fi
+	done
+fi
 
 imported_estimate=$(( ${#CANDIDATES[@]} - ${#LEFTOVER_AUDIO[@]} ))
 if (( imported_estimate < 0 )); then
 	imported_estimate=0
 fi
 
-echo "beets-inbox-runner: summary candidates=${#CANDIDATES[@]} imported_estimate=$imported_estimate leftovers=${#LEFTOVER_AUDIO[@]} demoted=$demoted_count import_log=$IMPORT_LOG_FILE runner_log=$RUNNER_LOG_FILE"
+echo "beets-inbox-runner: summary target=$CANONICAL_TARGET candidates=${#CANDIDATES[@]} imported_estimate=$imported_estimate leftovers=${#LEFTOVER_AUDIO[@]} demoted=$demoted_count import_log=$IMPORT_LOG_FILE runner_log=$RUNNER_LOG_FILE"

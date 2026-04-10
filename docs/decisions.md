@@ -335,13 +335,33 @@ Decision:
 - apply a fixed settle/debounce delay after transfer lock clears before import starts
 - rely on native systemd single-instance service behavior so overlapping path/timer triggers do not create concurrent workers
 - keep Beets headless album import execution (`-q`, `singletons: no`, `group_albums: yes`) and preserve original filenames via native Beets path templating
-- after Beets completes, sweep any remaining inbox audio into `/srv/media/untagged` to prevent recursive loops and restore zero-state inbox for eligible files
+- after Beets completes, sweep any remaining inbox audio into `/srv/media/quarantine/untagged` to prevent recursive loops and restore zero-state inbox for eligible files
 
 Rationale:
 
 - aligns implementation with operational acceptance criteria for robust mobile-first ingest automation
 - avoids partial-transfer races and repeated loop triggers caused by residual inbox files
 - preserves playlist safety by keeping downloaded basenames unchanged during both promotion and demotion
+
+## D-024: Quarantine uses music-ingest ownership with explicit media read-only ACLs and dedicated approved promotion config
+
+Status: Accepted
+
+Decision:
+
+- Syncthing sync scope includes both `/srv/media/library` and `/srv/media/quarantine`
+- quarantine paths (`/srv/media/quarantine`, `untagged`, `approved`) are owned by `music-ingest`
+- apply ACLs so `media` has explicit read-only (`r-x`/`r-X`) access to quarantine paths while `syncthing` retains explicit write access for sync operations
+- codify Syncthing marker files (`.stfolder`) at `/srv/media/library/.stfolder` and `/srv/media/quarantine/.stfolder` with `syncthing:syncthing` ownership via tmpfiles
+- add a secondary Beets runner that targets `/srv/media/quarantine/approved` for manual re-attempt promotions with a dedicated approved-flow config
+- keep Navidrome rooted on `/srv/media` so quarantine visibility remains explicit alongside promoted library content
+- remove Navidrome playlist injection hacks and rely on media-root scanning for visibility
+
+Rationale:
+
+- preserves a permission-safe, reviewable quarantine flow without introducing public exposure or ad-hoc scripts
+- keeps approved reprocessing native to systemd + Beets while avoiding recursive demotion behavior in the approved lane
+- aligns quarantine ownership with ingest boundaries while keeping media-library review access read-only and Syncthing write-capable where needed
 
 ## Open Questions (Intentional)
 
