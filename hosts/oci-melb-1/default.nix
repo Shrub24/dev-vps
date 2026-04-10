@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   modulesPath,
@@ -29,11 +30,33 @@
 
   sops.defaultSopsFile = ../../secrets/common.yaml;
 
+  sops.templates."beets-config.yaml" =
+    lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml)
+      {
+        owner = "beets";
+        group = "beets";
+        mode = "0440";
+        content =
+          builtins.replaceStrings
+            [ "REPLACE_WITH_DISCOGS_USER_TOKEN" ]
+            [ config.sops.placeholder.beets_discogs_token ]
+            (builtins.readFile ../../scripts/beets-config.yaml);
+      };
+
   sops.secrets = lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
     tailscale_auth_key = {
       sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
       key = "tailscale/auth_key";
       path = "/run/secrets/tailscale.auth_key";
+      mode = "0400";
+    };
+
+    beets_discogs_token = {
+      sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+      key = "beets/discogs_token";
+      path = "/run/secrets/beets.discogs_token";
+      owner = "beets";
+      group = "beets";
       mode = "0400";
     };
   };

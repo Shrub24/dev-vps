@@ -2,11 +2,11 @@
 {
   services.syncthing = {
     enable = true;
-    dataDir = "/srv/media";
+    dataDir = "/srv/data/syncthing";
     configDir = "/srv/data/syncthing/config";
     openDefaultPorts = false;
     settings.folders."media" = {
-      path = "/srv/media";
+      path = "/srv/media/library";
       type = "sendreceive";
       versioning = {
         type = "trashcan";

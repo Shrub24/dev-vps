@@ -1,13 +1,17 @@
-directory: /srv/media/library
+directory: /srv/media/library/tagged
 library: /srv/data/beets/state/library.db
-plugins: discogs beatport bandcamp fromfilename inline
-
+plugins: bandcamp discogs importfeeds fetchart embedart fromfilename inline
 item_fields:
-  filename: |
+  source_filename: |
     import os
     from beets.util import bytestring_path
     return bytestring_path(os.path.basename(path))
-
+  source_stem: |
+    import os
+    from beets.util import bytestring_path
+    source_name = os.path.basename(path)
+    source_stem, _ = os.path.splitext(source_name)
+    return bytestring_path(source_stem)
 import:
   write: yes
   copy: no
@@ -15,18 +19,43 @@ import:
   link: no
   hardlink: no
   quiet: yes
-  quiet_fallback: asis
+  quiet_fallback: skip
   incremental: no
   incremental_skip_later: no
   singletons: no
   group_albums: yes
-
 match:
+  strong_rec_thresh: 0.18
   distance_weights:
-    missing_tracks: 0.1
-    unmatched_tracks: 0.1
-
+    media: 0.2
+    albumdisambig: 0.0
+    catalognum: 0.0
+    missing_tracks: 0.0
+    unmatched_tracks: 0.0
+    data_source: 0.1
+  max_rec:
+    missing_tracks: strong
+    unmatched_tracks: strong
+fetchart:
+  auto: yes
+  cautious: yes
+  minwidth: 500
+  maxwidth: 1200
+  cover_names: cover front folder art album
+  sources: filesystem cover_art_url coverart discogs itunes albumart
+embedart:
+  auto: no
+  ifempty: yes
 paths:
-  default: $albumartist/$album%aunique{}/$filename
-  comp: Compilations/$album%aunique{}/$filename
-  singleton: Singles/$artist/$filename
+  default: $albumartist/$album%aunique{}/$source_stem
+  comp: Compilations/$album%aunique{}/$source_stem
+  singleton: Singles/$artist/$source_stem
+discogs:
+  user_token: "REPLACE_WITH_DISCOGS_USER_TOKEN"
+beetcamp:
+  include_digital_only_tracks: true
+  art: true
+importfeeds:
+  formats: [m3u]
+  dir: /srv/data/beets/importfeeds
+  m3u_name: imported.m3u

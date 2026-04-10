@@ -1,4 +1,10 @@
-{ pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 let
   pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; };
   beetsRuntime = import ./beets-inbox-runtime.nix {
@@ -9,16 +15,54 @@ let
     builtins.readFile ../../scripts/beets-config.yaml
   );
 
+  beetsConfigSource =
+    if lib.hasAttrByPath [ "sops" "templates" "beets-config.yaml" "path" ] config then
+      config.sops.templates."beets-config.yaml".path
+    else
+      beetsConfig;
+
   beetsInboxRunner = pkgs.writeShellApplication {
     name = "beets-inbox-runner";
     runtimeInputs = [
       beetsRuntime
       pkgs.coreutils
       pkgs.findutils
+      pkgs.gnused
     ];
     text = ''
-      BEETS_CONFIG_SOURCE=${beetsConfig}
+      BEETS_CONFIG_SOURCE=${beetsConfigSource}
       ${builtins.readFile ../../scripts/beets-inbox-runner.sh}
+    '';
+  };
+
+  beetsPermissionReconcile = pkgs.writeShellApplication {
+    name = "beets-permission-reconcile";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.findutils
+      pkgs.acl
+    ];
+    text = ''
+      set -euo pipefail
+
+      TAGGED_ROOT=/srv/media/library/tagged
+      UNTAGGED_ROOT=/srv/media/library/untagged
+
+      if [[ -d "$TAGGED_ROOT" ]]; then
+        find "$TAGGED_ROOT" -type d -exec chgrp media {} +
+        find "$TAGGED_ROOT" -type d -exec chmod 2775 {} +
+        find "$TAGGED_ROOT" -type f -exec chgrp media {} +
+        find "$TAGGED_ROOT" -type f -exec chmod 0664 {} +
+      fi
+
+      if [[ -d "$UNTAGGED_ROOT" ]]; then
+        find "$UNTAGGED_ROOT" -type d -exec chgrp remediation {} +
+        find "$UNTAGGED_ROOT" -type d -exec chmod 2775 {} +
+        find "$UNTAGGED_ROOT" -type f -exec chgrp remediation {} +
+        find "$UNTAGGED_ROOT" -type f -exec chmod 0664 {} +
+        setfacl -R -m g:media:rX "$UNTAGGED_ROOT"
+        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:media:r-x {} +
+      fi
     '';
   };
 in
@@ -31,31 +75,29 @@ in
     createHome = false;
     extraGroups = [
       "music-ingest"
-      "music-library"
+      "media"
+      "remediation"
     ];
   };
 
   environment.systemPackages = [
     beetsRuntime
     beetsInboxRunner
+    beetsPermissionReconcile
   ];
 
   systemd.tmpfiles.rules = [
     "d /srv/data/beets 0750 beets beets - -"
     "d /srv/data/beets/state 0750 beets beets - -"
     "d /srv/data/beets/logs 0750 beets beets - -"
-    "d /srv/media/library 2775 syncthing music-library - -"
-    "z /srv/media/library 2775 syncthing music-library - -"
-    "a+ /srv/media/library - - - - group:music-ingest:rwx"
-    "a+ /srv/media/library - - - - group:music-library:r-x"
-    "a+ /srv/media/library - - - - default:group:music-ingest:rwx"
-    "a+ /srv/media/library - - - - default:group:music-library:r-x"
-    "d /srv/media/untagged 2755 syncthing music-library - -"
-    "z /srv/media/untagged 2755 syncthing music-library - -"
-    "a+ /srv/media/untagged - - - - group:music-ingest:rwx"
-    "a+ /srv/media/untagged - - - - group:music-library:r-x"
-    "a+ /srv/media/untagged - - - - default:group:music-ingest:rwx"
-    "a+ /srv/media/untagged - - - - default:group:music-library:r-x"
+    "d /srv/data/beets/importfeeds 0750 beets beets - -"
+    "a+ /srv/data/beets/logs - - - - user:dev:r-x"
+    "a+ /srv/data/beets/logs - - - - default:user:dev:r-x"
+    "d /srv/media/library 2775 root media - -"
+    "d /srv/media/library/tagged 2775 root media - -"
+    "d /srv/media/library/untagged 2775 root remediation - -"
+    "a+ /srv/media/library/untagged - - - - group:media:r-x"
+    "a+ /srv/media/library/untagged - - - - default:group:media:r-x"
   ];
 
   systemd.services.beets-inbox-run = {
@@ -65,7 +107,7 @@ in
       "/srv/media"
       "/srv/media/inbox"
       "/srv/media/library"
-      "/srv/media/untagged"
+      "/srv/media/library/untagged"
     ];
     unitConfig.ConditionPathIsDirectory = "/srv/media/inbox";
     after = [
@@ -79,11 +121,12 @@ in
       Group = "beets";
       SupplementaryGroups = [
         "music-ingest"
-        "music-library"
+        "media"
       ];
       WorkingDirectory = "/srv/data/beets";
       Environment = "BEETSDIR=/srv/data/beets";
       ExecStart = "${beetsInboxRunner}/bin/beets-inbox-runner /srv/media/inbox";
+      ExecStartPost = [ "+${beetsPermissionReconcile}/bin/beets-permission-reconcile" ];
       UMask = "0002";
       NoNewPrivileges = true;
       PrivateTmp = true;
@@ -104,13 +147,13 @@ in
         "/srv/data/beets"
         "/srv/media/inbox"
         "/srv/media/library"
-        "/srv/media/untagged"
+        "/srv/media/library/untagged"
       ];
     };
   };
 
   systemd.paths.beets-inbox-watch = {
-    wantedBy = [ "multi-user.target" ];
+    enable = false;
     unitConfig.RequiresMountsFor = [
       "/srv/media"
       "/srv/media/inbox"
@@ -121,7 +164,7 @@ in
   };
 
   systemd.timers.beets-inbox-backstop = {
-    wantedBy = [ "timers.target" ];
+    enable = false;
     timerConfig = {
       OnBootSec = "5m";
       OnUnitActiveSec = "15m";

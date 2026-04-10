@@ -8,11 +8,14 @@
   ];
 
   users.groups.music-ingest = { };
-  users.groups.music-library = { };
+  users.groups.media = { };
+  users.groups.remediation = { };
 
   users.users.dev.extraGroups = lib.mkAfter [
+    "beets"
     "music-ingest"
-    "music-library"
+    "media"
+    "remediation"
   ];
 
   services.slskd = {
@@ -22,12 +25,17 @@
 
   systemd.tmpfiles.rules = [
     "d /srv/media 0755 root root - -"
+    "z /srv/media 0755 root root - -"
     "d /srv/media/inbox 2775 root music-ingest - -"
     "z /srv/media/inbox 2775 root music-ingest - -"
-    "a+ /srv/media/inbox - - - - group:music-ingest:rwx"
-    "a+ /srv/media/inbox - - - - group:music-library:r-x"
-    "a+ /srv/media/inbox - - - - default:group:music-ingest:rwx"
-    "a+ /srv/media/inbox - - - - default:group:music-library:r-x"
+    "d /srv/media/library 2775 root media - -"
+    "z /srv/media/library 2775 root media - -"
+    "d /srv/media/library/tagged 2775 root media - -"
+    "z /srv/media/library/tagged 2775 root media - -"
+    "d /srv/media/library/untagged 2775 root remediation - -"
+    "z /srv/media/library/untagged 2775 root remediation - -"
+    "a+ /srv/media/library/untagged - - - - group:media:r-x"
+    "a+ /srv/media/library/untagged - - - - default:group:media:r-x"
     "f /var/lib/slskd/environment 0640 slskd slskd - -"
   ];
 }
