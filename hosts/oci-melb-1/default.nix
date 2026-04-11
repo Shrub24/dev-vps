@@ -24,6 +24,9 @@
   disko.devices.disk.main.device = "/dev/sda";
   disko.devices.disk.media.device = "/dev/sdb";
 
+  # Configurable root size — set here so it's visible in one place per host.
+  disko-root-extra = "20G";
+
   environment.systemPackages = with pkgs; [
     git
     curl
