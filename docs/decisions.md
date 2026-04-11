@@ -412,7 +412,6 @@ Rationale:
 - keeps deployment behavior host-centric and extensible as more nodes are added
 - removes ad-hoc per-command deployment drift while preserving bootstrap/secrets flows
 - ensures deployment schema validation is part of normal flake checks
->>>>>>> 12bdde3 (feat: deploy-rs deployment and digitalocean host bootstrap)
 
 ## Open Questions (Intentional)
 

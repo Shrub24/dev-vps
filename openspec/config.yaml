@@ -1,20 +1,76 @@
 schema: spec-driven
 
-# Project context (optional)
+# Project context
 # This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  # Project Overview
+  Modular NixOS Fleet Infrastructure - infrastructure source of truth for a homelab fleet.
+  First host: `oci-melb-1` on Oracle Cloud Free Tier using `aarch64-linux`.
+  Core value: Bring up and operate a clear, reproducible, low-complexity first NixOS host that establishes the right foundation for future fleet growth.
+  
+  # Key Constraints
+  - Platform: First host is `oci-melb-1` on Oracle Cloud Free Tier using `aarch64-linux`
+  - Compatibility: Fleet direction supports later mixed `aarch64` and `x86_64` hosts
+  - Security: Secrets scoped by blast radius with explicit `.sops.yaml` rules
+  - Network: Tailscale-first private access, no public ingress in initial baseline
+  - Operations: Favor reliability, recoverability, and break-glass access over cleverness
+  - Storage: One persistent mount with predictable service subdirectories (`/srv/data` for service state, `/srv/media` for authoritative media)
+  - Complexity: Native NixOS services and simple rollout flow before orchestration tooling
+  
+  # Technology Stack
+  - Base OS: NixOS 25.11 stable
+  - Package management: Nix flakes (built into current Nix)
+  - Remote bootstrap: `nixos-anywhere` 1.13.0
+  - Declarative partitioning: `disko` 1.13.0
+  - Secrets management: `sops-nix` + `age` (not GPG)
+  - Deployment: `deploy-rs` for multi-host deployment after day-0
+  - Networking: Tailscale (tagged auth keys, MagicDNS)
+  - Media sync: Syncthing with folder versioning
+  - Music streaming: Navidrome
+  - Media automation: Beets (inbox-only singleton ingestion)
+  
+  # Repository Structure
+  - Host-centric layout: `hosts/<host>/default.nix` with composition of reusable modules
+  - Module boundaries: `modules/core/`, `modules/profiles/`, `modules/services/`, `modules/applications/`
+  - Provider isolation: `modules/providers/<provider>/` for provider-specific defaults
+  - Flake entrypoint: `flake.nix` with `nixosConfigurations.<host>` outputs
+  - Documentation authority: `docs/` directory (architecture, decisions, plan, context-history)
+  - Secrets structure: `secrets/common.yaml` (shared), `hosts/<host>/secrets.yaml` (host-scoped)
+  
+  # Development Practices
+  - Code formatting: `nix fmt` as default formatter gate before deploys
+  - Validation: `nix flake check` for flake outputs
+  - Initial bootstrap: `nixos-anywhere`
+  - Host updates: `nixos-rebuild --target-host`
+  - Fleet deployment: `deploy-rs`
+  - Media flow: Syncthing manages library, Navidrome reads directly, Beets handles inbox automation
+  
+  # OpenSpec/OpenAgentsControl Workflow
+  - Repository uses OpenSpec for planning/project state structure
+  - OpenAgentsControl for agent execution flows
+  - Changes go in `openspec/changes/` directory, generate incremental specs
+  - Completed specs merged into `openspec/specs/` as source of truth static state
+  - GSD artifacts preserved in `.planning/` for reference until explicit removal
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+# Per-artifact rules
+rules:
+  proposal:
+    - Include clear "Core Value" statement
+    - List key constraints specific to the change
+    - Reference relevant existing specs from `openspec/specs/`
+    - Keep under 1000 words unless complexity warrants more
+  design:
+    - Structure around behaviors with IDs (e.g., "HB-1", "SECR-2")
+    - Include risk analysis with mitigation strategies
+    - Reference existing architecture patterns from repository
+    - Consider multi-host implications even for single-host changes
+  tasks:
+    - Break tasks into verifiable, atomic steps
+    - Include validation commands for each task
+    - Reference file paths and line numbers where applicable
+    - Consider secrets bootstrap sequence (base system first, then add machine recipient)
+  spec:
+    - Use behavior-driven format with capability ID
+    - Behaviors should be testable and specific
+    - Reference existing related specs
+    - Include constraints section for operational limits

@@ -1,21 +1,23 @@
 set -euo pipefail
 
-ROOT_INBOX="/srv/media/inbox"
-UNTAGGED_ROOT="/srv/media/quarantine/untagged"
-TARGET_PATH="${1:-/srv/media/inbox}"
+ROOT_INBOX="${BEETS_ROOT_INBOX:-/srv/media/inbox}"
+APPROVED_ROOT="${BEETS_APPROVED_ROOT:-/srv/media/quarantine/approved}"
+UNTAGGED_ROOT="${BEETS_UNTAGGED_ROOT:-/srv/media/quarantine/untagged}"
+BEETS_DATA_DIR="${BEETS_DATA_DIR:-/srv/data/beets}"
+TARGET_PATH="${1:-$ROOT_INBOX}"
 CANONICAL_TARGET="$(realpath -m "$TARGET_PATH")"
 SETTLE_SECONDS="${BEETS_SETTLE_SECONDS:-10}"
 DEMOTE_LEFTOVERS=0
 
 case "$CANONICAL_TARGET" in
-/srv/media/inbox | /srv/media/inbox/*)
+"$ROOT_INBOX" | "$ROOT_INBOX"/*)
 	DEMOTE_LEFTOVERS=1
 	;;
-/srv/media/quarantine/approved | /srv/media/quarantine/approved/*)
+"$APPROVED_ROOT" | "$APPROVED_ROOT"/*)
 	DEMOTE_LEFTOVERS=0
 	;;
 *)
-	echo "Target must stay under /srv/media/inbox or /srv/media/quarantine/approved"
+	echo "Target must stay under $ROOT_INBOX or $APPROVED_ROOT"
 	exit 1
 	;;
 esac
@@ -25,19 +27,19 @@ if [[ ! -d "$CANONICAL_TARGET" ]]; then
 	exit 1
 fi
 
-export BEETSDIR=/srv/data/beets
-export HOME=/srv/data/beets
+export BEETSDIR="$BEETS_DATA_DIR"
+export HOME="$BEETS_DATA_DIR"
 
 mkdir -p "$UNTAGGED_ROOT"
-mkdir -p /srv/data/beets/state
-mkdir -p /srv/data/beets/logs
+mkdir -p "$BEETS_DATA_DIR/state"
+mkdir -p "$BEETS_DATA_DIR/logs"
 
-cp "${BEETS_CONFIG_SOURCE:?missing BEETS_CONFIG_SOURCE}" /srv/data/beets/config.yaml
-chmod 0640 /srv/data/beets/config.yaml
+cp "${BEETS_CONFIG_SOURCE:?missing BEETS_CONFIG_SOURCE}" "$BEETS_DATA_DIR/config.yaml"
+chmod 0640 "$BEETS_DATA_DIR/config.yaml"
 
 TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
-IMPORT_LOG_FILE="/srv/data/beets/logs/$TIMESTAMP-import.log"
-RUNNER_LOG_FILE="/srv/data/beets/logs/$TIMESTAMP-runner.log"
+IMPORT_LOG_FILE="$BEETS_DATA_DIR/logs/$TIMESTAMP-import.log"
+RUNNER_LOG_FILE="$BEETS_DATA_DIR/logs/$TIMESTAMP-runner.log"
 
 exec > >(tee -a "$RUNNER_LOG_FILE") 2>&1
 
@@ -109,12 +111,12 @@ demote_and_record_unresolved() {
 }
 
 if [[ "${BEETS_DRY_RUN:-0}" == "1" ]]; then
-	beet -c /srv/data/beets/config.yaml import -q -p -C -l "$IMPORT_LOG_FILE" "$CANONICAL_TARGET"
+	beet -c "$BEETS_DATA_DIR/config.yaml" import -q -p -C -l "$IMPORT_LOG_FILE" "$CANONICAL_TARGET"
 	echo "beets-inbox-runner: dry-run complete import_log=$IMPORT_LOG_FILE runner_log=$RUNNER_LOG_FILE"
 	exit 0
 fi
 
-if ! beet -c /srv/data/beets/config.yaml import -q -C -l "$IMPORT_LOG_FILE" "$CANONICAL_TARGET"; then
+if ! beet -c "$BEETS_DATA_DIR/config.yaml" import -q -C -l "$IMPORT_LOG_FILE" "$CANONICAL_TARGET"; then
 	echo "beets-inbox-runner: beets import failed; skipping demotion import_log=$IMPORT_LOG_FILE runner_log=$RUNNER_LOG_FILE"
 	exit 1
 fi

@@ -1,60 +1,66 @@
-{ ... }:
+{ lib, config, ... }:
+
 {
-  virtualisation.podman.enable = true;
+  options.services.termix.dataDir = lib.mkOption {
+    type = lib.types.str;
+    default = "/srv/data/termix";
+    description = "Data directory for Termix";
+  };
 
-  virtualisation.oci-containers.containers = {
-    guacd = {
-      autoStart = true;
-      image = "docker.io/guacamole/guacd:1.6.0";
-      volumes = [
-        "/srv/data/termix/guacd:/var/lib/guacd"
-      ];
-    };
+  config = {
+    virtualisation.podman.enable = true;
 
-    termix = {
-      autoStart = true;
-      image = "ghcr.io/lukegus/termix:release-2.0.0";
-      dependsOn = [ "guacd" ];
-      environment = {
-        GUACD_HOST = "127.0.0.1";
-        GUACD_PORT = "4822";
+    virtualisation.oci-containers.containers = {
+      guacd = {
+        autoStart = true;
+        image = "docker.io/guacamole/guacd:1.6.0";
+        volumes = [
+          "${config.services.termix.dataDir}/guacd:/var/lib/guacd"
+        ];
       };
-      ports = [
-        "0.0.0.0:8083:8080"
+
+      termix = {
+        autoStart = true;
+        image = "ghcr.io/lukegus/termix:release-2.0.0";
+        dependsOn = [ "guacd" ];
+        environment = {
+          GUACD_HOST = "127.0.0.1";
+          GUACD_PORT = "4822";
+        };
+        ports = [
+          "0.0.0.0:8083:8080"
+        ];
+        extraOptions = [
+          "--dns=100.100.100.100"
+          "--dns=1.1.1.1"
+          "--dns-search=tail0fe19b.ts.net"
+        ];
+        volumes = [
+          "${config.services.termix.dataDir}/data:/app/data"
+        ];
+      };
+    };
+
+    systemd.tmpfiles.rules = [
+      "d ${config.services.termix.dataDir} 0750 root root - -"
+      "d ${config.services.termix.dataDir}/data 0750 root root - -"
+      "d ${config.services.termix.dataDir}/guacd 0750 root root - -"
+    ];
+
+    systemd.services."podman-guacd" = {
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+    };
+
+    systemd.services."podman-termix" = {
+      wants = [
+        "network-online.target"
+        "podman-guacd.service"
       ];
-      # Ensure the container can resolve MagicDNS names via Tailscale's DNS
-      # and have a sensible public fallback. Adjust the --dns-search value
-      # to match your tailnet (example: tail0fe19b.ts.net).
-      extraOptions = [
-        "--dns=100.100.100.100"
-        "--dns=1.1.1.1"
-        "--dns-search=tail0fe19b.ts.net"
-      ];
-      volumes = [
-        "/srv/data/termix/data:/app/data"
+      after = [
+        "network-online.target"
+        "podman-guacd.service"
       ];
     };
-  };
-
-  systemd.tmpfiles.rules = [
-    "d /srv/data/termix 0750 root root - -"
-    "d /srv/data/termix/data 0750 root root - -"
-    "d /srv/data/termix/guacd 0750 root root - -"
-  ];
-
-  systemd.services."podman-guacd" = {
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
-  };
-
-  systemd.services."podman-termix" = {
-    wants = [
-      "network-online.target"
-      "podman-guacd.service"
-    ];
-    after = [
-      "network-online.target"
-      "podman-guacd.service"
-    ];
   };
 }

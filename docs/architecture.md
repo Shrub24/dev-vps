@@ -186,8 +186,8 @@ Potential later model:
 Bootstrap and rollout order:
 
 - host installation and baseline with `nixos-anywhere`
-- iterative host updates via simple host-targeted rebuild flow
-- fleet deployment tooling introduced after first host stabilization
+- regular host updates via `deploy-rs` (`just deploy <host>`)
+- dry-activation and validation via `just activate <host>` and `just check`
 
 Fleet tooling posture:
 
@@ -196,6 +196,15 @@ Fleet tooling posture:
 - per-host deploy metadata is defined in `lib/deploy/hosts.nix`, with reusable wiring in `lib/deploy/default.nix`
 - keep `nixos-anywhere` for bootstrap and break-glass flows; use `deploy-rs` for regular host updates
 - before any bootstrap/deploy operation, run `just bootstrap-preflight host=<host>` to enforce access-safety invariants (`openssh` enabled, tcp/22 allowed, declarative `dev`/`root` SSH keys present)
+
+Operator commands:
+
+- deploy: `just deploy oci-melb-1` (or `just deploy do-admin-1`)
+- deploy without rollback: `just deploy oci-melb-1 rollback=false`
+- dry-activate: `just activate oci-melb-1`
+- checks: `just check`
+
+Note: `just deploy` takes positional host arguments (`just deploy oci-melb-1`), not `host=...`.
 
 ## Known Risks and Constraints
 

@@ -1,20 +1,13 @@
 { lib, config, ... }:
 
-let
-  # Readable shorthand — derive these once.
-  inherit (config) disko;
-in
-
 {
-  # Make root partition size configurable from bootstrap-config.nix.
-  # Accepts a value like "20G" or "100%" (fills remaining space).
-  options disko-root-extra = lib.mkOption {
+  options."disko-root-extra" = lib.mkOption {
     type = lib.types.str;
     default = "20G";
     description = "Size for the root partition (e.g. \"20G\", \"50G\", \"100%\").";
   };
 
-  disko.devices.disk.main = {
+  config.disko.devices.disk.main = {
     type = "disk";
     content = {
       type = "gpt";
@@ -68,7 +61,7 @@ in
     };
   };
 
-  disko.devices.disk.media = {
+  config.disko.devices.disk.media = {
     type = "disk";
     content = {
       type = "gpt";

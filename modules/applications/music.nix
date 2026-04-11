@@ -1,4 +1,11 @@
-{ lib, ... }:
+{
+  lib,
+  config,
+  ...
+}:
+let
+  cfg = config.applications.music;
+in
 {
   imports = [
     ../../modules/services/syncthing.nix
@@ -7,47 +14,111 @@
     ../../modules/services/beets-inbox.nix
   ];
 
-  users.groups.music-ingest = { };
-  users.groups.media = { };
+  options.applications.music = {
+    dataRoot = lib.mkOption {
+      type = lib.types.str;
+      default = "/srv/data";
+      description = "Top-level data root for music application services.";
+    };
 
-  users.users.dev.extraGroups = lib.mkAfter [
-    "beets"
-    "music-ingest"
-    "media"
-  ];
+    mediaRoot = lib.mkOption {
+      type = lib.types.str;
+      default = "/srv/media";
+      description = "Top-level media root for music application services.";
+    };
 
-  services.slskd = {
-    domain = "oci-melb-1";
-    environmentFile = "/var/lib/slskd/environment";
+    inboxDir = lib.mkOption {
+      type = lib.types.str;
+      default = "${cfg.mediaRoot}/inbox";
+      description = "Shared inbox directory composed at the application layer.";
+    };
+
+    libraryDir = lib.mkOption {
+      type = lib.types.str;
+      default = "${cfg.mediaRoot}/library";
+      description = "Shared library directory composed at the application layer.";
+    };
+
+    quarantineDir = lib.mkOption {
+      type = lib.types.str;
+      default = "${cfg.mediaRoot}/quarantine";
+      description = "Shared quarantine directory composed at the application layer.";
+    };
+
+    syncthingDevices = lib.mkOption {
+      type = lib.types.attrsOf lib.types.attrs;
+      default = {
+        arch = {
+          id = "L43OT2A-IULZ4LG-YRFMARJ-EX2CDF3-ZYTXGEX-UGWAYE6-K46I3BA-3KZF2AE";
+        };
+      };
+      description = "Syncthing device map for this application composition.";
+    };
+
+    syncthingFolders = lib.mkOption {
+      type = lib.types.attrsOf lib.types.attrs;
+      default = {
+        library = {
+          path = cfg.libraryDir;
+          type = "sendreceive";
+          ensureDir = true;
+          ensureMarker = true;
+        };
+        quarantine = {
+          path = cfg.quarantineDir;
+          type = "sendreceive";
+          ensureDir = true;
+          ensureMarker = true;
+          devices = [ "arch" ];
+        };
+      };
+      description = "Syncthing folder map for this application composition.";
+    };
   };
 
-  systemd.tmpfiles.rules = [
-    "d /srv/media 0755 root root - -"
-    "z /srv/media 0755 root root - -"
-    "d /srv/media/inbox 2775 root music-ingest - -"
-    "z /srv/media/inbox 2775 root music-ingest - -"
-    "d /srv/media/library 2775 root media - -"
-    "z /srv/media/library 2775 root media - -"
-    "a+ /srv/media/library - - - - user:syncthing:rwx"
-    "a+ /srv/media/library - - - - default:user:syncthing:rwx"
-    "f /srv/media/library/.stfolder 0664 syncthing syncthing - -"
-    "d /srv/media/quarantine 2775 root music-ingest - -"
-    "z /srv/media/quarantine 2775 root music-ingest - -"
-    "a+ /srv/media/quarantine - - - - user:syncthing:rwx"
-    "a+ /srv/media/quarantine - - - - default:user:syncthing:rwx"
-    "f /srv/media/quarantine/.stfolder 0664 syncthing syncthing - -"
-    "d /srv/media/quarantine/untagged 2775 root music-ingest - -"
-    "z /srv/media/quarantine/untagged 2775 root music-ingest - -"
-    "d /srv/media/quarantine/approved 2775 root music-ingest - -"
-    "z /srv/media/quarantine/approved 2775 root music-ingest - -"
-    "a+ /srv/media/quarantine/untagged - - - - group:media:r-x"
-    "a+ /srv/media/quarantine/untagged - - - - default:group:media:r-X"
-    "a+ /srv/media/quarantine/untagged - - - - user:syncthing:rwx"
-    "a+ /srv/media/quarantine/untagged - - - - default:user:syncthing:rwx"
-    "a+ /srv/media/quarantine/approved - - - - group:media:r-x"
-    "a+ /srv/media/quarantine/approved - - - - default:group:media:r-X"
-    "a+ /srv/media/quarantine/approved - - - - user:syncthing:rwx"
-    "a+ /srv/media/quarantine/approved - - - - default:user:syncthing:rwx"
-    "f /var/lib/slskd/environment 0640 slskd slskd - -"
-  ];
+  config = {
+    users.groups.music-ingest = { };
+    users.groups.media = { };
+
+    users.users.dev.extraGroups = lib.mkAfter [
+      "beets"
+      "music-ingest"
+      "media"
+    ];
+
+    services.syncthing = {
+      dataDir = "${cfg.dataRoot}/syncthing";
+      configDir = "${cfg.dataRoot}/syncthing/config";
+      deviceTargets = cfg.syncthingDevices;
+      folderTargets = cfg.syncthingFolders;
+    };
+
+    services.navidrome = {
+      mediaRoot = cfg.mediaRoot;
+      dataDir = "${cfg.dataRoot}/navidrome";
+    };
+
+    services.beets-inbox = {
+      dataDir = "${cfg.dataRoot}/beets";
+      mediaRoot = cfg.mediaRoot;
+      inboxDir = cfg.inboxDir;
+      libraryDir = cfg.libraryDir;
+      quarantineDir = cfg.quarantineDir;
+    };
+
+    services.slskd = {
+      downloadsPath = "${cfg.mediaRoot}/inbox/slskd";
+      incompletePath = "${cfg.mediaRoot}/slskd-incomplete";
+      domain = "oci-melb-1";
+      environmentFile = "/var/lib/slskd/environment";
+    };
+
+    systemd.tmpfiles.rules = [
+      "d ${cfg.mediaRoot} 0755 root root - -"
+      "z ${cfg.mediaRoot} 0755 root root - -"
+      "d ${cfg.inboxDir} 2775 root music-ingest - -"
+      "z ${cfg.inboxDir} 2775 root music-ingest - -"
+      "f /var/lib/slskd/environment 0640 slskd slskd - -"
+    ];
+  };
 }

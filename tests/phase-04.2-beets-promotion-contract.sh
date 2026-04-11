@@ -2,23 +2,20 @@
 set -euo pipefail
 
 BEETS_MODULE="modules/services/beets-inbox.nix"
-BEETS_RUNTIME="modules/services/beets-inbox-runtime.nix"
 BEETS_RUNNER="scripts/beets-inbox-runner.sh"
 BEETS_CONFIG="scripts/beets-config.yaml"
 SERVICE_FLOW_CONTRACT="tests/phase-04-service-flow-contract.sh"
 NAVIDROME_FILE="modules/services/navidrome.nix"
 
-rg --fixed-strings --quiet 'import ./beets-inbox-runtime.nix {' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'pkgsUnstable.python3Packages.beets.override {' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'pkgs,' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'inputs,' "$BEETS_MODULE"
 rg --fixed-strings --quiet '...' "$BEETS_MODULE"
 rg --fixed-strings --quiet '}:' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; };' "$BEETS_MODULE"
-rg --fixed-strings --quiet 'inherit pkgsUnstable;' "$BEETS_MODULE"
-rg --fixed-strings --quiet 'pkgsUnstable.python3Packages.beets.override {' "$BEETS_RUNTIME"
-rg --fixed-strings --quiet '{ pkgsUnstable }:' "$BEETS_RUNTIME"
-rg --fixed-strings --quiet 'bandcamp = {' "$BEETS_RUNTIME"
-rg --fixed-strings --quiet 'propagatedBuildInputs = [ pkgsUnstable.python3Packages.beetcamp ];' "$BEETS_RUNTIME"
+rg --fixed-strings --quiet 'pluginOverrides = {' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'bandcamp = {' "$BEETS_MODULE"
+rg --fixed-strings --quiet 'propagatedBuildInputs = [ pkgsUnstable.python3Packages.beetcamp ];' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'users.users.beets = {' "$BEETS_MODULE"
 rg --fixed-strings --quiet 'extraGroups = [' "$BEETS_MODULE"
 rg --fixed-strings --quiet '"music-ingest"' "$BEETS_MODULE"
@@ -26,8 +23,9 @@ rg --fixed-strings --quiet '"media"' "$BEETS_MODULE"
 rg --fixed-strings --quiet '../../scripts/beets-inbox-runner.sh' "$BEETS_MODULE"
 rg --fixed-strings --quiet '../../scripts/beets-config.yaml' "$BEETS_MODULE"
 
-if ! rg --fixed-strings --quiet 'TARGET_PATH="${1:-/srv/media/inbox}"' "$BEETS_RUNNER"; then
-	echo 'missing all-inbox target default in runner: TARGET_PATH="${1:-/srv/media/inbox}"'
+if ! rg --fixed-strings --quiet 'ROOT_INBOX="${BEETS_ROOT_INBOX:-/srv/media/inbox}"' "$BEETS_RUNNER" ||
+	! rg --fixed-strings --quiet 'TARGET_PATH="${1:-$ROOT_INBOX}"' "$BEETS_RUNNER"; then
+	echo 'missing all-inbox target default via ROOT_INBOX/TARGET_PATH in runner'
 	exit 1
 fi
 
@@ -135,7 +133,7 @@ if rg --fixed-strings --quiet 'import -q -C -l "$IMPORT_LOG_FILE" "$CANONICAL_TA
 	exit 1
 fi
 
-if rg --fixed-strings --quiet 'pythonCatchConflicts = false;' "$BEETS_RUNTIME"; then
+if rg --fixed-strings --quiet 'pythonCatchConflicts = false;' "$BEETS_MODULE"; then
 	echo 'runtime must not rely on temporary pythonCatchConflicts workaround'
 	exit 1
 fi

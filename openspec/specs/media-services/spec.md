@@ -1,79 +1,97 @@
 # Spec: Media Services
 
-## Capability ID
+## Purpose
 
-`media-services`
+Define the declarative media-service contracts for the music stack so Syncthing, Navidrome, slskd, and Beets can operate with explicit ownership boundaries, predictable data flow, and private-network operation.
+## Requirements
+### Requirement: Music application composes the media stack
+The system SHALL compose Syncthing, Navidrome, slskd, and Beets from `modules/applications/music.nix` and SHALL define required collaboration groups for media operations.
 
-## Summary
+#### Scenario: Music composition is enabled
+- **WHEN** `applications.music.enable` is configured on a host
+- **THEN** the host includes Syncthing, Navidrome, slskd, and Beets with shared group boundaries (`music-ingest`, `media`)
 
-The repository provides declarative media service composition for music library management, including Syncthing for bidirectional sync with versioning safeguards, Navidrome for streaming, slskd for Soulseek downloads, and Beets for automated tagging and promotion. Services are composed via `modules/applications/music.nix` with explicit data flow contracts, group-based permissions, and mount-aware dependency ordering.
+### Requirement: Shared media roots are app-owned and created via tmpfiles
+The system SHALL treat media shared roots as application-owned boundaries and SHALL create them via `systemd.tmpfiles.rules`.
 
-## Behaviors
+#### Scenario: Shared media paths are reconciled
+- **WHEN** tmpfiles are applied for the music application
+- **THEN** shared roots (such as media root and inbox boundary) are present with declared ownership and modes
 
-### Service Composition
+### Requirement: Service-specific subtrees are service-owned
+Each service SHALL manage its own service-specific subdirectories and permissions via its service module rather than relying on app-level hardcoded service subpaths.
 
-- **MS-1**: The `modules/applications/music.nix` module shall import and configure Syncthing, Navidrome, slskd, and Beets-inbox as an integrated media stack.
-- **MS-2**: The composition shall define `music-ingest` and `media` Unix groups for path ownership and access control.
-- **MS-3**: The `dev` user shall belong to `beets`, `music-ingest`, and `media` groups to permit manual intervention and log inspection.
+#### Scenario: Service subtree permissions are enforced
+- **WHEN** service tmpfiles and unit constraints are evaluated
+- **THEN** service-specific paths are reconciled by the owning service module
 
-### Storage Paths and Permissions
+### Requirement: Syncthing uses generic application-composed targets
+Syncthing SHALL support device and folder composition through `services.syncthing.deviceTargets` and `services.syncthing.folderTargets`, and SHALL keep runtime roots configurable through `services.syncthing.dataDir` and `services.syncthing.configDir`.
 
-- **MS-4**: The `/srv/media` mount shall be the authoritative media root, owned by `root:root` with 0755 permissions.
-- **MS-5**: The `/srv/media/inbox` directory shall be owned by `root:music-ingest` with 2775 setgid sticky-bit for group-writable ingest.
-- **MS-6**: The `/srv/media/library` directory shall be owned by `root:media` with 2775 setgid sticky-bit and Syncthing ACLs (`user:syncthing:rwx`).
-- **MS-7**: The `/srv/media/quarantine` directory shall be owned by `root:music-ingest` with 2775 setgid sticky-bit, ACLs for Syncthing, and read‑only ACLs for the `media` group.
-- **MS-8**: All media directories shall be created and permission‑reconciled via `systemd.tmpfiles.rules` declared in `music.nix`.
+#### Scenario: Syncthing folder settings are generated from targets
+- **WHEN** folder targets are rendered
+- **THEN** Syncthing folder settings are derived from configured targets and management-only tmpfiles keys are excluded from daemon folder payload
 
-### Syncthing Synchronization
+### Requirement: Syncthing data protections are enabled
+Syncthing SHALL run with default ports closed and SHALL use per-folder versioning safeguards for managed sync folders.
 
-- **MS-9**: Syncthing shall operate with `openDefaultPorts = false`, relying on Tailscale for peer connectivity.
-- **MS-10**: Syncthing shall define a `media` folder at `/srv/media/library` with `type = "sendreceive"` and trashcan versioning (`cleanoutDays = "30"`, `cleanupIntervalS = "86400"`).
-- **MS-11**: Syncthing shall define a `quarantine` folder at `/srv/media/quarantine` with the same versioning safeguards and explicit device targeting.
-- **MS-12**: Syncthing’s data and config directories shall be rooted under `/srv/data/syncthing`.
+#### Scenario: Syncthing network and versioning safeguards are present
+- **WHEN** Syncthing settings are inspected
+- **THEN** `openDefaultPorts` is disabled and configured folders include versioning safeguards
 
-### Navidrome Streaming
+### Requirement: Navidrome reads composed media paths without owning media root
+Navidrome SHALL consume application/service-composed media paths, SHALL not own shared media roots via tmpfiles, and SHALL remain private-network only.
 
-- **MS-13**: Navidrome shall be configured with `MusicFolder = "/srv/media"`, scanning every 15 minutes, and shall **not** manage `/srv/media` via its own tmpfiles rules.
-- **MS-14**: Navidrome shall depend on `syncthing.service` (via `systemd.service` `wants`/`after`) to ensure the library is synchronized before scanning.
-- **MS-15**: Navidrome shall have `openFirewall = false`, serving only over Tailscale private networking.
+#### Scenario: Navidrome starts after media prerequisites
+- **WHEN** Navidrome service is started
+- **THEN** it depends on required mount/service ordering and reads configured media/library paths without creating shared media roots itself
 
-### Soulseek Integration (slskd)
+### Requirement: slskd path and share scope are explicit
+slskd SHALL expose explicit path controls (`downloadsPath`, `incompletePath`) and SHALL restrict `shares.directories` to configured slskd directories instead of sharing the full media root.
 
-- **MS-16**: slskd shall be configured with downloads directory `/srv/media/inbox/slskd` and incomplete directory `/srv/media/slskd/incomplete`.
-- **MS-17**: slskd shall share the entire `/srv/media` tree as a Soulseek share.
-- **MS-18**: slskd shall depend on `syncthing.service` to ensure media paths are available.
+#### Scenario: slskd share scope is constrained
+- **WHEN** slskd settings are generated
+- **THEN** only configured slskd directories are shared
 
-### Beets Integration
+### Requirement: Beets promotion and runtime contracts are modular
+Beets SHALL use module-injected media/data paths, SHALL support inbox/quarantine promotion contracts, and SHALL keep runtime plugin overrides declared in `beets-inbox.nix`.
 
-- **MS-19**: Beets shall be integrated as a singleton tagging worker with dedicated system user `beets`, home `/srv/data/beets`, and membership in `music-ingest` and `media` groups.
-- **MS-20**: Beets shall process files from `/srv/media/inbox` and promote successfully tagged tracks to `/srv/media/library`, preserving original filenames.
-- **MS-21**: Beets shall write fallback and hard‑failure reports under `/srv/data/beets` for operator review.
-- **MS-22**: Beets automation details (systemd path watchers, timers, transfer‑safety) are specified in the separate `beets-automation` capability.
+#### Scenario: Beets runtime and promotion behavior are evaluated
+- **WHEN** Beets worker and promotion units are rendered
+- **THEN** paths are option-driven and runtime overrides are defined in-module without external runtime indirection files
 
-### Data Flow Contract
+### Requirement: Media services remain mount-aware and permission-reconciling
+Media services SHALL declare mount prerequisites and SHALL reconcile permissions after promotion/sync operations where required.
 
-- **MS-23**: Syncthing shall be the authoritative sync source for `/srv/media/library` and `/srv/media/quarantine`.
-- **MS-24**: Navidrome shall read directly from `/srv/media` (including library, inbox, and quarantine) but must **not** be restricted to `/srv/media/library` only.
-- **MS-25**: Ingest sources (slskd, manual drops) shall place files under `/srv/media/inbox` or its subdirectories.
-- **MS-26**: Beets shall move successfully processed files from `/srv/media/inbox` to `/srv/media/library`, and from `/srv/media/quarantine/approved` to `/srv/media/library`.
-- **MS-27**: No duplicate staging paths shall exist; Navidrome reads the same authoritative paths managed by Syncthing.
+#### Scenario: Service units enforce mount and permission integrity
+- **WHEN** media service units are evaluated
+- **THEN** required mounts are declared and permission reconciliation hooks remain part of operational flow
 
-### Operational Integrity
+### Requirement: Application injects shared media directories
+`modules/applications/music.nix` SHALL define and pass shared media directories (`inboxDir`, `libraryDir`, `quarantineDir`) to dependent services rather than relying on service-local hardcoded shared paths.
 
-- **MS-28**: All service units shall declare `RequiresMountsFor` on `/srv/data` and `/srv/media` mounts.
-- **MS-29**: Service start ordering shall enforce that Syncthing is ready before Navidrome or slskd begin.
-- **MS-30**: Permission reconciliation shall run after Beets promotions to ensure ACLs and group ownership remain aligned with declared tmpfiles rules.
+#### Scenario: Shared directory options are provided by application layer
+- **WHEN** `applications.music.inboxDir`, `applications.music.libraryDir`, and `applications.music.quarantineDir` are configured
+- **THEN** Syncthing and Beets consume those injected paths through service options
 
-## Constraints
+### Requirement: Syncthing target composition is generic
+Syncthing SHALL support application-composed device and folder definitions through `services.syncthing.deviceTargets` and `services.syncthing.folderTargets`.
 
-- Media services assume a dedicated `/srv/media` mount with stable device identifiers.
-- All services operate within Tailscale‑only networking; no public firewall ports are opened.
-- Syncthing versioning safeguards are mandatory, not optional.
-- Beets automation is currently manual‑trigger (systemd path/timer disabled) pending transfer‑safety completion (MEDI‑05, MEDI‑06).
+#### Scenario: Syncthing settings are derived from composed targets
+- **WHEN** folder targets include daemon fields and management-only tmpfiles fields
+- **THEN** daemon folder payload excludes management-only fields while tmpfiles generation uses them
 
-## Verification
+### Requirement: slskd shares only configured directories
+slskd SHALL expose explicit path options (`downloadsPath`, `incompletePath`) and SHALL restrict `shares.directories` to configured slskd directories.
 
-- `tests/phase-04-syncthing-contract.sh` validates Syncthing folder definitions and versioning parameters.
-- `tests/phase-04-service-flow-contract.sh` validates Navidrome root guard and no‑duplicate‑staging rule.
-- `tests/phase-04.2-beets-promotion-contract.sh` validates promotion behavior and reporting outputs.
-- `just verify-phase-04` runs the full media‑service contract suite.
+#### Scenario: slskd sharing scope is constrained
+- **WHEN** custom `downloadsPath` and `incompletePath` are configured
+- **THEN** `shares.directories` contains only those configured paths
+
+### Requirement: Beets runtime override is in-module
+Beets runtime plugin overrides SHALL be declared directly in `beets-inbox.nix`, and an external runtime indirection file SHALL NOT be required.
+
+#### Scenario: Beets runtime is assembled from beets module
+- **WHEN** Beets runtime dependencies are rendered
+- **THEN** plugin override wiring is sourced inline from `beets-inbox.nix`
+

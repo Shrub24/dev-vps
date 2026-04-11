@@ -1,6 +1,12 @@
-{ ... }:
+{ lib, config, ... }:
 {
-  disko.devices.disk.main = {
+  options."disko-root-extra" = lib.mkOption {
+    type = lib.types.str;
+    default = "100%";
+    description = "Size for the root partition on single-disk hosts.";
+  };
+
+  config.disko.devices.disk.main = {
     type = "disk";
     content = {
       type = "gpt";
@@ -22,7 +28,7 @@
         };
 
         root = {
-          size = "100%";
+          size = lib.mkDefault config.disko-root-extra;
           content = {
             type = "filesystem";
             format = "ext4";

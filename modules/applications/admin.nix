@@ -1,11 +1,26 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
+let
+  cfg = config.applications.admin;
+in
 {
   imports = [
-    ../../modules/services/tailscale.nix
     ../../modules/services/termix.nix
   ];
 
-  systemd.services.tailscale-serve-termix = {
+  options.applications.admin.dataRoot = lib.mkOption {
+    type = lib.types.str;
+    default = "/srv/data";
+    description = "Top-level data root for admin application services.";
+  };
+
+  config.services.termix.dataDir = "${cfg.dataRoot}/termix";
+
+  config.systemd.services.tailscale-serve-termix = {
     description = "Expose Termix via dedicated Tailscale HTTPS port";
     requires = [
       "tailscaled.service"
@@ -41,7 +56,7 @@
     };
   };
 
-  system.activationScripts.tailscale-serve-termix-restart = {
+  config.system.activationScripts.tailscale-serve-termix-restart = {
     deps = [ "etc" ];
     text = ''
       ${pkgs.systemd}/bin/systemctl restart tailscale-serve-termix.service || true
