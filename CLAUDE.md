@@ -1,4 +1,4 @@
-<!-- GSD:project-start source:PROJECT.md -->
+<!-- openspec:project-start source:PROJECT.md -->
 ## Project
 
 **Modular NixOS Fleet Infrastructure**
@@ -19,9 +19,9 @@ Canonical human-facing architecture and migration guidance lives under `docs/` (
 - **Migration**: Legacy `dev-vps` assumptions and stale documentation should be removed or archived coherently - avoid long-lived dual-mission drift.
 - **Storage**: The initial data model uses one persistent mount with predictable service subdirectories - avoid duplicate staging datasets early.
 - **Complexity**: Native NixOS services and simple rollout flow come before orchestration tooling - only add higher-complexity systems when real pressure exists.
-<!-- GSD:project-end -->
+<!-- openspec:project-end -->
 
-<!-- GSD:stack-start source:research/STACK.md -->
+<!-- openspec:stack-start source:research/STACK.md -->
 ## Technology Stack
 
 ## Recommended Stack
@@ -117,38 +117,37 @@ Canonical human-facing architecture and migration guidance lives under `docs/` (
 - https://github.com/syncthing/syncthing/releases/tag/v2.0.15 - verified current release line.
 - https://raw.githubusercontent.com/syncthing/syncthing/main/README.md - verified project goals and security/data-loss posture.
 - https://github.com/navidrome/navidrome/releases/tag/v0.60.3 - verified current release line.
-<!-- GSD:stack-end -->
+<!-- openspec:stack-end -->
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
+<!-- openspec:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
 Conventions not yet established. Will populate as patterns emerge during development.
-<!-- GSD:conventions-end -->
+<!-- openspec:conventions-end -->
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
+<!-- openspec:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
 Architecture not yet mapped. Follow existing patterns found in the codebase.
-<!-- GSD:architecture-end -->
+<!-- openspec:architecture-end -->
 
-<!-- GSD:workflow-start source:GSD defaults -->
-## GSD Workflow Enforcement
+<!-- openspec:workflow-start source:openspec defaults -->
+## OpenSpec/OpenAgentsControl Workflow
 
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+This repository uses OpenSpec for planning/project state structure and OpenAgentsControl for agent flows.
 
-Use these entry points:
-- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd:debug` for investigation and bug fixing
-- `/gsd:execute-phase` for planned phase work
+For implementation work, use OpenSpec change workflows:
+- Create changes with OpenSpec for planning and specification
+- Use OpenAgentsControl for agent execution flows
 
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
+Do not make direct repo edits outside established workflows unless the user explicitly asks to bypass them.
+<!-- openspec:workflow-end -->
 
 
-<!-- GSD:profile-start -->
+
+<!-- openspec:profile-start -->
 ## Developer Profile
 
-> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.
+> Profile not yet configured. Use OpenSpec workflow to generate your developer profile.
 > This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
+<!-- openspec:profile-end -->
