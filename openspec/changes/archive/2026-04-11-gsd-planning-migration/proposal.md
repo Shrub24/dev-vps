@@ -47,6 +47,7 @@ Migrate the repository from GetShitDone (GSD) style planning/state artifacts to 
 | 04 | Service Baseline And Data Safety | Complete | 2026-03-27 |
 | 04.1 | Beets Inbox-Only Singleton Ingestion | Complete | - |
 | 04.2 | All-Inbox Beets Preprocessing with Auto-Promotion | Complete | 2026-04-01 |
+| 06 | Deploy Rework (deploy-rs integration) | Complete | 2026-04-08 |
 
 ### Active Requirements
 
@@ -56,8 +57,12 @@ Migrate the repository from GetShitDone (GSD) style planning/state artifacts to 
 ### Deferred to Phase 05
 
 - Traktor NML/M3U syncing
-- deploy-rs adoption and root access hardening
+- Root access hardening (if not already covered by deploy-rs integration)
 - MEDI-05 and MEDI-06 implementation
+
+### Completed in Phase 06
+
+- deploy-rs adoption integrated into flake, lib/deploy/, justfile, and tests
 
 ## Source Files Used
 

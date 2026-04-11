@@ -19,6 +19,7 @@
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
   networking.hostName = "oci-melb-1";
+  networking.firewall.allowedTCPPorts = [ 22 ];
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   disko.devices.disk.main.device = "/dev/sda";
