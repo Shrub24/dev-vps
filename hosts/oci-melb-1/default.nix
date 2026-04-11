@@ -19,11 +19,11 @@
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
   networking.hostName = "oci-melb-1";
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   disko.devices.disk.main.device = "/dev/sda";
   disko.devices.disk.media.device = "/dev/sdb";
+  applications.music.dataRoot = "/srv/data";
+  applications.music.mediaRoot = "/srv/media";
 
   # Configurable root size — set here so it's visible in one place per host.
   disko-root-extra = "20G";
@@ -67,19 +67,8 @@
     };
   };
 
-  services.tailscale = {
-    extraUpFlags = [
-      "--hostname=oci-melb-1"
-      "--advertise-tags=tag:oci-melb-1"
-    ];
-  }
-  // lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
+  services.tailscale = lib.mkIf (builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml) {
     authKeyFile = "/run/secrets/tailscale.auth_key";
-  };
-
-  systemd.services.tailscaled-autoconnect = {
-    after = [ "sops-install-secrets.service" ];
-    wants = [ "sops-install-secrets.service" ];
   };
 
   programs.nix-ld = {

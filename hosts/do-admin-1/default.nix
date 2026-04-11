@@ -17,10 +17,10 @@
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
   networking.hostName = "do-admin-1";
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   disko.devices.disk.main.device = "/dev/vda";
+  disko-root-extra = "100%";
+  applications.admin.dataRoot = "/srv/data";
 
   sops.defaultSopsFile = ../../secrets/common.yaml;
 
@@ -33,13 +33,7 @@
     };
   };
 
-  services.tailscale = {
-    extraUpFlags = [
-      "--hostname=do-admin-1"
-      "--advertise-tags=tag:do-admin-1"
-    ];
-  }
-  // lib.mkIf (builtins.pathExists ../../hosts/do-admin-1/secrets.yaml) {
+  services.tailscale = lib.mkIf (builtins.pathExists ../../hosts/do-admin-1/secrets.yaml) {
     authKeyFile = "/run/secrets/tailscale.auth_key";
   };
 
@@ -48,11 +42,6 @@
     "1.1.1.1"
     "8.8.8.8"
   ];
-
-  systemd.services.tailscaled-autoconnect = {
-    after = [ "sops-install-secrets.service" ];
-    wants = [ "sops-install-secrets.service" ];
-  };
 
   system.stateVersion = "25.11";
 }
