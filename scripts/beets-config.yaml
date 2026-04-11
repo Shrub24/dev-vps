@@ -25,6 +25,7 @@ import:
   group_albums: yes
 match:
   strong_rec_thresh: 0.18
+  medium_rec_thresh: 0.45
   distance_weights:
     media: 0.2
     albumdisambig: 0.0
@@ -43,7 +44,7 @@ fetchart:
   cover_names: cover front folder art album
   sources: filesystem cover_art_url coverart discogs itunes albumart
 embedart:
-  auto: no
+  auto: yes
   ifempty: yes
 paths:
   default: $albumartist/$album%aunique{}/$source_stem
