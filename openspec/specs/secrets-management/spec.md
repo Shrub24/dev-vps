@@ -1,92 +1,35 @@
 # Spec: Secrets Management
 
-## Capability ID
+## Purpose
 
-`secrets-management`
+Define blast-radius-scoped secret management contracts using SOPS and age recipients across fleet and host scopes.
 
-## Summary
+## Requirements
 
-The repository implements a scoped blast-radius model for secrets using SOPS with age encryption. Secrets are split by scope: fleet-shared secrets in `secrets/common.yaml`, host-specific secrets in `hosts/<host>/secrets.yaml`. The `.sops.yaml` policy defines explicit recipient rules to prevent new hosts from automatically gaining access to existing host secrets.
+### Requirement: Secret scopes are explicitly separated
+Secrets SHALL be split into fleet-shared and host-specific scopes with explicit path policies.
 
-## Behaviors
+#### Scenario: Secret files are reviewed
+- **WHEN** repository secret locations and policy are inspected
+- **THEN** shared and host-specific scopes are clearly separated
 
-### Scoped Blast-Radius Model
+### Requirement: Recipient policy is path-bound and auditable
+SOPS recipient rules SHALL be path-scoped and auditable to prevent implicit cross-host access.
 
-- **SECR-1**: Fleet-shared secrets shall be stored in `secrets/common.yaml` with restricted recipient policy (admin recipients only).
-- **SECR-2**: Host-specific secrets shall be stored in `hosts/<host>/secrets.yaml` with host-scoped recipients (admin + host recipient).
-- **SECR-3**: The `.sops.yaml` policy shall define explicit path-based rules that prevent new hosts from automatically gaining decryption access to existing host secrets.
-- **SECR-4**: Tailscale enrollment material (auth keys) shall be host-scoped, not shared across hosts.
+#### Scenario: New host recipient is introduced
+- **WHEN** recipient rules are updated
+- **THEN** only explicitly targeted secret paths include the new host recipient
 
-### Two-Step Bootstrap Safety
+### Requirement: Two-step bootstrap secret flow is supported
+Base host install SHALL not require host secrets, with host-secret enablement occurring as a second step.
 
-- **SECR-5**: Base host installation shall succeed without requiring host-specific secret material.
-- **SECR-6**: Secret-dependent service wiring (e.g., Tailscale auth) shall be conditional on host secret file existence, using `builtins.pathExists` checks.
-- **SECR-7**: Host recipient derivation shall use the live SSH host key to generate an age recipient, enabling post-install secret introduction.
-- **SECR-8**: The operator workflow shall support a two-step bootstrap: Step A (base install) → Step B (add host recipient + host secrets).
+#### Scenario: Initial host bring-up is performed
+- **WHEN** host is installed before secret bootstrap
+- **THEN** base system converges and secret-dependent wiring can be enabled afterward
 
-### Operational Integrity
+### Requirement: Host recipient derivation is operationalized
+Host recipient derivation from SSH host keys SHALL be available through operator workflows.
 
-- **SECR-9**: Unencrypted template files (`*.template.yaml`) shall be maintained for reference, documenting expected secret structure.
-- **SECR-10**: Secret file paths and recipient rules shall be auditable and explicit in `.sops.yaml`.
-- **SECR-11**: Transitional legacy secret files (e.g., `secrets/secrets.yaml`) may exist but shall have explicit recipient scoping separate from new patterns.
-- **SECR-12**: Moving a service between hosts shall require an explicit security and operations decision due to secret scoping boundaries.
-
-### Recipient Management
-
-- **SECR-13**: Admin recipients shall be anchored in `.sops.yaml` as age public keys.
-- **SECR-14**: Host recipients shall be derived from SSH host keys using `ssh-to-age` conversion.
-- **SECR-15**: The `just derive-host-age` command shall provide preview and update modes for safe recipient management.
-- **SECR-16**: Age encryption shall be used as the default backend; GPG is avoided for operational simplicity.
-
-## Constraints
-
-- First host is `oci-melb-1` on Oracle Cloud Free Tier; host recipient anchored as `oci_melb_1_age`.
-- Second host `do-admin-1` on DigitalOcean follows same pattern with `do_admin_1_age`.
-- Fleet direction supports mixed architectures (`aarch64` and `x86_64`) with consistent secret scoping.
-- Complexity deferred: no automatic secret rotation, no centralized secret store beyond SOPS+Git.
-- Operational safety: bootstrap must work without pre‑generated host keys; live SSH host key derivation is the default.
-
-## Examples
-
-### SOPS Policy (`.sops.yaml`)
-```yaml
-keys:
-  - &owner_age age1w5asfm5rfncy4yvslj3az78kvn7hkrzq4vy0mzexf36w64a7e3nqamw3fp
-  - &oci_melb_1_age age1lg45rhdn6mp856f97sdwxu7rpzyyz7edqwnldnpj67r6curnkqws7nn42a
-
-creation_rules:
-  - path_regex: ^secrets/common\.ya?ml$
-    key_groups:
-      - age:
-          - *owner_age
-  - path_regex: ^hosts/oci-melb-1/secrets\.ya?ml$
-    key_groups:
-      - age:
-          - *owner_age
-          - *oci_melb_1_age
-```
-
-### Host Secret Template (`hosts/oci-melb-1/secrets.template.yaml`)
-```yaml
-tailscale:
-  auth_key: REPLACE_WITH_TAILSCALE_AUTH_KEY
-beets:
-  discogs_token: REPLACE_WITH_DISCOGS_USER_TOKEN
-```
-
-### Two-Step Bootstrap Commands
-```bash
-# Step A: Base install without host secrets
-just bootstrap BOOTSTRAP_TARGET=<target-ip>
-
-# Step B: Add host recipient and secrets
-just derive-host-age host=<target-ip-or-dns> update=true
-sops --encrypt --in-place hosts/oci-melb-1/secrets.yaml
-just redeploy TARGET_HOST=<tailscale-name-or-ip> TARGET_USER=dev
-```
-
-## Related Specifications
-
-- [fleet-infrastructure](../fleet-infrastructure/spec.md) – broader infrastructure context
-- [bootstrap-storage](../bootstrap-storage/spec.md) – bootstrap and storage contracts
-- [network-access](../network-access/spec.md) – Tailscale and private access model
+#### Scenario: Operator derives host age recipient
+- **WHEN** recipient derivation command is executed
+- **THEN** generated recipient can be used to update secret policy/workflow safely

@@ -1,42 +1,35 @@
 # Spec: Repository Structure
 
-## Capability ID
+## Purpose
 
-`repository-structure`
+Define repository layout contracts that preserve modular host composition, clear ownership boundaries, and durable documentation authority.
 
-## Summary
+## Requirements
 
-This repository serves as a modular NixOS fleet infrastructure source of truth, with a host-centric layout that separates host identity from reusable service modules. The structure enables scalable multi-host growth while maintaining clear boundaries between provider-specific details, service logic, and host composition.
+### Requirement: Host and module boundaries are explicit
+Repository structure SHALL separate host composition from reusable module domains.
 
-## Behaviors
+#### Scenario: Operator navigates repository
+- **WHEN** codebase layout is reviewed
+- **THEN** host identity and reusable module domains are clearly separated by directory boundaries
 
-### Host-Centric Layout
+### Requirement: Provider-specific logic remains isolated
+Provider assumptions SHALL be isolated to provider/host layers and not embedded in reusable service modules.
 
-- **RS-1**: The repository shall organize host identity under `hosts/<host>/default.nix` with composition of reusable modules.
-- **RS-2**: The repository shall provide reusable module boundaries under `modules/core/`, `modules/profiles/`, `modules/services/`, and `modules/applications/`.
-- **RS-3**: The repository shall isolate provider-specific defaults under `modules/providers/<provider>/`.
-- **RS-4**: The repository shall maintain a canonical flake entrypoint at `flake.nix` with `nixosConfigurations.<host>` outputs.
+#### Scenario: Service modules are reused across hosts
+- **WHEN** service modules are composed by different hosts/providers
+- **THEN** reusable module behavior does not depend on provider-specific inline logic
 
-### Documentation Authority
+### Requirement: Flake outputs are canonical host entrypoints
+Canonical host build/deploy targets SHALL be represented through flake host outputs.
 
-- **RS-5**: Canonical architecture, decisions, and migration guidance shall reside under `docs/` as the authoritative source.
-- **RS-6**: Entrypoint documents (`README.md`, `CLAUDE.md`) shall be thin wrappers that reference canonical docs to prevent drift.
-- **RS-7**: Documentation updates shall ship in the same change window as architecture changes.
+#### Scenario: Host target is selected for operations
+- **WHEN** build/deploy routines resolve host targets
+- **THEN** they map to canonical `nixosConfigurations.<host>` outputs
 
-### Operator and CI Alignment
+### Requirement: Documentation authority is centralized
+Architecture/decision/process documents SHALL remain centralized and referenced by entrypoint docs to avoid drift.
 
-- **RS-8**: Operator command surfaces shall use neutral naming (`TARGET_HOST`, `TARGET_USER`) and target canonical flake host outputs.
-- **RS-9**: CI workflows shall validate only canonical host outputs that exist in active flake wiring.
-- **RS-10**: Legacy personal-tooling assumptions shall be removed from status and build defaults.
-
-### Extensibility
-
-- **RS-11**: The repository structure shall support addition of new hosts without requiring structural rewrites.
-- **RS-12**: The module composition pattern shall allow mixing `aarch64-linux` and `x86_64-linux` hosts with provider-aware defaults where needed.
-
-## Constraints
-
-- First host is `oci-melb-1` on Oracle Cloud Free Tier using `aarch64-linux`.
-- Fleet direction supports later mixed `aarch64` and `x86_64` hosts.
-- Provider specifics are isolated from reusable service logic.
-- Complexity deferred until real pressure exists: no early Kubernetes, no public ingress, no premature fleet tooling.
+#### Scenario: Structure or workflow changes are introduced
+- **WHEN** significant layout/workflow updates are made
+- **THEN** authoritative docs are updated in the same change window
