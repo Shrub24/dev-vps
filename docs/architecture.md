@@ -15,6 +15,7 @@ Primary objective:
 In scope now:
 
 - Oracle Cloud host `oci-melb-1` as the first fleet node
+- DigitalOcean host `do-admin-1` as the second fleet node
 - Tailscale-first private access model
 - native NixOS services: `navidrome` and `syncthing`
 - modular host and service design for future multi-host growth
@@ -74,11 +75,13 @@ Fleet direction:
 
 The exact file tree can evolve, but the intended shape is:
 
-- `hosts/oci-melb-1/default.nix` as the active first-host entrypoint today
+- `hosts/oci-melb-1/default.nix` and `hosts/do-admin-1/default.nix` as active host entrypoints
 - `hosts/<host>/default.nix` for host composition
 - `hosts/<host>/secrets.yaml` for host-scoped encrypted values
 - `modules/providers/oci/default.nix` for OCI-specific host-safe defaults
+- `modules/providers/digitalocean/default.nix` for DigitalOcean host-safe defaults
 - `modules/storage/disko-root.nix` for active declarative root disk layout
+- `modules/storage/disko-single-disk.nix` for single-disk host layout
 - `modules/core/base.nix` for shared baseline policy
 - `modules/profiles/base-server.nix` for host profile composition
 - `modules/applications/music.nix` for first-pass Syncthing/Navidrome/slskd composition
@@ -122,11 +125,13 @@ Preferred baseline:
 
 - `nixos-anywhere` bootstrap with conservative secret bootstrapping
 - two-step secrets bootstrap is the default because it reduces pre-install key handling risk
+- host key bootstrap defaults to retrieving the live SSH ed25519 host key and deriving an age recipient
 
 Accepted advanced alternative:
 
 - pre-generated host identity material can be used when first-boot decryption is required
 - this is valid but is intentionally treated as a sharper option with higher bootstrap complexity
+- injected host public key bootstrap is available as an advanced override path
 
 ## Storage and Service Data Model
 
@@ -187,7 +192,10 @@ Bootstrap and rollout order:
 Fleet tooling posture:
 
 - structure now for future fleet tools
-- defer operational overhead until needed
+- `deploy-rs` is the primary host deployment path (`deploy.nodes` in flake output)
+- per-host deploy metadata is defined in `lib/deploy/hosts.nix`, with reusable wiring in `lib/deploy/default.nix`
+- keep `nixos-anywhere` for bootstrap and break-glass flows; use `deploy-rs` for regular host updates
+- before any bootstrap/deploy operation, run `just bootstrap-preflight host=<host>` to enforce access-safety invariants (`openssh` enabled, tcp/22 allowed, declarative `dev`/`root` SSH keys present)
 
 ## Known Risks and Constraints
 

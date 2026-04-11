@@ -4,7 +4,7 @@ This plan is intentionally strategic, not a command-by-command runbook. The goal
 
 ## Planning Objective
 
-Transition this repository from legacy `dev-vps` orientation to a clean, modular fleet-infrastructure repository that can reliably bootstrap and operate `oci-melb-1`, then scale to more hosts.
+Transition this repository from legacy `dev-vps` orientation to a clean, modular fleet-infrastructure repository that can reliably bootstrap and operate `oci-melb-1`, then scale to more hosts including `do-admin-1`.
 
 ## Planning Constraints
 
@@ -55,12 +55,14 @@ Track B: Secrets and identity model
 - use `secrets/common.template.yaml` as the unencrypted reference template for common secret scaffolding
 - maintain clear distinction between common and host-scoped data
 - keep host enrollment artifacts and policies explicit
+- default host recipient bootstrap via live SSH host key to age derivation, with injected-key override available
 
 Track C: Host and storage baseline
 
 - establish reliable host bootstrap path
 - apply one-mount persistent storage model
 - map service directories on that mount predictably
+- keep provider-specific storage contracts isolated so new hosts do not couple to `oci-melb-1` bootstrap config
 
 Track D: Service baseline
 
@@ -109,6 +111,7 @@ These documents are intended to remain current and drive implementation, not tra
 Active implementation anchor paths that must stay reflected in docs:
 
 - `hosts/oci-melb-1/default.nix`
+- `hosts/do-admin-1/default.nix`
 - `modules/applications/music.nix`
 - `modules/applications/admin.nix`
 - `modules/core/base.nix`

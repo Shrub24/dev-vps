@@ -1,6 +1,7 @@
 keys:
   - &owner_age age1w5asfm5rfncy4yvslj3az78kvn7hkrzq4vy0mzexf36w64a7e3nqamw3fp
   - &oci_melb_1_age age1lg45rhdn6mp856f97sdwxu7rpzyyz7edqwnldnpj67r6curnkqws7nn42a
+  - &do_admin_1_age age1a2masnj7tmwjl9azt75kh387lvwwz9vqfhqr0emghdcvu7x9jd9q4wv4aq
 creation_rules:
   - path_regex: ^secrets/common\.ya?ml$
     key_groups:
@@ -15,3 +16,8 @@ creation_rules:
       - age:
           - *owner_age
           - *oci_melb_1_age
+  - path_regex: ^hosts/do-admin-1/secrets\.ya?ml$
+    key_groups:
+      - age:
+          - *owner_age
+          - *do_admin_1_age

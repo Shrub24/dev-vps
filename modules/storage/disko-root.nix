@@ -1,7 +1,4 @@
 { lib, ... }:
-let
-  bootstrapConfig = import ../../hosts/oci-melb-1/bootstrap-config.nix;
-in
 {
   disko.devices.disk.main = {
     type = "disk";
@@ -25,7 +22,7 @@ in
         };
 
         root = {
-          size = lib.mkDefault bootstrapConfig.rootPartitionSize;
+          size = lib.mkDefault "20G";
           content = {
             type = "filesystem";
             format = "ext4";

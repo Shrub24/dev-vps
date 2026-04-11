@@ -1,12 +1,6 @@
-{ lib, ... }:
-let
-  bootstrapConfig = import ../../../hosts/oci-melb-1/bootstrap-config.nix;
-in
+{ ... }:
 {
-  disko.devices.disk.main.device = lib.mkDefault bootstrapConfig.bootstrapDisk;
-  disko.devices.disk.media.device = lib.mkDefault bootstrapConfig.mediaDisk;
-
-  boot.loader.grub.devices = [ bootstrapConfig.bootstrapDisk ];
+  boot.loader.grub.devices = [ "/dev/sda" ];
 
   # Keep OCI serial-console recovery available after reboot.
   # Provider-specific console wiring intentionally lives here.

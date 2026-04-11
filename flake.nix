@@ -7,6 +7,8 @@
     disko.url = "github:nix-community/disko";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -15,6 +17,7 @@
       nixpkgs,
       disko,
       sops-nix,
+      deploy-rs,
       ...
     }:
     let
@@ -36,15 +39,26 @@
             sops
             age
             nixos-anywhere
+            deploy-rs.packages.${system}.default
             nix-output-monitor
             nixfmt
             statix
+            ssh-to-age
           ];
         };
+
+      deployConfig = import ./lib/deploy {
+        inherit self nixpkgs deploy-rs;
+        hosts = import ./lib/deploy/hosts.nix;
+      };
     in
     {
       devShells = nixpkgs.lib.genAttrs devShellSystems (system: {
         default = mkDevShell system;
+      });
+
+      packages = nixpkgs.lib.genAttrs devShellSystems (system: {
+        deploy-rs = deploy-rs.packages.${system}.default;
       });
 
       nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
@@ -56,5 +70,18 @@
         ];
         specialArgs = { inherit self inputs; };
       };
+
+      nixosConfigurations.do-admin-1 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/do-admin-1/default.nix
+        ];
+        specialArgs = { inherit self inputs; };
+      };
+
+      deploy = deployConfig.deploy;
+      checks = deployConfig.checks;
     };
 }

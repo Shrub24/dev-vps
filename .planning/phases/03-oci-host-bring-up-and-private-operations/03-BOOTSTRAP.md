@@ -7,16 +7,22 @@ This runbook defines the canonical OCI bootstrap sequence aligned to the enforce
 1. Run preflight evaluation:
 
    ```bash
-   just flake-check
+    just flake-check
+    ```
+
+2. Run bootstrap access safety preflight (required before bootstrap/deploy):
+
+   ```bash
+   just bootstrap-preflight host=oci-melb-1
    ```
 
-2. Confirm bootstrap/storage contract invariants:
+3. Confirm bootstrap/storage contract invariants:
 
    ```bash
    bash tests/phase-03-bootstrap-contract.sh
    ```
 
-3. Execute remote install (recommended via `just` entrypoint):
+4. Execute remote install (recommended via `just` entrypoint):
 
    ```bash
    just bootstrap BOOTSTRAP_TARGET=<oci_public_ip_or_dns>
@@ -64,13 +70,13 @@ This runbook defines the canonical OCI bootstrap sequence aligned to the enforce
    - `--hardware-config-path <path>`
    - `--skip-hardware-config`
 
-4. Validate expected hostname output from flake:
+5. Validate expected hostname output from flake:
 
    ```bash
    nix eval --raw path:.#nixosConfigurations.oci-melb-1.config.networking.hostName
    ```
 
-5. Keep access private-first:
+6. Keep access private-first:
    - This bootstrap flow remains Tailscale-first.
    - Do not add public ingress as part of this procedure.
 

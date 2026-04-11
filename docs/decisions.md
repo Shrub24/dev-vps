@@ -363,6 +363,56 @@ Rationale:
 - keeps approved reprocessing native to systemd + Beets while avoiding recursive demotion behavior in the approved lane
 - aligns quarantine ownership with ingest boundaries while keeping media-library review access read-only and Syncthing write-capable where needed
 
+## D-025: Second host `do-admin-1` is added as a DigitalOcean x86_64 admin node
+
+Status: Accepted
+
+Decision:
+
+- add `nixosConfigurations.do-admin-1` with `x86_64-linux`
+- compose the host in `hosts/do-admin-1/default.nix` with shared `dev` user model
+- isolate provider defaults in `modules/providers/digitalocean/default.nix`
+- use `modules/storage/disko-single-disk.nix` for single-disk DO layout
+
+Rationale:
+
+- validates multi-provider, mixed-architecture fleet shape without perturbing `oci-melb-1`
+- keeps provider and storage concerns modular instead of coupling to OCI bootstrap metadata
+
+## D-026: Host age recipient bootstrap defaults to live SSH host key derivation
+
+Status: Accepted
+
+Decision:
+
+- default bootstrap workflow derives host age recipient by fetching live SSH ed25519 host key (`host-generic` pattern)
+- keep advanced injected-key workflow available for cases where live retrieval is not possible
+- enforce host-scoped `.sops.yaml` rules per host (`hosts/<host>/secrets.yaml`)
+
+Rationale:
+
+- reduces manual key handling during day-0 bring-up while preserving scoped blast radius
+- keeps a deterministic fallback for restricted network/bootstrap scenarios
+
+## D-027: deploy-rs is the primary deployment workflow for both active hosts
+
+Status: Accepted
+
+Decision:
+
+- add `deploy-rs` as a flake input and publish `deploy.nodes` for `oci-melb-1` and `do-admin-1`
+- define host deploy metadata in `lib/deploy/hosts.nix` and reusable wiring in `lib/deploy/default.nix`
+- set each node to `sshUser = "dev"`, host hostname, and `profiles.system.path` from the matching `nixosConfigurations.<host>`
+- wire `deploy-rs` deployment checks into `flake checks` for both `aarch64-linux` and `x86_64-linux`
+- make `just deploy`, `just deploy-activate`, and `just deploy-check` the primary operator workflow
+
+Rationale:
+
+- keeps deployment behavior host-centric and extensible as more nodes are added
+- removes ad-hoc per-command deployment drift while preserving bootstrap/secrets flows
+- ensures deployment schema validation is part of normal flake checks
+>>>>>>> 12bdde3 (feat: deploy-rs deployment and digitalocean host bootstrap)
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

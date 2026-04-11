@@ -11,7 +11,6 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
-    ../../modules/applications/admin.nix
     ../../modules/applications/music.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
@@ -21,6 +20,9 @@
 
   networking.hostName = "oci-melb-1";
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
+
+  disko.devices.disk.main.device = "/dev/sda";
+  disko.devices.disk.media.device = "/dev/sdb";
 
   environment.systemPackages = with pkgs; [
     git

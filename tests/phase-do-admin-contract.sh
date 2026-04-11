@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FLAKE_FILE="flake.nix"
+DO_HOST_FILE="hosts/do-admin-1/default.nix"
+DO_BOOTSTRAP_FILE="hosts/do-admin-1/bootstrap-config.nix"
+DO_PROVIDER_FILE="modules/providers/digitalocean/default.nix"
+DO_DISKO_FILE="modules/storage/disko-single-disk.nix"
+JUSTFILE="justfile"
+SOPS_FILE=".sops.yaml"
+
+rg --fixed-strings --quiet 'nixosConfigurations.do-admin-1 = nixpkgs.lib.nixosSystem {' "$FLAKE_FILE"
+rg --fixed-strings --quiet 'system = "x86_64-linux";' "$FLAKE_FILE"
+rg --fixed-strings --quiet './hosts/do-admin-1/default.nix' "$FLAKE_FILE"
+
+rg --fixed-strings --quiet '../../modules/providers/digitalocean/default.nix' "$DO_HOST_FILE"
+rg --fixed-strings --quiet '../../modules/storage/disko-single-disk.nix' "$DO_HOST_FILE"
+rg --fixed-strings --quiet '../../modules/core/users.nix' "$DO_HOST_FILE"
+rg --fixed-strings --quiet 'networking.hostName = "do-admin-1";' "$DO_HOST_FILE"
+rg --fixed-strings --quiet 'networking.firewall.allowedTCPPorts = [ 22 ];' "$DO_HOST_FILE"
+rg --fixed-strings --quiet 'disko.devices.disk.main.device = "/dev/vda";' "$DO_HOST_FILE"
+nix eval --no-write-lock-file --apply 'ports: builtins.elem 22 ports' path:.#nixosConfigurations.do-admin-1.config.networking.firewall.allowedTCPPorts | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'dev: dev == "/dev/vda"' path:.#nixosConfigurations.do-admin-1.config.disko.devices.disk.main.device | rg --fixed-strings --quiet 'true'
+
+rg --fixed-strings --quiet 'hostName = "do-admin-1";' "$DO_BOOTSTRAP_FILE"
+rg --fixed-strings --quiet 'bootstrapUser = "root";' "$DO_BOOTSTRAP_FILE"
+rg --fixed-strings --quiet 'bootstrapDisk = "/dev/vda";' "$DO_BOOTSTRAP_FILE"
+
+rg --fixed-strings --quiet '/virtualisation/digital-ocean-config.nix' "$DO_PROVIDER_FILE"
+rg --fixed-strings --quiet 'datasource_list = [' "$DO_PROVIDER_FILE"
+rg --fixed-strings --quiet '"Digitalocean"' "$DO_PROVIDER_FILE"
+rg --fixed-strings --quiet 'cloud_init_modules = [' "$DO_PROVIDER_FILE"
+rg --fixed-strings --quiet 'cloud_config_modules = [' "$DO_PROVIDER_FILE"
+rg --fixed-strings --quiet 'cloud_final_modules = [' "$DO_PROVIDER_FILE"
+! rg --fixed-strings --quiet 'systemd.network = {' "$DO_PROVIDER_FILE"
+! rg --fixed-strings --quiet 'networking.useDHCP = lib.mkForce false;' "$DO_PROVIDER_FILE"
+! rg --fixed-strings --quiet 'network.enable = lib.mkForce false;' "$DO_PROVIDER_FILE"
+! rg --fixed-strings --quiet '"10-eth0-dhcp"' "$DO_PROVIDER_FILE"
+! rg --fixed-strings --quiet '"20-en-dhcp"' "$DO_PROVIDER_FILE"
+
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.openssh.enable | rg --fixed-strings --quiet 'true'
+
+rg --fixed-strings --quiet 'disko.devices.disk.main = {' "$DO_DISKO_FILE"
+rg --fixed-strings --quiet 'mountpoint = "/";' "$DO_DISKO_FILE"
+
+rg --fixed-strings --quiet 'bootstrap-preflight host:' "$JUSTFILE"
+rg --fixed-strings --quiet 'openssh is disabled' "$JUSTFILE"
+rg --fixed-strings --quiet 'firewall does not allow tcp/22' "$JUSTFILE"
+rg --fixed-strings --quiet 'missing declarative dev/root SSH keys' "$JUSTFILE"
+
+rg --fixed-strings --quiet '^hosts/do-admin-1/secrets\.ya?ml$' "$SOPS_FILE"
+rg --fixed-strings --quiet '*do_admin_1_age' "$SOPS_FILE"

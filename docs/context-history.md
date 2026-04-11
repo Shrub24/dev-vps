@@ -18,6 +18,7 @@ That direction produced working components, but it was optimized for a different
 The project direction was intentionally changed to:
 
 - Oracle Free Tier as the first host target
+- DigitalOcean as a second host provider target
 - modular reproducible NixOS multi-service architecture
 - host-fleet thinking over single-machine developer workflow
 - Tailscale as mandatory private connectivity fabric
@@ -38,8 +39,9 @@ During planning and research, the selected direction was validated as idiomatic 
 Tooling stance that emerged:
 
 - keep first host path simple
-- adopt fleet deployment tooling after first host is stable
+- bootstrap remains `nixos-anywhere`, while regular updates now use `deploy-rs`
 - structure repository now so later tooling adoption is low-friction
+- keep host bootstrap/secret workflows host-key driven with clear default and advanced variants
 
 ## Security And Secrets Direction
 
@@ -88,10 +90,14 @@ The migration intent is intentionally aggressive:
 As of this planning update:
 
 - first host name is fixed: `oci-melb-1`
+- second host name is fixed: `do-admin-1`
 - architecture direction is fleet-first, modular, and native-service-first
 - active host path is `hosts/oci-melb-1/default.nix`
+- active second host path is `hosts/do-admin-1/default.nix`
 - active provider boundary is `modules/providers/oci/default.nix`
+- active second provider boundary is `modules/providers/digitalocean/default.nix`
 - active storage boundary is `modules/storage/disko-root.nix`
+- active single-disk storage boundary is `modules/storage/disko-single-disk.nix`
 - active reusable module boundaries are `modules/core/base.nix`, `modules/profiles/base-server.nix`, and `modules/services/tailscale.nix`
 - legacy `nixos/configuration.nix`, `nixos/digitalocean.nix`, and `nixos/disko-config.nix` are retired from active architecture
 - decisions have been formalized in `docs/decisions.md`
