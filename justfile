@@ -36,8 +36,8 @@ ssh host=target_host user=target_user:
 ssh-root host=target_host:
   HOST="{{host}}"; HOST="${HOST#host=}"; ssh "root@$HOST" || true
 
-deploy host:
-  HOST="{{host}}"; HOST="${HOST#host=}"; if [[ -z "$HOST" ]]; then echo "Error: host is required (use host=<deploy-node>)"; exit 1; fi; nix run .#deploy-rs -- --skip-checks ".#$HOST"
+deploy host rollback="true":
+  HOST="{{host}}"; ROLLBACK="{{rollback}}"; HOST="${HOST#host=}"; ROLLBACK="${ROLLBACK#rollback=}"; if [[ -z "$HOST" ]]; then echo "Error: host is required (use host=<deploy-node>)"; exit 1; fi; ARGS=(--skip-checks); if [[ "$ROLLBACK" == "false" ]]; then ARGS+=(--auto-rollback false); fi; nix run .#deploy-rs -- "${ARGS[@]}" ".#$HOST"
 
 deploy-activate host:
   HOST="{{host}}"; HOST="${HOST#host=}"; if [[ -z "$HOST" ]]; then echo "Error: host is required (use host=<deploy-node>)"; exit 1; fi; nix run .#deploy-rs -- --skip-checks --dry-activate ".#$HOST"
@@ -46,8 +46,14 @@ deploy-check:
   nix flake check --no-build --no-write-lock-file path:.
 
 # Legacy alias; deploy-rs is the primary deployment path.
-redeploy host:
-  HOST="{{host}}"; HOST="${HOST#host=}"; just deploy "$HOST"
+redeploy host rollback="true":
+  HOST="{{host}}"; ROLLBACK="{{rollback}}"; HOST="${HOST#host=}"; ROLLBACK="${ROLLBACK#rollback=}"; just deploy "$HOST" "$ROLLBACK"
+
+deploy-no-rollback host:
+  HOST="{{host}}"; HOST="${HOST#host=}"; just deploy "$HOST" "false"
+
+redeploy-no-rollback host:
+  HOST="{{host}}"; HOST="${HOST#host=}"; just redeploy "$HOST" "false"
 
 breakglass-baseline host=target_host user=target_user:
   HOST="{{host}}"; USER="{{user}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; ssh "$USER@$HOST" "set -euo pipefail; echo 'Break-glass baseline capture for $USER@$HOST'; hostnamectl; echo; echo 'System profile target:'; readlink -f /nix/var/nix/profiles/system; echo; echo 'System generations (record the generation marked current as the known-good generation):'; sudo nix-env -p /nix/var/nix/profiles/system --list-generations"

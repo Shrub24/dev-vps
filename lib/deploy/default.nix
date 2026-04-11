@@ -12,7 +12,7 @@ let
     sshUser = host.sshUser;
     profiles.system = {
       user = "root";
-      remoteBuild = true;
+      remoteBuild = host.remoteBuild or false;
       path = deploy-rs.lib.${host.system}.activate.nixos self.nixosConfigurations.${name};
     };
   };

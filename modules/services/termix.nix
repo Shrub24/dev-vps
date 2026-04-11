@@ -22,6 +22,14 @@
       ports = [
         "0.0.0.0:8083:8080"
       ];
+      # Ensure the container can resolve MagicDNS names via Tailscale's DNS
+      # and have a sensible public fallback. Adjust the --dns-search value
+      # to match your tailnet (example: tail0fe19b.ts.net).
+      extraOptions = [
+        "--dns=100.100.100.100"
+        "--dns=1.1.1.1"
+        "--dns-search=tail0fe19b.ts.net"
+      ];
       volumes = [
         "/srv/data/termix/data:/app/data"
       ];

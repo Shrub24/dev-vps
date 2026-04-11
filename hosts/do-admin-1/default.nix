@@ -43,6 +43,12 @@
     authKeyFile = "/run/secrets/tailscale.auth_key";
   };
 
+  services.resolved.enable = true;
+  networking.nameservers = [
+    "1.1.1.1"
+    "8.8.8.8"
+  ];
+
   systemd.services.tailscaled-autoconnect = {
     after = [ "sops-install-secrets.service" ];
     wants = [ "sops-install-secrets.service" ];
