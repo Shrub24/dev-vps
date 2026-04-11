@@ -238,7 +238,7 @@ Rationale:
 - introduces an explicit logical application boundary without disrupting existing host behavior
 - preserves service-level reuse while making host composition easier to reason about
 
-## D-018: Termix runs as a Tailscale-only admin application on oci-melb-1
+## D-018: Termix runs as a Tailscale-only admin application on do-admin-1
 
 Status: Accepted
 
@@ -247,6 +247,7 @@ Decision:
 - implement Termix with a dedicated low-level module `modules/services/termix.nix` using Podman OCI containers (`termix` + `guacd`)
 - persist Termix state under `/srv/data/termix`
 - keep public exposure unchanged (no new firewall openings)
+- Termix is hosted on `do-admin-1` (DigitalOcean x86_64); `oci-melb-1` does not run Termix
 
 Rationale:
 

@@ -131,3 +131,9 @@ status host=target_host user=target_user:
 
 tailscale-status host=target_host user=target_user:
   HOST="{{host}}"; USER="{{user}}"; HOST="${HOST#host=}"; USER="${USER#user=}"; ssh "$USER@$HOST" "sudo tailscale status"
+
+deploy-rs target="path:.#oci-melb-1":
+  TARGET="{{target}}"; TARGET="${TARGET#target=}"; nix run github:serokell/deploy-rs -- "$TARGET"
+
+deploy-rs-no-rollback target="path:.#oci-melb-1":
+  TARGET="{{target}}"; TARGET="${TARGET#target=}"; nix run github:serokell/deploy-rs -- "$TARGET" --rollback-succeeded false --magic-rollback false

@@ -40,4 +40,11 @@
       '';
     };
   };
+
+  system.activationScripts.tailscale-serve-termix-restart = {
+    deps = [ "etc" ];
+    text = ''
+      ${pkgs.systemd}/bin/systemctl restart tailscale-serve-termix.service || true
+    '';
+  };
 }
