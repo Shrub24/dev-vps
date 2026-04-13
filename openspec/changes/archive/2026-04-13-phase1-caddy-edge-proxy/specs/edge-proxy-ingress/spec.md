@@ -1,14 +1,14 @@
 ## ADDED Requirements
 
-### Requirement: Single-domain ingress supports subdomain and path routing
-The ingress layer SHALL support serving services under one primary domain using both subdomain routing and path-based routing.
+### Requirement: Single-domain ingress supports flat subdomain routing
+The ingress layer SHALL support serving services under one primary domain using flat subdomain routing for phase-1 host rollout.
 
 #### Scenario: Route map is rendered for a host
 - **WHEN** ingress routes are evaluated
-- **THEN** each route declares a host/path mapping under the same primary domain
+- **THEN** each routed service maps to a flat subdomain under the same primary domain
 
 ### Requirement: Per-service exposure mode is explicit
-Each routed service SHALL declare one exposure mode: `direct`, `tailscale-upstream`, or `tailscale-only`.
+Each routed service SHALL declare one exposure mode, with phase-1 defaults using `tailscale-upstream` or `tailscale-only`; `direct` remains available but deferred to explicit edge-local exceptions.
 
 #### Scenario: Service exposure policy is configured
 - **WHEN** a service is added to ingress configuration
@@ -17,6 +17,10 @@ Each routed service SHALL declare one exposure mode: `direct`, `tailscale-upstre
 #### Scenario: Exposure mode is omitted
 - **WHEN** a service route does not explicitly set exposure mode
 - **THEN** the route defaults to `tailscale-upstream`
+
+#### Scenario: Direct mode is requested in phase-1
+- **WHEN** a route is configured as `direct`
+- **THEN** it is treated as an explicit edge-local exception, not a normal cross-host default
 
 ### Requirement: Cloudflare DNS-01 certificates are automated
 Ingress TLS certificates SHALL be issued using Cloudflare DNS challenge integration with host-scoped credentials.

@@ -206,6 +206,30 @@ Operator commands:
 
 Note: `just deploy` takes positional host arguments (`just deploy oci-melb-1`), not `host=...`.
 
+## Phase-1 Edge Ingress Operations
+
+Phase-1 ingress is implemented with `modules/applications/edge-ingress.nix` and `modules/services/edge-proxy-ingress.nix`.
+
+Operational posture:
+
+- default web pattern keeps private-origin transport (`tailscale-upstream`) where practical
+- `direct` exposure is explicit opt-in for constant-availability cases where Tailscale harms client behavior
+- admin/sensitive public routes require access-gated edge policy and private-origin preference
+
+Operator workflow (do-admin-1 edge host):
+
+- precheck: `just check`
+- deploy: `just deploy do-admin-1`
+- deploy without rollback waiter: `just deploy do-admin-1 rollback=false`
+- rollback (generation): `just rollback do-admin-1`
+- runtime checks: `sudo scripts/edge-ingress-operational-checks.sh termix.shrublab.xyz /`
+
+Deferred from phase-1 (intentional):
+
+- cache layer and edge performance tuning
+- failover/HA ingress topology
+- advanced traffic management (rate limiting/WAF hardening beyond baseline)
+
 ## Known Risks and Constraints
 
 - cloud disk naming can vary; stable identifiers are required for reliable runtime mounts

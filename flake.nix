@@ -15,6 +15,7 @@
     inputs@{
       self,
       nixpkgs,
+      nixpkgs-unstable,
       disko,
       sops-nix,
       deploy-rs,
@@ -29,10 +30,11 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
+          pkgsUnstable = import nixpkgs-unstable { inherit system; };
         in
         pkgs.mkShell {
           packages = with pkgs; [
-            just
+            pkgsUnstable.just
             git
             jq
             yq

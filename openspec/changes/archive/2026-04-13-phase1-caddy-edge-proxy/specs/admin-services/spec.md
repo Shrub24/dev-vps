@@ -1,15 +1,15 @@
 ## MODIFIED Requirements
 
-### Requirement: Admin web access is edge-gated with private-origin transport by default
-Administrative web access SHALL default to edge access controls with private-origin transport, while preserving Tailscale-only mode for routes that must remain non-public.
+### Requirement: Admin access remains private and Tailscale-first
+Administrative access SHALL remain private and Tailscale-first by default, while allowing explicit edge-gated web ingress with private-origin transport for approved admin routes.
 
 #### Scenario: Admin network posture is evaluated
 - **WHEN** admin service and firewall config are inspected
-- **THEN** admin routes are access-gated at the edge and constrained to private-origin upstream transport
+- **THEN** access paths are private by default, and any declared admin web routes are edge-gated and constrained to private-origin upstream transport
 
 #### Scenario: Public ingress is enabled for non-admin services
 - **WHEN** mixed exposure policy is configured
-- **THEN** admin endpoints remain access-gated with private-origin transport unless explicitly changed
+- **THEN** admin endpoints remain private-first and access-gated with private-origin transport unless explicitly changed
 
 ### Requirement: Termix is exposed through controlled service wiring
 Termix SHALL run under declared service wiring and SHALL be exposed through controlled private-origin routing, independent from public Caddy app routes.

@@ -12,6 +12,7 @@
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
     ../../modules/applications/music.nix
+    ../../modules/applications/edge-ingress.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
     ../../modules/core/users.nix
@@ -24,6 +25,10 @@
   disko.devices.disk.media.device = "/dev/sdb";
   applications.music.dataRoot = "/srv/data";
   applications.music.mediaRoot = "/srv/media";
+  applications."edge-ingress" = {
+    enable = true;
+    role = "origin";
+  };
 
   # Configurable root size — set here so it's visible in one place per host.
   disko-root-extra = "20G";

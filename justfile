@@ -15,7 +15,7 @@ default:
 # the host's bootstrap-config.nix.
 # Examples:
 #   just bootstrap oci-melb-1 1.2.3.4
-#   just bootstrap do-admin-1 5.6.7.8 user=root
+#   just bootstrap do-admin-1 5.6.7.8
 bootstrap host target:
   @TARGET="{{target}}"; \
   echo "Checking port 22 on $TARGET..."; \
@@ -45,13 +45,14 @@ preflight host:
 # Deploy
 # ---------------------------------------------------------------------------
 
-# Deploy to a host. roll=false disables rollback.
+# Deploy to a host. rollback=false disables rollback.
 # Examples:
 #   just deploy do-admin-1
-#   just deploy oci-melb-1 rollback=false
+#   just deploy oci-melb-1 --rollback false
+[arg("rollback", long)]
 deploy host rollback="true":
   @HOST="{{host}}"; ROLLBACK="{{rollback}}"; \
-  if [[ -z "$HOST" ]]; then echo "Error: host required (use host=<nixosConfiguration>)"; exit 1; fi; \
+  if [[ -z "$HOST" ]]; then echo "Error: host required (use --host <nixosConfiguration>)"; exit 1; fi; \
   ARGS=(--skip-checks); \
   [[ "$ROLLBACK" != "false" ]] || ARGS+=(--auto-rollback false); \
   nix run .#deploy-rs -- "${ARGS[@]}" ".#$HOST"
@@ -66,18 +67,24 @@ activate host:
 # SSH / observability
 # ---------------------------------------------------------------------------
 
+[arg("user", long)]
 ssh host user="dev":
   @ssh {{user}}@{{host}}
 
 ssh-root host:
   @ssh root@{{host}}
 
+[arg("user", long)]
+[arg("unit", long)]
+[arg("lines", long)]
 logs host user="dev" unit="tailscaled" lines="200":
   @ssh {{user}}@{{host}} "sudo journalctl -u {{unit}} -n {{lines}} --no-pager"
 
+[arg("user", long)]
 status host user="dev":
   @ssh {{user}}@{{host}} "hostnamectl; echo; sudo systemctl --no-pager --full status tailscaled"
 
+[arg("user", long)]
 tailscale-status host user="dev":
   @ssh {{user}}@{{host}} "sudo tailscale status"
 
@@ -85,6 +92,9 @@ tailscale-status host user="dev":
 # Host key / age
 # ---------------------------------------------------------------------------
 
+[arg("port", long)]
+[arg("key_alias", long)]
+[arg("update", long)]
 host-age host port="22" key_alias="host_generic_age" update="false":
   @HOST="{{host}}"; PORT="{{port}}"; KEY_ALIAS="{{key_alias}}"; UPDATE="{{update}}"; \
   KEY_LINE="$(ssh-keyscan -p "$PORT" -t ed25519 "$HOST" 2>/dev/null | awk '/ssh-ed25519/ {print $0; exit}')"; \
@@ -98,6 +108,8 @@ host-age host port="22" key_alias="host_generic_age" update="false":
     echo "(preview — re-run with update=true to persist)"; \
   fi
 
+[arg("key_alias", long)]
+[arg("update", long)]
 host-age-from-key pubkey key_alias="host_generic_age" update="false":
   @KEY_ALIAS="{{key_alias}}"; UPDATE="{{update}}"; \
   AGE_RECIPIENT="$(printf '%s\n' "{{pubkey}}" | nix shell nixpkgs#ssh-to-age --command ssh-to-age)"; \
@@ -113,6 +125,7 @@ host-age-from-key pubkey key_alias="host_generic_age" update="false":
 # Break-glass
 # ---------------------------------------------------------------------------
 
+[arg("user", long)]
 breakglass host user="dev":
   @ssh {{user}}@{{host}} "set -euo pipefail; hostnamectl; echo '---'; readlink -f /nix/var/nix/profiles/system; echo '---'; sudo nix-env -p /nix/var/nix/profiles/system --list-generations"
 

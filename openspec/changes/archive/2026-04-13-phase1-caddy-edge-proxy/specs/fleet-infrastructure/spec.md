@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Access model is private-first
-Management and service access SHALL be Tailscale-first and SHALL not include uncontrolled public exposure in baseline configuration, while allowing explicit phase-scoped edge ingress policies.
+Management and service access SHALL be Tailscale-first and SHALL not include public exposure in baseline configuration.
 
 #### Scenario: Network posture is validated
 - **WHEN** network and service configs are inspected

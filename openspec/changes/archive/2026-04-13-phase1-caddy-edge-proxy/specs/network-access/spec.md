@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Baseline access is private-first
-Management and service access SHALL be private and Tailscale-first by default, with explicit policy-controlled exceptions for Phase-1 edge ingress.
+Management and service access SHALL be private and Tailscale-first by default.
 
 #### Scenario: Baseline network posture is checked
 - **WHEN** host and service network settings are evaluated
@@ -13,10 +13,10 @@ Management and service access SHALL be private and Tailscale-first by default, w
 
 #### Scenario: Constant-availability exception is introduced
 - **WHEN** a route is explicitly configured as `direct`
-- **THEN** it is treated as an explicit exception to the Tailscale-encrypted default and is constrained to declared exposure policy
+- **THEN** it is treated as an explicit, edge-local-only exception to the Tailscale-encrypted default and is constrained to declared exposure policy
 
 ### Requirement: Firewall trust boundaries are explicit
-Firewall policy SHALL enforce explicit trust boundaries for allowed interfaces and ports, including constrained ingress exposure for declared edge routes.
+Firewall policy SHALL enforce explicit trust boundaries for allowed interfaces and ports.
 
 #### Scenario: Firewall config is rendered
 - **WHEN** networking/firewall modules are evaluated

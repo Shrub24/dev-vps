@@ -9,10 +9,10 @@ The repo currently enforces a private-first Tailscale baseline, but it lacks a m
 - Add a Phase-1 modular Caddy reverse-proxy architecture for host/service ingress policy.
 - Introduce per-service exposure modes:
   - `tailscale-upstream` for web services that should stay private-origin over Tailscale
-  - `direct` for selected constant-availability services where Tailscale routing is operationally harmful
+  - `direct` retained as a schema mode but deferred from normal phase-1 usage (edge-local exception only)
   - `tailscale-only` for services with no public web route
-- Keep most services Tailscale-encrypted/reachable by default (`tailscale-upstream` or `tailscale-only`), and require explicit opt-in for `direct` public routing.
-- Serve through a single primary domain with both subdomain routing and path-based routing support where appropriate.
+- Keep most services Tailscale-encrypted/reachable by default (`tailscale-upstream` or `tailscale-only`), and defer `direct` as non-default in phase-1.
+- Serve through a single primary domain with flat subdomain routing for service exposure in phase-1.
 - Add Cloudflare DNS challenge integration for Caddy certificate automation (DNS-01 only).
 - Keep admin/sensitive services private-first by default; for web admin UIs, prefer Cloudflare Access at the edge with private-origin upstream.
 - Define host-role composition so each host can independently serve selected services while sharing common module patterns.

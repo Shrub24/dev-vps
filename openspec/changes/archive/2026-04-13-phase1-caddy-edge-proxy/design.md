@@ -10,10 +10,10 @@ Key constraints:
 ## Goals / Non-Goals
 
 **Goals:**
-- Introduce a reusable `edge-proxy-ingress` capability with per-service route policy (`direct`, `tailscale-upstream`, `tailscale-only`) where most services remain Tailscale-encrypted.
+- Introduce a reusable `edge-proxy-ingress` capability with per-service route policy where phase-1 defaults to `tailscale-upstream` and `tailscale-only`, and `direct` is deferred to explicit edge-local exceptions.
 - Define modular host wiring so each host can independently expose selected services.
 - Use Cloudflare DNS-01 challenge integration for certificate automation in Caddy.
-- Serve via a single primary domain using both subdomain and path-based routing where policy allows.
+- Serve via a single primary domain using flat subdomain routing for phase-1 service exposure.
 - Keep admin/sensitive routes private-origin by default, with Cloudflare Access as the default browser-admin edge control when publicly routed.
 - Make operations verifiable via contracts/smoke checks.
 
@@ -31,11 +31,11 @@ Key constraints:
    - Alternative rejected: hardcoding one ingress topology per host (too rigid).
 
 2. **Per-service exposure mode model**
-   - Each route declares one of: `direct`, `tailscale-upstream`, `tailscale-only`.
-   - Default mode is `tailscale-upstream` for centralized domain access with private transport preserved.
-   - `direct` is explicit opt-in for constant-availability services where Tailscale routing materially harms operation.
-   - Rationale: captures intended phase-1 topology while preserving future flexibility.
-   - Alternative rejected: boolean public/private flag (too coarse for edge-to-origin routing).
+    - Each route declares one of: `direct`, `tailscale-upstream`, `tailscale-only`.
+    - Default mode is `tailscale-upstream` for centralized domain access with private transport preserved.
+    - `direct` is retained as a schema mode but deferred from normal phase-1 use; if used, it is edge-local-only and explicit.
+    - Rationale: captures intended phase-1 topology while preserving future flexibility.
+    - Alternative rejected: boolean public/private flag (too coarse for edge-to-origin routing).
 
 3. **Certificate automation via Cloudflare DNS-01**
    - Integrate Caddy DNS challenge provider using host-scoped secrets.
@@ -64,7 +64,7 @@ Key constraints:
 1. Add ingress module contracts and capability specs.
 2. Add host-scoped DNS challenge secret scaffolding.
 3. Implement minimal Caddy service module with route policy inputs.
-4. Wire one service in each mode for validation (direct / tailscale-upstream / tailscale-only).
+4. Validate phase-1 with `tailscale-upstream` and `tailscale-only`; keep `direct` deferred unless explicitly needed for edge-local exceptions.
 5. Add contract/smoke checks and rollback notes.
 6. Roll out first to non-critical route(s), then expand per service.
 
@@ -75,5 +75,5 @@ Rollback strategy:
 ## Open Questions
 
 - Should `tailscale-upstream` routes require explicit health-check endpoints in phase-1?
-- Which first `direct` candidate service is safest for initial rollout?
+- Do we need any edge-local `direct` routes in phase-1, or defer fully to a later change?
 - Do we standardize one route metadata schema now for future cache/failover phases, or keep phase-1 minimal and evolve later?
