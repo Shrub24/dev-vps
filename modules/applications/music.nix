@@ -63,12 +63,15 @@ in
           type = "sendreceive";
           ensureDir = true;
           ensureMarker = true;
+          ensureAcl = true;
         };
         quarantine = {
           path = cfg.quarantineDir;
           type = "sendreceive";
+          ignorePerms = true;
           ensureDir = true;
           ensureMarker = true;
+          ensureAcl = true;
           devices = [ "arch" ];
         };
       };
