@@ -172,11 +172,15 @@ Status: Accepted
 
 Decision:
 
-- keep services private and Tailscale-only for now
+- keep service origins private-first and Tailscale-first by default
+- allow explicit public edge exposure only through the designated Cloudflare + Caddy edge bastion
+- use Cloudflare Access-gated policy for approved admin web routes at the edge
+- keep `direct` transport limited to explicit edge-local localhost exceptions
 
 Rationale:
 
-- minimizes attack surface during architecture transition
+- preserves a narrow public surface while retaining encrypted/private-origin upstream posture
+- keeps admin access policy explicit and consistent as ingress complexity grows
 
 ## D-014: Full repository cutover now (no long-lived bridge)
 
@@ -246,12 +250,12 @@ Decision:
 
 - implement Termix with a dedicated low-level module `modules/services/termix.nix` using Podman OCI containers (`termix` + `guacd`)
 - persist Termix state under `/srv/data/termix`
-- keep public exposure unchanged (no new firewall openings)
+- expose Termix only through declared edge route policy (Cloudflare Access-gated at public edge, private-origin transport preference)
 - Termix is hosted on `do-admin-1` (DigitalOcean x86_64); `oci-melb-1` does not run Termix
 
 Rationale:
 
-- adds private remote admin capability while keeping the project's Tailscale-first posture intact
+- adds controlled remote admin capability while preserving private-origin boundaries and explicit edge policy
 - keeps runtime/container specifics isolated from host composition and canonical docs
 
 ## D-019: Music app owns generic ingest boundary and slskd is confined to service subtree

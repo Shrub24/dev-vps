@@ -30,15 +30,15 @@ Secrets SHALL be split into fleet-shared and host-scoped material with explicit 
 - **THEN** only explicitly declared recipients can decrypt that host scope
 
 ### Requirement: Access model is private-first
-Management and service access SHALL be Tailscale-first and SHALL not include public exposure in baseline configuration.
+Management and service access SHALL be Tailscale-first and SHALL not include broad public origin exposure in baseline configuration, while allowing explicitly declared public edge bastion ingress routes.
 
 #### Scenario: Network posture is validated
 - **WHEN** network and service configs are inspected
-- **THEN** baseline access remains private and public exposure is absent by default
+- **THEN** baseline access remains private and non-edge origin exposure is absent by default
 
 #### Scenario: Phase-1 edge ingress is composed
 - **WHEN** a host is designated to publish selected routes
-- **THEN** only explicitly declared routes are exposed and private transport boundaries are preserved for upstream services
+- **THEN** only explicitly declared routes are exposed at the edge bastion and private-origin upstream boundaries are preserved for services behind that edge
 
 ### Requirement: Storage model separates service state and media
 The system SHALL maintain predictable persistent mounts for service state and media using stable identifiers.

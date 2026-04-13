@@ -16,14 +16,14 @@ In scope now:
 
 - Oracle Cloud host `oci-melb-1` as the first fleet node
 - DigitalOcean host `do-admin-1` as the second fleet node
-- Tailscale-first private access model
+- private-first service topology with a designated public edge bastion (Cloudflare + Caddy)
 - native NixOS services: `navidrome` and `syncthing`
 - modular host and service design for future multi-host growth
 
 Out of scope for now:
 
 - Kubernetes stack (`k3s`, `keda`) and cluster scheduling decisions
-- internet-facing reverse proxy and public edge hardening
+- high-availability edge topology and advanced edge traffic policy
 - cloud worker architecture details
 - production-grade backup automation design
 
@@ -39,7 +39,7 @@ First target host:
 - hostname: `oci-melb-1`
 - provider: Oracle Cloud Free Tier
 - architecture: `aarch64-linux` (Ampere)
-- network policy: management and service access over Tailscale
+- network policy: private-origin services and cross-host access over Tailscale
 
 Fleet direction:
 
@@ -173,13 +173,16 @@ Future evolution:
 
 Current model:
 
-- Tailscale is the private connectivity and access fabric
-- services remain private/Tailscale-only in the near term
-- Termix is exposed as a private admin application over Tailscale only (no new public firewall opening)
+- Cloudflare + Caddy on `do-admin-1` is the public edge bastion for explicitly declared web routes
+- Tailscale remains the private connectivity and cross-host upstream fabric
+- Admin web routes are access-gated at the edge (Cloudflare Access) with private-origin upstream preference
+- `tailscale-upstream` is the default cross-host route transport mode
+- `direct` is reserved for explicit edge-local localhost upstream exceptions
+- `tailscale-only` remains the mode for routes that must not be publicly rendered
 
 Potential later model:
 
-- optional internet exposure via reverse proxy or tunnel, only after baseline hardening
+- edge HA/failover and advanced policy hardening once phase-1 operational posture is stable
 
 ## Deployment Architecture
 
@@ -200,7 +203,7 @@ Fleet tooling posture:
 Operator commands:
 
 - deploy: `just deploy oci-melb-1` (or `just deploy do-admin-1`)
-- deploy without rollback: `just deploy oci-melb-1 rollback=false`
+- deploy without rollback: `just deploy oci-melb-1 --rollback false`
 - dry-activate: `just activate oci-melb-1`
 - checks: `just check`
 
@@ -213,14 +216,14 @@ Phase-1 ingress is implemented with `modules/applications/edge-ingress.nix` and 
 Operational posture:
 
 - default web pattern keeps private-origin transport (`tailscale-upstream`) where practical
-- `direct` exposure is explicit opt-in for constant-availability cases where Tailscale harms client behavior
+- `direct` exposure is deferred from normal phase-1 usage and only allowed as explicit edge-local localhost exception
 - admin/sensitive public routes require access-gated edge policy and private-origin preference
 
 Operator workflow (do-admin-1 edge host):
 
 - precheck: `just check`
 - deploy: `just deploy do-admin-1`
-- deploy without rollback waiter: `just deploy do-admin-1 rollback=false`
+- deploy without rollback waiter: `just deploy do-admin-1 --rollback false`
 - rollback (generation): `just rollback do-admin-1`
 - runtime checks: `sudo scripts/edge-ingress-operational-checks.sh termix.shrublab.xyz /`
 
