@@ -39,4 +39,3 @@ Provider-appropriate break-glass recovery SHALL be documented and operationally 
 #### Scenario: Remote admin path fails
 - **WHEN** Tailscale/SSH access is unavailable
 - **THEN** documented recovery procedures can be used to regain control
-

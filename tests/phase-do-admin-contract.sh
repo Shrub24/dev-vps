@@ -17,10 +17,22 @@ rg --fixed-strings --quiet '../../modules/providers/digitalocean/default.nix' "$
 rg --fixed-strings --quiet '../../modules/storage/disko-single-disk.nix' "$DO_HOST_FILE"
 rg --fixed-strings --quiet '../../modules/core/users.nix' "$DO_HOST_FILE"
 rg --fixed-strings --quiet 'networking.hostName = "do-admin-1";' "$DO_HOST_FILE"
-rg --fixed-strings --quiet 'networking.firewall.allowedTCPPorts = [ 22 ];' "$DO_HOST_FILE"
+rg --fixed-strings --quiet 'applications.admin.enable = true;' "$DO_HOST_FILE"
 rg --fixed-strings --quiet 'disko.devices.disk.main.device = "/dev/vda";' "$DO_HOST_FILE"
 nix eval --no-write-lock-file --apply 'ports: builtins.elem 22 ports' path:.#nixosConfigurations.do-admin-1.config.networking.firewall.allowedTCPPorts | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'dev: dev == "/dev/vda"' path:.#nixosConfigurations.do-admin-1.config.disko.devices.disk.main.device | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.applications.admin.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'svc: builtins.hasAttr "tailscale-serve-termix" svc' path:.#nixosConfigurations.do-admin-1.config.systemd.services | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'svc: builtins.hasAttr "tailscale-serve-cockpit" svc' path:.#nixosConfigurations.do-admin-1.config.systemd.services | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.cockpit.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.webhook.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.ntfy-sh.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.gatus.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.vaultwarden.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.filebrowser.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.homepage-dashboard.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.beszel.hub.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --raw path:.#nixosConfigurations.do-admin-1.config.services.termix.dataDir | rg --fixed-strings --quiet '/srv/data/termix'
 
 rg --fixed-strings --quiet 'hostName = "do-admin-1";' "$DO_BOOTSTRAP_FILE"
 rg --fixed-strings --quiet 'bootstrapUser = "root";' "$DO_BOOTSTRAP_FILE"

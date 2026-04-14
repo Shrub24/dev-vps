@@ -22,6 +22,7 @@
 
   disko.devices.disk.main.device = "/dev/vda";
   disko-root-extra = "100%";
+  applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
 
   sops.defaultSopsFile = ../../secrets/common.yaml;
