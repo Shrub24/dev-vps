@@ -65,8 +65,56 @@ in
         web.port = 8087;
         endpoints = [
           {
-            name = "ntfy-health";
+            name = "homepage";
+            url = "http://127.0.0.1:8082/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "cockpit";
+            url = "http://127.0.0.1:9090/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "beszel";
+            url = "http://127.0.0.1:8090/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "termix";
+            url = "http://127.0.0.1:8083/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "vaultwarden";
+            url = "http://127.0.0.1:8222/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "filebrowser";
+            url = "http://127.0.0.1:8088/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "ntfy";
             url = "http://127.0.0.1:2586/v1/health";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "webhook";
+            url = "http://127.0.0.1:9000/hooks/health";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "syncthing";
+            url = "http://oci-melb-1.tail0fe19b.ts.net:8384/";
             interval = "1m";
             conditions = [ "[STATUS] == 200" ];
           }
@@ -98,7 +146,142 @@ in
       enable = true;
       openFirewall = false;
       listenPort = 8082;
-      allowedHosts = "localhost:8082,127.0.0.1:8082";
+      allowedHosts = "localhost:8082,127.0.0.1:8082,admin.shrublab.xyz";
+      settings = {
+        title = "Shrublab Admin";
+        headerStyle = "boxedWidgets";
+      };
+      widgets = [
+        {
+          resources = {
+            cpu = true;
+            memory = true;
+            disk = "/";
+          };
+        }
+      ];
+      services = [
+        {
+          Operations = [
+            {
+              Cockpit = {
+                description = "Server administration";
+                href = "https://cockpit.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:9090";
+              };
+            }
+            {
+              "Beszel Hub" = {
+                description = "Fleet visibility and metrics";
+                href = "https://beszel.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8090";
+                widget = {
+                  type = "beszel";
+                  url = "http://127.0.0.1:8090";
+                };
+              };
+            }
+            {
+              Caddy = {
+                description = "Edge proxy runtime";
+                href = "https://admin.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:2019/config/";
+                widget = {
+                  type = "caddy";
+                  url = "http://127.0.0.1:2019";
+                };
+              };
+            }
+            {
+              Tailscale = {
+                description = "Tailnet connectivity and node state";
+                href = "https://login.tailscale.com/admin/machines";
+                widget = {
+                  type = "tailscale";
+                  deviceid = "{{HOMEPAGE_VAR_TAILSCALE_DEVICEID}}";
+                  key = "{{HOMEPAGE_VAR_TAILSCALE_API_KEY}}";
+                };
+              };
+            }
+            {
+              Gatus = {
+                description = "Health checks and status";
+                href = "https://gatus.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8087";
+                widget = {
+                  type = "gatus";
+                  url = "http://127.0.0.1:8087";
+                };
+              };
+            }
+          ];
+        }
+        {
+          "Core Tools" = [
+            {
+              Termix = {
+                description = "Interactive admin shell";
+                href = "https://termix.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8083";
+              };
+            }
+            {
+              Vaultwarden = {
+                description = "Password vault";
+                href = "https://vaultwarden.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8222";
+              };
+            }
+            {
+              Filebrowser = {
+                description = "Data root browser";
+                href = "https://filebrowser.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8088";
+                widget = {
+                  type = "filebrowser";
+                  url = "http://127.0.0.1:8088";
+                };
+              };
+            }
+            {
+              Ntfy = {
+                description = "Notification broker";
+                href = "https://ntfy.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:2586";
+              };
+            }
+            {
+              Syncthing = {
+                description = "Cross-host file sync controller";
+                href = "https://syncthing.shrublab.xyz";
+                siteMonitor = "http://oci-melb-1.tail0fe19b.ts.net:8384";
+              };
+            }
+          ];
+        }
+      ];
+      bookmarks = [
+        {
+          Access = [
+            {
+              "Admin Dashboard" = [
+                {
+                  abbr = "ADM";
+                  href = "https://admin.shrublab.xyz";
+                }
+              ];
+            }
+            {
+              Tailscale = [
+                {
+                  abbr = "TS";
+                  href = "https://login.tailscale.com/admin/machines";
+                }
+              ];
+            }
+          ];
+        }
+      ];
     };
 
     services.beszel.hub = {

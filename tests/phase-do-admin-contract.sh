@@ -32,7 +32,26 @@ nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosCon
 nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.filebrowser.enable | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.homepage-dashboard.enable | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'enabled: enabled == true' path:.#nixosConfigurations.do-admin-1.config.services.beszel.hub.enable | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'hosts: hosts == "localhost:8082,127.0.0.1:8082,admin.shrublab.xyz"' path:.#nixosConfigurations.do-admin-1.config.services.homepage-dashboard.allowedHosts | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --raw path:.#nixosConfigurations.do-admin-1.config.services.termix.dataDir | rg --fixed-strings --quiet '/srv/data/termix'
+
+rg --fixed-strings --quiet 'services.homepage-dashboard = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Operations = [' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Cockpit = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet '"Beszel Hub" = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Caddy = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Tailscale = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Gatus = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'type = "tailscale";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'deviceid = "{{HOMEPAGE_VAR_TAILSCALE_DEVICEID}}";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'key = "{{HOMEPAGE_VAR_TAILSCALE_API_KEY}}";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'href = "https://gatus.shrublab.xyz";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'href = "https://vaultwarden.shrublab.xyz";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'href = "https://filebrowser.shrublab.xyz";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'href = "https://ntfy.shrublab.xyz";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Syncthing = {' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'href = "https://syncthing.shrublab.xyz";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'url = "http://oci-melb-1.tail0fe19b.ts.net:8384/";' 'modules/applications/admin.nix'
 
 rg --fixed-strings --quiet 'hostName = "do-admin-1";' "$DO_BOOTSTRAP_FILE"
 rg --fixed-strings --quiet 'bootstrapUser = "root";' "$DO_BOOTSTRAP_FILE"

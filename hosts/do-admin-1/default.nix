@@ -97,12 +97,84 @@
         cloudflareAccessRequired = true;
       };
 
-      cockpit-private = {
+      admin-homepage = {
+        subdomain = "admin";
+        path = "/";
+        upstream = "http://127.0.0.1:8082";
+        exposureMode = "direct";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      cockpit-admin = {
         subdomain = "cockpit";
         path = "/";
         upstream = "http://127.0.0.1:9090";
-        exposureMode = "tailscale-only";
+        exposureMode = "direct";
+        declarePublic = true;
         category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      beszel-admin = {
+        subdomain = "beszel";
+        path = "/";
+        upstream = "http://127.0.0.1:8090";
+        exposureMode = "direct";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      gatus-admin = {
+        subdomain = "gatus";
+        path = "/";
+        upstream = "http://127.0.0.1:8087";
+        exposureMode = "direct";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      vaultwarden-admin = {
+        subdomain = "vaultwarden";
+        path = "/";
+        upstream = "http://127.0.0.1:8222";
+        exposureMode = "direct";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      filebrowser-admin = {
+        subdomain = "filebrowser";
+        path = "/";
+        upstream = "http://127.0.0.1:8088";
+        exposureMode = "direct";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      ntfy-admin = {
+        subdomain = "ntfy";
+        path = "/";
+        upstream = "http://127.0.0.1:2586";
+        exposureMode = "direct";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
+
+      syncthing-admin = {
+        subdomain = "syncthing";
+        path = "/";
+        upstream = "http://oci-melb-1.tail0fe19b.ts.net:8384";
+        exposureMode = "tailscale-upstream";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
       };
     };
   };
