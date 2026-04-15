@@ -25,6 +25,14 @@
   disko.devices.disk.media.device = "/dev/sdb";
   applications.music.dataRoot = "/srv/data";
   applications.music.mediaRoot = "/srv/media";
+
+  systemd.tmpfiles.rules = [
+    "d ${config.applications.music.dataRoot} 0755 root root - -"
+    "z ${config.applications.music.dataRoot} 0755 root root - -"
+    "d ${config.applications.music.mediaRoot} 0755 root root - -"
+    "z ${config.applications.music.mediaRoot} 0755 root root - -"
+  ];
+
   applications."edge-ingress" = {
     enable = true;
     role = "origin";
