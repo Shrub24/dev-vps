@@ -42,8 +42,8 @@
           category = "app";
           access.requireCloudflareAccess = false;
           cloudflare = {
-            proxied = false;
-            authenticatedOriginPulls = false;
+            proxied = true;
+            authenticatedOriginPulls = true;
           };
           health.path = "/ping";
         };
@@ -57,6 +57,21 @@
           };
           category = "admin";
           access.oidc.enabled = true;
+        };
+
+        pocket-id-admin = {
+          subdomain = "id";
+          origin = {
+            scheme = "http";
+            host = "127.0.0.1";
+            port = 1411;
+          };
+          category = "admin";
+          access.requireCloudflareAccess = false;
+          cloudflare = {
+            proxied = true;
+            authenticatedOriginPulls = true;
+          };
         };
 
         admin-homepage = {
@@ -120,7 +135,6 @@
             port = 8088;
           };
           category = "admin";
-          access.oidc.enabled = true;
         };
 
         ntfy-admin = {

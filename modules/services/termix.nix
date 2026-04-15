@@ -1,10 +1,35 @@
 { lib, config, ... }:
 
+let
+  cfg = config.services.termix;
+in
 {
-  options.services.termix.dataDir = lib.mkOption {
-    type = lib.types.str;
-    default = "/srv/data/termix";
-    description = "Data directory for Termix";
+  options.services.termix = {
+    dataDir = lib.mkOption {
+      type = lib.types.str;
+      default = "/srv/data/termix";
+      description = "Data directory for Termix";
+    };
+
+    oidc = {
+      enabled = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether Termix should enable native OIDC auth wiring.";
+      };
+
+      issuerUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Pocket ID issuer URL for Termix auth posture documentation/runtime metadata.";
+      };
+
+      environmentFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Optional env-file containing Termix OIDC variables (OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_AUTHORIZATION_URL, OIDC_TOKEN_URL, etc.).";
+      };
+    };
   };
 
   config = {
@@ -15,7 +40,7 @@
         autoStart = true;
         image = "docker.io/guacamole/guacd:1.6.0";
         volumes = [
-          "${config.services.termix.dataDir}/guacd:/var/lib/guacd"
+          "${cfg.dataDir}/guacd:/var/lib/guacd"
         ];
       };
 
@@ -26,6 +51,16 @@
         environment = {
           GUACD_HOST = "127.0.0.1";
           GUACD_PORT = "4822";
+        }
+        // lib.optionalAttrs cfg.oidc.enabled {
+          OIDC_ISSUER_URL = toString cfg.oidc.issuerUrl;
+        };
+        environmentFiles = lib.optionals (cfg.oidc.enabled && cfg.oidc.environmentFile != null) [
+          cfg.oidc.environmentFile
+        ];
+        labels = lib.optionalAttrs cfg.oidc.enabled {
+          "io.shrublab.auth.oidc" = "pocket-id";
+          "io.shrublab.auth.oidc.issuer" = toString cfg.oidc.issuerUrl;
         };
         ports = [
           "0.0.0.0:8083:8080"
@@ -36,15 +71,15 @@
           "--dns-search=tail0fe19b.ts.net"
         ];
         volumes = [
-          "${config.services.termix.dataDir}/data:/app/data"
+          "${cfg.dataDir}/data:/app/data"
         ];
       };
     };
 
     systemd.tmpfiles.rules = [
-      "d ${config.services.termix.dataDir} 0750 root root - -"
-      "d ${config.services.termix.dataDir}/data 0750 root root - -"
-      "d ${config.services.termix.dataDir}/guacd 0750 root root - -"
+      "d ${cfg.dataDir} 0750 root root - -"
+      "d ${cfg.dataDir}/data 0750 root root - -"
+      "d ${cfg.dataDir}/guacd 0750 root root - -"
     ];
 
     systemd.services."podman-guacd" = {
@@ -62,5 +97,16 @@
         "podman-guacd.service"
       ];
     };
+
+    assertions = [
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.issuerUrl != null;
+        message = "services.termix.oidc.issuerUrl must be set when services.termix.oidc.enabled=true.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.environmentFile != null;
+        message = "services.termix.oidc.environmentFile must be set when services.termix.oidc.enabled=true.";
+      }
+    ];
   };
 }

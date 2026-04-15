@@ -1,0 +1,14 @@
+{
+  "libraries": {
+    "gatus": {
+      "files": [
+        {
+          "filename": "oidc-env-syntax.md",
+          "topic": "oidc env syntax",
+          "fetched": "2026-04-15T00:00:00Z",
+          "source": "Context7 API"
+        }
+      ]
+    }
+  }
+}

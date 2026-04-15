@@ -183,5 +183,8 @@ resource "cloudflare_zero_trust_access_identity_provider" "main" {
     pkce_enabled  = true
     client_id     = var.idp_client_id
     client_secret = var.idp_client_secret
+    auth_url      = var.idp_auth_url
+    token_url     = var.idp_token_url
+    certs_url     = var.idp_certs_url
   }
 }
