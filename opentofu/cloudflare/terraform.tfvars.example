@@ -14,10 +14,12 @@ admin_email = "<admin-email-address>"
 aop_enabled = true
 
 # Identity Provider — set these to configure Zero Trust login with your IdP.
-# idp_type  = "google"
-# idp_name  = "Homelab SSO"
+# idp_name          = "Pocket ID"
 # idp_client_id     = "<client-id>"
 # idp_client_secret = "<client-secret>"
+# idp_auth_url      = "https://id.shrublab.xyz/oauth/authorize"
+# idp_token_url     = "https://id.shrublab.xyz/oauth/token"
+# idp_certs_url     = "https://id.shrublab.xyz/.well-known/jwks.json"
 
 # Optional overrides (defaults shown):
 # manage_origin_record   = true

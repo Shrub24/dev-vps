@@ -65,7 +65,6 @@
       });
 
       nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
@@ -75,7 +74,6 @@
       };
 
       nixosConfigurations.do-admin-1 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops

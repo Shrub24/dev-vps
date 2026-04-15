@@ -8,10 +8,23 @@
 let
   cfg = config.applications.admin;
   unstablePkgs = import inputs.nixpkgs-unstable { system = pkgs.system; };
+  hasGatusOidcEnv = lib.hasAttrByPath [
+    "sops"
+    "templates"
+    "gatus-oidc.env"
+    "path"
+  ] config;
+  hasTermixOidcEnv = lib.hasAttrByPath [
+    "sops"
+    "templates"
+    "termix-oidc.env"
+    "path"
+  ] config;
 in
 {
   imports = [
     ../../modules/services/termix.nix
+    ../../modules/services/pocket-id.nix
   ];
 
   options.applications.admin = {
@@ -22,10 +35,30 @@ in
       default = "/srv/data";
       description = "Top-level data root for admin application services.";
     };
+
+    pocketIdBaseUrl = lib.mkOption {
+      type = lib.types.str;
+      default = "https://id.shrublab.xyz";
+      description = "Pocket ID public base URL used by Access and app OIDC wiring.";
+    };
+
   };
 
   config = lib.mkIf cfg.enable {
-    services.termix.dataDir = "${cfg.dataRoot}/termix";
+    services.shrublab-pocket-id = {
+      enable = true;
+      dataDir = "${cfg.dataRoot}/pocket-id";
+      appUrl = cfg.pocketIdBaseUrl;
+    };
+
+    services.termix = {
+      dataDir = "${cfg.dataRoot}/termix";
+      oidc = {
+        enabled = hasTermixOidcEnv;
+        issuerUrl = cfg.pocketIdBaseUrl;
+        environmentFile = if hasTermixOidcEnv then config.sops.templates."termix-oidc.env".path else null;
+      };
+    };
 
     services.cockpit = {
       enable = true;
@@ -61,8 +94,16 @@ in
     services.gatus = {
       enable = true;
       openFirewall = false;
+      environmentFile = if hasGatusOidcEnv then config.sops.templates."gatus-oidc.env".path else null;
       settings = {
         web.port = 8087;
+        security.oidc = {
+          "issuer-url" = cfg.pocketIdBaseUrl;
+          "redirect-url" = "https://gatus.shrublab.xyz/authorization-code/callback";
+          "client-id" = "\${GATUS_OIDC_CLIENT_ID}";
+          "client-secret" = "\${GATUS_OIDC_CLIENT_SECRET}";
+          scopes = [ "openid" ];
+        };
         endpoints = [
           {
             name = "homepage";
@@ -145,14 +186,18 @@ in
     };
 
     services.filebrowser = {
-      enable = true;
+      enable = false;
       openFirewall = false;
       settings = {
         address = "127.0.0.1";
         port = 8088;
-        root = cfg.dataRoot;
+        root = "${cfg.dataRoot}/filebrowser";
       };
     };
+
+    systemd.tmpfiles.rules = [
+      "d ${cfg.dataRoot}/filebrowser 0750 root root - -"
+    ];
 
     services.homepage-dashboard = {
       enable = true;
@@ -384,6 +429,11 @@ in
       enable = true;
       host = "127.0.0.1";
       port = 8090;
+      environment = {
+        APP_URL = "https://beszel.shrublab.xyz";
+        DISABLE_PASSWORD_AUTH = "false";
+        USER_CREATION = "true";
+      };
     };
 
     systemd.services.tailscale-serve-termix = {

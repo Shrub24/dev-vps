@@ -80,34 +80,110 @@ variable "aop_enabled" {
 }
 
 # -----------------------------------------------------------------------------
-# Zero Trust Identity Provider
+# Zero Trust Identity Provider (Pocket ID generic OIDC)
 # -----------------------------------------------------------------------------
 
 variable "idp_type" {
-  description = "Zero Trust IdP type (e.g. google, azureAD, oidc, okta)"
+  description = "Zero Trust IdP name shown on the login page"
   type        = string
-  default     = "google"
+  default     = "oidc"
 }
 
 variable "idp_name" {
   description = "Zero Trust IdP name shown on the login page"
   type        = string
-  default     = "Homelab SSO"
+  default     = "Pocket ID"
 }
 
 variable "idp_client_id" {
-  description = "OAuth Client ID for the IdP"
+  description = "OIDC client ID for Cloudflare Access upstream IdP"
   type        = string
   default     = null
   nullable    = true
+
+  # validation {
+  #   condition = (
+  #     var.idp_client_id == null
+  #     || (
+  #       var.idp_client_secret != null
+  #       && trimspace(var.idp_client_secret) != ""
+  #     )
+  #   )
+  #   error_message = "idp_client_secret is required when idp_client_id is set."
+  # }
 }
 
 variable "idp_client_secret" {
-  description = "OAuth Client Secret for the IdP"
+  description = "OIDC client secret for Cloudflare Access upstream IdP"
   type        = string
   sensitive   = true
   default     = null
   nullable    = true
+
+  validation {
+    condition = (
+      var.idp_client_secret == null
+      || (
+        var.idp_client_id != null
+        && trimspace(var.idp_client_id) != ""
+      )
+    )
+    error_message = "idp_client_id is required when idp_client_secret is set."
+  }
+}
+
+variable "idp_auth_url" {
+  description = "Pocket ID authorization endpoint URL"
+  type        = string
+  default     = null
+  nullable    = true
+
+  # validation {
+  #   condition = (
+  #     var.idp_client_id == null
+  #     || (
+  #       var.idp_auth_url != null
+  #       && trimspace(var.idp_auth_url) != ""
+  #     )
+  #   )
+  #   error_message = "idp_auth_url is required when idp_client_id is set."
+  # }
+}
+
+variable "idp_token_url" {
+  description = "Pocket ID token endpoint URL"
+  type        = string
+  default     = null
+  nullable    = true
+
+  # validation {
+  #   condition = (
+  #     var.idp_client_id == null
+  #     || (
+  #       var.idp_token_url != null
+  #       && trimspace(var.idp_token_url) != ""
+  #     )
+  #   )
+  #   error_message = "idp_token_url is required when idp_client_id is set."
+  # }
+}
+
+variable "idp_certs_url" {
+  description = "Pocket ID JWKS/certs endpoint URL"
+  type        = string
+  default     = null
+  nullable    = true
+
+  # validation {
+  #   condition = (
+  #     var.idp_client_id == null
+  #     || (
+  #       var.idp_certs_url != null
+  #       && trimspace(var.idp_certs_url) != ""
+  #     )
+  #   )
+  #   error_message = "idp_certs_url is required when idp_client_id is set."
+  # }
 }
 
 # -----------------------------------------------------------------------------

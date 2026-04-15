@@ -37,13 +37,17 @@ rg --fixed-strings --quiet 'routes = edgeRoutes;' "$EDGE_HOST"
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.subdomain == "music"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.cloudflareAccessRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.exposureMode == "tailscale-upstream"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.vaultwarden-admin.cloudflareAccessRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.cloudflareAccessRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.subdomain == "termix"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.syncthing-admin.exposureMode == "tailscale-upstream"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.admin-homepage.subdomain == "admin"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."pocket-id-admin".subdomain == "id"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."pocket-id-admin".cloudflareAccessRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."pocket-id-admin".authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."filebrowser-admin".cloudflareAccessRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 
-nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.authenticatedOriginPullsRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 
 rg --fixed-strings --quiet 'role = "origin";' "$ORIGIN_HOST"
