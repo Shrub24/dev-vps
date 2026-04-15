@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Edge policy inputs SHALL come from canonical web-services policy
 Ingress policy defaults and explicit exceptions used by edge-proxy-ingress SHALL be sourced from the canonical policy map at `policy/web-services.nix`.

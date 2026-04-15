@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Public-edge policy SHALL be explicit by default-plus-exception model
 Cloudflare public-edge access posture SHALL be modeled as a global default with explicit host/route exceptions.
