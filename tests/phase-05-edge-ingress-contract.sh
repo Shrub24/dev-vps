@@ -30,41 +30,20 @@ rg --fixed-strings --quiet 'applications."edge-ingress"' "$EDGE_APP"
 rg --fixed-strings --quiet 'services."edge-proxy-ingress"' "$EDGE_APP"
 
 rg --fixed-strings --quiet 'role = "edge";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'exposureMode = "direct";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'exposureMode = "tailscale-upstream";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'cloudflareAccessRequired = true;' "$EDGE_HOST"
-rg --fixed-strings --quiet 'admin-homepage = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "admin";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:8082";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'category = "admin";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'declarePublic = true;' "$EDGE_HOST"
-rg --fixed-strings --quiet 'cockpit-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "cockpit";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'path = "/";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:9090";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'beszel-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "beszel";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'path = "/";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:8090";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'gatus-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "gatus";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:8087";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'vaultwarden-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "vaultwarden";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:8222";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'filebrowser-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "filebrowser";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:8088";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'ntfy-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "ntfy";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://127.0.0.1:2586";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'syncthing-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "syncthing";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://oci-melb-1.tail0fe19b.ts.net:8384";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'exposureMode = "tailscale-upstream";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'slskd-admin = {' "$EDGE_HOST"
-rg --fixed-strings --quiet 'subdomain = "slskd";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'upstream = "http://oci-melb-1.tail0fe19b.ts.net:5030";' "$EDGE_HOST"
-rg --fixed-strings --quiet 'exposureMode = "tailscale-upstream";' "$EDGE_HOST"
+rg --fixed-strings --quiet 'webServicesPolicy = import ../../policy/web-services.nix;' "$EDGE_HOST"
+rg --fixed-strings --quiet 'policyLib = import ../../lib/policy.nix { inherit lib; };' "$EDGE_HOST"
+rg --fixed-strings --quiet 'routes = edgeRoutes;' "$EDGE_HOST"
+
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.subdomain == "music"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.cloudflareAccessRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.exposureMode == "tailscale-upstream"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.vaultwarden-admin.cloudflareAccessRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.cloudflareAccessRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.subdomain == "termix"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.syncthing-admin.exposureMode == "tailscale-upstream"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.admin-homepage.subdomain == "admin"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.navidrome.authenticatedOriginPullsRequired == false' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 
 rg --fixed-strings --quiet 'role = "origin";' "$ORIGIN_HOST"

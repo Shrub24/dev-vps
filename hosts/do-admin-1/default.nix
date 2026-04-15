@@ -4,6 +4,26 @@
   modulesPath,
   ...
 }:
+let
+  webServicesPolicy = import ../../policy/web-services.nix;
+  policyLib = import ../../lib/policy.nix { inherit lib; };
+
+  resolvedRoutes = policyLib.resolveHostServices webServicesPolicy "do-admin-1";
+
+  edgeRoutes = lib.mapAttrs (_: svc: {
+    inherit (svc)
+      subdomain
+      path
+      exposureMode
+      category
+      stripPrefix
+      declarePublic
+      upstream
+      ;
+    cloudflareAccessRequired = svc.access.requireCloudflareAccess;
+    authenticatedOriginPullsRequired = svc.cloudflare.authenticatedOriginPulls;
+  }) resolvedRoutes;
+in
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
@@ -77,116 +97,7 @@
       enable = true;
       caCertFile = toString ../../certs/authenticated_origin_pull_ca.pem;
     };
-    routes = {
-      navidrome = {
-        subdomain = "music";
-        path = "/";
-        upstream = "http://oci-melb-1.tail0fe19b.ts.net:4533";
-        exposureMode = "tailscale-upstream";
-        declarePublic = true;
-        category = "app";
-      };
-
-      termix-admin = {
-        subdomain = "termix";
-        path = "/";
-        upstream = "http://127.0.0.1:8083";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      admin-homepage = {
-        subdomain = "admin";
-        path = "/";
-        upstream = "http://127.0.0.1:8082";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      cockpit-admin = {
-        subdomain = "cockpit";
-        path = "/";
-        upstream = "http://127.0.0.1:9090";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      beszel-admin = {
-        subdomain = "beszel";
-        path = "/";
-        upstream = "http://127.0.0.1:8090";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      gatus-admin = {
-        subdomain = "gatus";
-        path = "/";
-        upstream = "http://127.0.0.1:8087";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      vaultwarden-admin = {
-        subdomain = "vaultwarden";
-        path = "/";
-        upstream = "http://127.0.0.1:8222";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      filebrowser-admin = {
-        subdomain = "filebrowser";
-        path = "/";
-        upstream = "http://127.0.0.1:8088";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      ntfy-admin = {
-        subdomain = "ntfy";
-        path = "/";
-        upstream = "http://127.0.0.1:2586";
-        exposureMode = "direct";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      syncthing-admin = {
-        subdomain = "syncthing";
-        path = "/";
-        upstream = "http://oci-melb-1.tail0fe19b.ts.net:8384";
-        exposureMode = "tailscale-upstream";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-
-      slskd-admin = {
-        subdomain = "slskd";
-        path = "/";
-        upstream = "http://oci-melb-1.tail0fe19b.ts.net:5030";
-        exposureMode = "tailscale-upstream";
-        declarePublic = true;
-        category = "admin";
-        cloudflareAccessRequired = true;
-      };
-    };
+    routes = edgeRoutes;
   };
 
   system.stateVersion = "25.11";

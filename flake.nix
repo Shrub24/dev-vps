@@ -38,6 +38,7 @@
             git
             jq
             yq
+            opentofu
             sops
             age
             nixos-anywhere

@@ -138,3 +138,24 @@ check:
 
 build host="oci-melb-1":
   @nix build --no-link --no-write-lock-file "path:.#nixosConfigurations.{{host}}.config.system.build.toplevel"
+
+# ---------------------------------------------------------------------------
+# OpenTofu / Cloudflare
+# ---------------------------------------------------------------------------
+
+tofu-sync host="do-admin-1":
+  @./lib/export-web-services-policy.sh {{host}}
+  @./lib/check-web-services-policy.sh {{host}}
+
+tofu-init:
+  @tofu -chdir=opentofu/cloudflare init
+
+tofu-check:
+  @tofu -chdir=opentofu/cloudflare fmt -check
+  @tofu -chdir=opentofu/cloudflare validate
+
+tofu-plan:
+  @tofu -chdir=opentofu/cloudflare plan -var-file=terraform.tfvars
+
+tofu-apply:
+  @tofu -chdir=opentofu/cloudflare apply -var-file=terraform.tfvars

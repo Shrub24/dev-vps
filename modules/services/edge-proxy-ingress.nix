@@ -19,7 +19,7 @@ let
 
   siteHosts = lib.unique (map hostForRoute publicRoutes);
 
-  needsAccessHeader = route: route.cloudflareAccessRequired || route.category != "app";
+  needsAccessHeader = route: route.cloudflareAccessRequired;
 
   sanitize = value: lib.replaceStrings [ "." "-" "/" "@" ] [ "_" "_" "_" "_" ] value;
 
@@ -62,8 +62,24 @@ let
         }
       '';
 
+  hostRouteNames =
+    host: builtins.filter (name: hostForRoute (routeByName name) == host) publicRouteNames;
+
+  hostAopValues =
+    host: map (name: (routeByName name).authenticatedOriginPullsRequired) (hostRouteNames host);
+
+  hostRequiresAop = host: builtins.any (value: value) (hostAopValues host);
+
+  hostHasMixedAopRequirement =
+    host:
+    let
+      values = lib.unique (hostAopValues host);
+    in
+    builtins.length values > 1;
+
   mTlsBlock =
-    if cfg.authenticatedOriginPulls.enable then
+    host:
+    if cfg.authenticatedOriginPulls.enable && hostRequiresAop host then
       ''
         client_auth {
           mode require_and_verify
@@ -104,7 +120,7 @@ let
     ''
       ${host} {
         tls /var/lib/acme/${cfg.primaryDomain}/fullchain.pem /var/lib/acme/${cfg.primaryDomain}/key.pem {
-          ${mTlsBlock}
+          ${mTlsBlock host}
         }
         encode zstd
       ${routeBlocks}
@@ -138,17 +154,6 @@ let
       {
         assertion = route.exposureMode == "tailscale-only" || route.declarePublic;
         message = "edge-proxy-ingress route '${name}' must set declarePublic=true for public exposure modes.";
-      }
-    ) routeNames
-    ++ lib.map (
-      name:
-      let
-        route = routeByName name;
-      in
-      {
-        assertion =
-          route.category == "app" || route.exposureMode == "tailscale-only" || needsAccessHeader route;
-        message = "edge-proxy-ingress route '${name}' is admin/sensitive and must require Cloudflare Access when publicly routed.";
       }
     ) routeNames;
 in
@@ -285,6 +290,12 @@ in
               default = false;
               description = "Use handle_path to strip path prefix before proxying.";
             };
+
+            authenticatedOriginPullsRequired = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Whether this route requires Cloudflare Authenticated Origin Pulls (mTLS) at host TLS layer.";
+            };
           };
         }
       );
@@ -308,6 +319,14 @@ in
       {
         assertion = !cfg.authenticatedOriginPulls.enable || cfg.authenticatedOriginPulls.caCertFile != null;
         message = "edge-proxy-ingress requires authenticatedOriginPulls.caCertFile when authenticatedOriginPulls.enable=true.";
+      }
+      {
+        assertion = cfg.authenticatedOriginPulls.enable || !(builtins.any hostRequiresAop siteHosts);
+        message = "edge-proxy-ingress has public hosts requiring authenticated origin pulls, but authenticatedOriginPulls.enable=false.";
+      }
+      {
+        assertion = !(builtins.any hostHasMixedAopRequirement siteHosts);
+        message = "edge-proxy-ingress cannot mix authenticatedOriginPullsRequired true/false routes on the same host.";
       }
       {
         assertion = cfg.role == "edge" || cfg.routes == { };

@@ -1,0 +1,29 @@
+# Copy this to terraform.tfvars and fill real values.
+# Do not commit terraform.tfvars.
+
+cloudflare_api_token    = "<cloudflare-api-token>"
+cloudflare_account_id   = "<cloudflare-account-id>"
+cloudflare_zone_id      = "<cloudflare-zone-id>"
+
+edge_record_target    = "<edge-dns-target>"
+origin_record_content = "<origin-ip-or-hostname>"
+
+admin_email = "<admin-email-address>"
+
+# AOP — enable zone-level Authenticated Origin Pulls.
+aop_enabled = true
+
+# Identity Provider — set these to configure Zero Trust login with your IdP.
+# idp_type  = "google"
+# idp_name  = "Homelab SSO"
+# idp_client_id     = "<client-id>"
+# idp_client_secret = "<client-secret>"
+
+# Optional overrides (defaults shown):
+# manage_origin_record   = true
+# origin_record_name      = "origin"
+# origin_record_type      = "A"
+# origin_record_proxied   = false
+# primary_domain          = "shrublab.xyz"
+# temp_access_session_duration = "24h"
+# access_session_duration = "24h"
