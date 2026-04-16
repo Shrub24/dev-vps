@@ -61,6 +61,10 @@
         deploy-rs = deploy-rs.packages.${system}.default;
       });
 
+      formatter = nixpkgs.lib.genAttrs devShellSystems (
+        system: (import nixpkgs { inherit system; }).nixfmt
+      );
+
       nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
         modules = [
           disko.nixosModules.disko

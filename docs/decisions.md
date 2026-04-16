@@ -234,7 +234,7 @@ Status: Accepted
 Decision:
 
 - add `modules/applications/music.nix` to compose Syncthing, Navidrome, and slskd for `oci-melb-1`
-- add `modules/applications/admin.nix` to compose private admin access through Tailscale plus Termix
+- add `modules/applications/admin/default.nix` to compose private admin access through Tailscale plus Termix
 - keep low-level implementation in `modules/services/*.nix` and avoid broad repository reorganization
 
 Rationale:

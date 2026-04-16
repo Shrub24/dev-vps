@@ -1,5 +1,6 @@
 {
   defaults = {
+    primaryDomain = "shrublab.xyz";
     exposureMode = "direct";
     category = "app";
     path = "/";
@@ -21,7 +22,7 @@
     };
 
     health = {
-      path = "/health";
+      path = "/";
       expectedStatus = 200;
     };
   };
@@ -146,6 +147,7 @@
             port = 2586;
           };
           category = "admin";
+          health.path = "/v1/health";
         };
 
         syncthing-admin = {
@@ -157,6 +159,29 @@
           };
           exposureMode = "tailscale-upstream";
           category = "admin";
+        };
+
+        slskd-admin = {
+          subdomain = "slskd";
+          origin = {
+            scheme = "http";
+            host = "oci-melb-1.tail0fe19b.ts.net";
+            port = 5030;
+          };
+          exposureMode = "tailscale-upstream";
+          category = "admin";
+        };
+
+        webhook-admin = {
+          subdomain = "webhook";
+          origin = {
+            scheme = "http";
+            host = "127.0.0.1";
+            port = 9000;
+          };
+          exposureMode = "tailscale-only";
+          category = "admin";
+          health.path = "/hooks/health";
         };
       };
     };
