@@ -176,6 +176,16 @@
         category = "admin";
         cloudflareAccessRequired = true;
       };
+
+      slskd-admin = {
+        subdomain = "slskd";
+        path = "/";
+        upstream = "http://oci-melb-1.tail0fe19b.ts.net:5030";
+        exposureMode = "tailscale-upstream";
+        declarePublic = true;
+        category = "admin";
+        cloudflareAccessRequired = true;
+      };
     };
   };
 

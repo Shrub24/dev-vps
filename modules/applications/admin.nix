@@ -118,6 +118,18 @@ in
             interval = "1m";
             conditions = [ "[STATUS] == 200" ];
           }
+          {
+            name = "navidrome";
+            url = "http://oci-melb-1.tail0fe19b.ts.net:4533/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
+          {
+            name = "slskd";
+            url = "http://oci-melb-1.tail0fe19b.ts.net:5030/";
+            interval = "1m";
+            conditions = [ "[STATUS] == 200" ];
+          }
         ];
       };
     };
@@ -150,6 +162,29 @@ in
       settings = {
         title = "Shrublab Admin";
         headerStyle = "boxedWidgets";
+        startUrl = "https://admin.shrublab.xyz/#overview";
+        layout = {
+          Glance = {
+            tab = "Overview";
+            style = "row";
+            columns = 3;
+            icon = "mdi-view-dashboard";
+            useEqualHeights = true;
+          };
+          Access = {
+            tab = "Access";
+            style = "row";
+            columns = 4;
+            icon = "mdi-link-variant";
+          };
+          "0Links" = {
+            style = "row";
+            columns = 4;
+            iconsOnly = true;
+            header = false;
+            icon = "mdi-bookmark-multiple";
+          };
+        };
       };
       widgets = [
         {
@@ -162,19 +197,12 @@ in
       ];
       services = [
         {
-          Operations = [
-            {
-              Cockpit = {
-                description = "Server administration";
-                href = "https://cockpit.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:9090";
-              };
-            }
+          Glance = [
             {
               "Beszel Hub" = {
+                icon = "beszel";
                 description = "Fleet visibility and metrics";
                 href = "https://beszel.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:8090";
                 widget = {
                   type = "beszel";
                   url = "http://127.0.0.1:8090";
@@ -183,9 +211,9 @@ in
             }
             {
               Caddy = {
+                icon = "caddy";
                 description = "Edge proxy runtime";
                 href = "https://admin.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:2019/config/";
                 widget = {
                   type = "caddy";
                   url = "http://127.0.0.1:2019";
@@ -194,6 +222,7 @@ in
             }
             {
               Tailscale = {
+                icon = "tailscale";
                 description = "Tailnet connectivity and node state";
                 href = "https://login.tailscale.com/admin/machines";
                 widget = {
@@ -205,38 +234,20 @@ in
             }
             {
               Gatus = {
+                icon = "gatus";
                 description = "Health checks and status";
                 href = "https://gatus.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:8087";
                 widget = {
                   type = "gatus";
                   url = "http://127.0.0.1:8087";
                 };
               };
             }
-          ];
-        }
-        {
-          "Core Tools" = [
-            {
-              Termix = {
-                description = "Interactive admin shell";
-                href = "https://termix.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:8083";
-              };
-            }
-            {
-              Vaultwarden = {
-                description = "Password vault";
-                href = "https://vaultwarden.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:8222";
-              };
-            }
             {
               Filebrowser = {
+                icon = "filebrowser";
                 description = "Data root browser";
                 href = "https://filebrowser.shrublab.xyz";
-                siteMonitor = "http://127.0.0.1:8088";
                 widget = {
                   type = "filebrowser";
                   url = "http://127.0.0.1:8088";
@@ -244,7 +255,62 @@ in
               };
             }
             {
+              Navidrome = {
+                icon = "navidrome";
+                description = "Music streaming status";
+                href = "https://music.shrublab.xyz";
+                widget = {
+                  type = "navidrome";
+                  url = "http://oci-melb-1.tail0fe19b.ts.net:4533";
+                  user = "{{HOMEPAGE_VAR_NAVIDROME_USER}}";
+                  token = "{{HOMEPAGE_VAR_NAVIDROME_TOKEN}}";
+                  salt = "{{HOMEPAGE_VAR_NAVIDROME_SALT}}";
+                };
+              };
+            }
+            {
+              Slskd = {
+                icon = "slskd";
+                description = "Soulseek queue and transfer status";
+                href = "https://slskd.shrublab.xyz";
+                widget = {
+                  type = "slskd";
+                  url = "http://oci-melb-1.tail0fe19b.ts.net:5030";
+                  key = "{{HOMEPAGE_VAR_SLSKD_KEY}}";
+                };
+              };
+            }
+          ];
+        }
+        {
+          Access = [
+            {
+              Cockpit = {
+                icon = "mdi-console-network";
+                description = "Server administration";
+                href = "https://cockpit.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:9090";
+              };
+            }
+            {
+              Termix = {
+                icon = "mdi-console";
+                description = "Interactive admin shell";
+                href = "https://termix.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8083";
+              };
+            }
+            {
+              Vaultwarden = {
+                icon = "vaultwarden";
+                description = "Password vault";
+                href = "https://vaultwarden.shrublab.xyz";
+                siteMonitor = "http://127.0.0.1:8222";
+              };
+            }
+            {
               Ntfy = {
+                icon = "mdi-bell-outline";
                 description = "Notification broker";
                 href = "https://ntfy.shrublab.xyz";
                 siteMonitor = "http://127.0.0.1:2586";
@@ -252,6 +318,7 @@ in
             }
             {
               Syncthing = {
+                icon = "syncthing";
                 description = "Cross-host file sync controller";
                 href = "https://syncthing.shrublab.xyz";
                 siteMonitor = "http://oci-melb-1.tail0fe19b.ts.net:8384";
@@ -262,20 +329,49 @@ in
       ];
       bookmarks = [
         {
-          Access = [
+          "0Links" = [
             {
               "Admin Dashboard" = [
                 {
-                  abbr = "ADM";
+                  icon = "si-homeassistant";
                   href = "https://admin.shrublab.xyz";
+                  description = "";
                 }
               ];
             }
             {
               Tailscale = [
                 {
-                  abbr = "TS";
+                  icon = "si-tailscale";
                   href = "https://login.tailscale.com/admin/machines";
+                  description = "";
+                }
+              ];
+            }
+            {
+              Oracle = [
+                {
+                  icon = "si-oracle";
+                  href = "https://www.oracle.com/anz/cloud/sign-in.html";
+                  description = "";
+                }
+              ];
+            }
+            {
+              DigitalOcean = [
+                {
+                  icon = "si-digitalocean";
+                  href = "https://cloud.digitalocean.com/login";
+                  description = "";
+                }
+              ];
+            }
+            {
+              Homelab = [
+                {
+                  icon = "si-github";
+                  href = "https://github.com/Shrub24/nix-homelab";
+                  description = "";
                 }
               ];
             }
