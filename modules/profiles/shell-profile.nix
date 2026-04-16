@@ -14,6 +14,8 @@
     ripgrep
     zoxide
     pay-respects
+    zsh-autosuggestions
+    zsh-completions
     zsh-fzf-tab
     zsh-powerlevel10k
   ];
@@ -32,6 +34,7 @@
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
 
     interactiveShellInit = ''
