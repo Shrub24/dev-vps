@@ -30,6 +30,12 @@ in
   options.applications.admin = {
     enable = lib.mkEnableOption "admin application composition";
 
+    cockpit.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Enable Cockpit and Cockpit-dependent integrations.";
+    };
+
     dataRoot = lib.mkOption {
       type = lib.types.str;
       default = "/srv/data";
@@ -61,14 +67,14 @@ in
     };
 
     services.cockpit = {
-      enable = true;
+      enable = cfg.cockpit.enable;
       openFirewall = false;
       package = unstablePkgs.cockpit;
     };
 
-    environment.systemPackages = [
-      unstablePkgs."cockpit-podman"
-      unstablePkgs."cockpit-files"
+    environment.systemPackages = lib.optionals cfg.cockpit.enable [
+      pkgs."cockpit-podman"
+      pkgs."cockpit-files"
     ];
 
     services.udisks2.enable = true;
@@ -472,7 +478,7 @@ in
       };
     };
 
-    systemd.services.tailscale-serve-cockpit = {
+    systemd.services.tailscale-serve-cockpit = lib.mkIf cfg.cockpit.enable {
       description = "Expose Cockpit via dedicated Tailscale HTTPS port";
       requires = [
         "tailscaled.service"
@@ -512,7 +518,9 @@ in
       deps = [ "etc" ];
       text = ''
         ${pkgs.systemd}/bin/systemctl restart tailscale-serve-termix.service || true
-        ${pkgs.systemd}/bin/systemctl restart tailscale-serve-cockpit.service || true
+        ${lib.optionalString cfg.cockpit.enable ''
+          ${pkgs.systemd}/bin/systemctl restart tailscale-serve-cockpit.service || true
+        ''}
       '';
     };
   };
