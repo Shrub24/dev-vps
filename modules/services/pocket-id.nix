@@ -1,4 +1,8 @@
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  ...
+}:
 
 let
   cfg = config.services.shrublab-pocket-id;
@@ -15,7 +19,6 @@ in
 
     appUrl = lib.mkOption {
       type = lib.types.str;
-      default = "https://id.shrublab.xyz";
       description = "Externally reachable Pocket ID URL used as OIDC issuer base.";
     };
   };

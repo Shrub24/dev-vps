@@ -1,9 +1,5 @@
-# Spec: Repository Structure
+## MODIFIED Requirements
 
-## Purpose
-
-Define repository layout contracts that preserve modular host composition, clear ownership boundaries, and durable documentation authority.
-## Requirements
 ### Requirement: Host and module boundaries are explicit
 Repository structure SHALL separate host composition from reusable module domains and SHALL preserve explicit layering between policy data (`policy/`), policy transformation helpers (`lib/`), service-owned modules (`modules/services/`), application composition (`modules/applications/`), and host assembly (`hosts/`).
 
@@ -19,13 +15,6 @@ Provider assumptions SHALL be isolated to provider/host layers and not embedded 
 - **WHEN** service modules are composed by different hosts/providers
 - **THEN** reusable module behavior does not depend on provider-specific inline logic
 
-### Requirement: Flake outputs are canonical host entrypoints
-Canonical host build/deploy targets SHALL be represented through flake host outputs.
-
-#### Scenario: Host target is selected for operations
-- **WHEN** build/deploy routines resolve host targets
-- **THEN** they map to canonical `nixosConfigurations.<host>` outputs
-
 ### Requirement: Documentation authority is centralized
 Architecture/decision/process documents SHALL remain centralized and referenced by entrypoint docs to avoid drift, including when module and host layout changes are introduced.
 
@@ -33,12 +22,7 @@ Architecture/decision/process documents SHALL remain centralized and referenced 
 - **WHEN** significant layout/workflow updates are made
 - **THEN** authoritative docs are updated in the same change window
 
-### Requirement: Canonical docs reflect active package baseline policy
-Canonical repository documentation SHALL describe the active package baseline policy and SHALL remain synchronized with flake input behavior.
-
-#### Scenario: Baseline policy changes
-- **WHEN** primary package baseline policy is changed in active code
-- **THEN** canonical docs (`docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`) are updated in the same change window to reflect the new default policy
+## ADDED Requirements
 
 ### Requirement: Admin host composition SHALL support focused host files
 Admin host composition for `do-admin-1` SHALL support focused host files for secrets, edge route/policy projection, and networking glue while keeping `hosts/do-admin-1/default.nix` as the primary assembly entrypoint.
@@ -55,4 +39,3 @@ Repository structure and module boundaries SHALL keep canonical domain, route su
 - **WHEN** domain/subdomain/path/port values are inspected across edge, service, and monitoring modules
 - **THEN** each value class has one authoritative source-of-truth location
 - **AND** downstream modules consume resolved projections rather than duplicating raw literals
-

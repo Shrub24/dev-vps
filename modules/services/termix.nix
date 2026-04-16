@@ -5,6 +5,8 @@ let
 in
 {
   options.services.termix = {
+    enable = lib.mkEnableOption "Termix service";
+
     dataDir = lib.mkOption {
       type = lib.types.str;
       default = "/srv/data/termix";
@@ -33,7 +35,7 @@ in
 
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     virtualisation.podman.enable = true;
 
     virtualisation.oci-containers.containers = {
@@ -95,15 +97,6 @@ in
         "network-online.target"
         "podman-guacd.service"
       ];
-    };
-
-    # Ensure host switch/apply operations also bounce Termix so container runtime
-    # picks up host-level edits even when generated unit content doesn't change.
-    system.activationScripts.termix-restart-on-switch = {
-      deps = [ "etc" ];
-      text = ''
-        ${config.systemd.package}/bin/systemctl try-restart podman-termix.service || true
-      '';
     };
 
     assertions = [

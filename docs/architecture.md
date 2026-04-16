@@ -90,7 +90,7 @@ The exact file tree can evolve, but the intended shape is:
 - `modules/core/base.nix` for shared baseline policy
 - `modules/profiles/base-server.nix` for host profile composition
 - `modules/applications/music.nix` for first-pass Syncthing/Navidrome/slskd composition
-- `modules/applications/admin.nix` for first-pass private admin composition
+- `modules/applications/admin/default.nix` for first-pass private admin composition
 - `modules/services/tailscale.nix` for reusable service wiring
 - `modules/services/termix.nix` for low-level Termix + guacd container wiring
 - `modules/services/*.nix` for reusable service modules with enable flags

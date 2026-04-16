@@ -8,6 +8,7 @@
 
   do-admin-1 = {
     hostName = "homelab-lon";
+    # hostName = "139.59.199.81";
     sshUser = "dev";
     system = "x86_64-linux";
     remoteBuild = false;
