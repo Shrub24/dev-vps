@@ -29,3 +29,13 @@ aop_enabled = true
 # primary_domain          = "shrublab.xyz"
 # temp_access_session_duration = "24h"
 # access_session_duration = "24h"
+
+# Zone rulesets (firewall/WAF/cache)
+# managed_waf_enabled          = true
+# firewall_country_allowlist_enabled = false
+# firewall_allowed_countries   = ["AU", "GB"]
+# rate_limit_enabled           = true
+# rate_limit_characteristics   = ["ip.src", "cf.colo.id"]
+# rate_limit_requests_per_period = 200
+# rate_limit_requests_to_origin = true
+# navidrome_cache_bypass_enabled = true

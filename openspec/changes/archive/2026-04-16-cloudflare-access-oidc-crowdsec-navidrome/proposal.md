@@ -19,6 +19,7 @@ We are pivoting to a Cloudflare-first edge posture: keep Cloudflare Access for b
 - Keep `homepage` as Access-gated only (no app-native OIDC work in this phase).
 - Keep file-management UI out of this phase’s OIDC rollout.
 - Remove CrowdSec and firewall bouncer from rollout scope; rely on Cloudflare traffic blocking and firewall controls at the edge.
+- In this change, CrowdSec references are removed from active runtime/test code paths; mentions retained in current/archived OpenSpec docs are historical/contextual.
 - Update contract checks for orange-cloud posture, Access-vs-exception behavior, and Cloudflare-first security baseline.
 
 ## Capabilities

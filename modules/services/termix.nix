@@ -30,6 +30,7 @@ in
         description = "Optional env-file containing Termix OIDC variables (OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_AUTHORIZATION_URL, OIDC_TOKEN_URL, etc.).";
       };
     };
+
   };
 
   config = {
@@ -55,7 +56,7 @@ in
         // lib.optionalAttrs cfg.oidc.enabled {
           OIDC_ISSUER_URL = toString cfg.oidc.issuerUrl;
         };
-        environmentFiles = lib.optionals (cfg.oidc.enabled && cfg.oidc.environmentFile != null) [
+        environmentFiles = lib.optionals (cfg.oidc.environmentFile != null) [
           cfg.oidc.environmentFile
         ];
         labels = lib.optionalAttrs cfg.oidc.enabled {
@@ -66,8 +67,6 @@ in
           "0.0.0.0:8083:8080"
         ];
         extraOptions = [
-          "--dns=100.100.100.100"
-          "--dns=1.1.1.1"
           "--dns-search=tail0fe19b.ts.net"
         ];
         volumes = [
@@ -96,6 +95,15 @@ in
         "network-online.target"
         "podman-guacd.service"
       ];
+    };
+
+    # Ensure host switch/apply operations also bounce Termix so container runtime
+    # picks up host-level edits even when generated unit content doesn't change.
+    system.activationScripts.termix-restart-on-switch = {
+      deps = [ "etc" ];
+      text = ''
+        ${config.systemd.package}/bin/systemctl try-restart podman-termix.service || true
+      '';
     };
 
     assertions = [

@@ -31,6 +31,14 @@ locals {
     allow_admins   = cloudflare_zero_trust_access_policy.allow_admins.id
     allow_approved = cloudflare_zero_trust_access_policy.allow_approved.id
   }
+
+  firewall_allowed_countries_expression = length(var.firewall_allowed_countries) > 0 ? format(
+    "ip.geoip.country in {%s}",
+    join(" ", [for cc in var.firewall_allowed_countries : format("\"%s\"", upper(cc))])
+  ) : "ip.geoip.country in {\"__none__\"}"
+
+  navidrome_service = try(local.public_service_records.navidrome, null)
+  navidrome_host    = local.navidrome_service != null ? "${local.navidrome_service.subdomain}.${var.primary_domain}" : null
 }
 
 # ---------------------------------------------------------------------------
@@ -187,4 +195,87 @@ resource "cloudflare_zero_trust_access_identity_provider" "main" {
     token_url     = var.idp_token_url
     certs_url     = var.idp_certs_url
   }
+}
+
+# ---------------------------------------------------------------------------
+# Cloudflare security and cache controls
+# ---------------------------------------------------------------------------
+
+resource "cloudflare_ruleset" "zone_firewall_managed" {
+  zone_id     = var.cloudflare_zone_id
+  name        = "zone-managed-waf"
+  description = "Execute managed WAF ruleset zone-wide"
+  phase       = "http_request_firewall_managed"
+  kind        = "zone"
+
+  rules = [{
+    ref         = "execute_managed_waf"
+    description = "Execute managed WAF for all requests in this zone"
+    expression  = "true"
+    action      = "execute"
+    enabled     = var.managed_waf_enabled
+    action_parameters = {
+      id = "efb7b8c949ac4650a09736fc376e9aee"
+    }
+  }]
+}
+
+resource "cloudflare_ruleset" "zone_firewall_custom" {
+  zone_id     = var.cloudflare_zone_id
+  name        = "zone-custom-firewall"
+  description = "Custom firewall controls zone-wide"
+  phase       = "http_request_firewall_custom"
+  kind        = "zone"
+
+  rules = [{
+    ref         = "block_non_allowlisted_countries"
+    description = "Block requests from countries not in the allow list (zone-wide)"
+    expression  = "not (${local.firewall_allowed_countries_expression})"
+    action      = "block"
+    enabled     = var.firewall_country_allowlist_enabled
+  }]
+}
+
+resource "cloudflare_ruleset" "zone_rate_limit" {
+  zone_id     = var.cloudflare_zone_id
+  name        = "zone-rate-limit"
+  description = "Rate limit requests zone-wide"
+  phase       = "http_ratelimit"
+  kind        = "zone"
+
+  rules = [{
+    ref         = "rate_limit_public_services"
+    description = "Apply rate limiting for all requests in this zone"
+    expression  = "true"
+    action      = "block"
+    enabled     = var.rate_limit_enabled
+    ratelimit = {
+      characteristics     = var.rate_limit_characteristics
+      period              = 10
+      requests_per_period = var.rate_limit_requests_per_period
+      mitigation_timeout  = 10
+      requests_to_origin  = var.rate_limit_requests_to_origin
+    }
+  }]
+}
+
+resource "cloudflare_ruleset" "navidrome_cache_bypass" {
+  count = var.navidrome_cache_bypass_enabled && local.navidrome_host != null ? 1 : 0
+
+  zone_id     = var.cloudflare_zone_id
+  name        = "zone-navidrome-cache-bypass"
+  description = "Bypass CDN cache for Navidrome streaming host"
+  phase       = "http_request_cache_settings"
+  kind        = "zone"
+
+  rules = [{
+    ref         = "navidrome_bypass_cache"
+    description = "Disable cache for Navidrome host"
+    expression  = format("http.host eq \"%s\"", local.navidrome_host)
+    action      = "set_cache_settings"
+    enabled     = true
+    action_parameters = {
+      cache = false
+    }
+  }]
 }
