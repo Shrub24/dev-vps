@@ -417,6 +417,23 @@ Rationale:
 - removes ad-hoc per-command deployment drift while preserving bootstrap/secrets flows
 - ensures deployment schema validation is part of normal flake checks
 
+## D-028: nixpkgs baseline is unstable-default with exception-only fallback
+
+Status: Accepted
+
+Decision:
+
+- set the primary flake `nixpkgs` input to `github:NixOS/nixpkgs/nixos-unstable`
+- remove pre-provisioned `nixpkgs-unstable` split wiring from active code paths
+- allow additional stable fallback inputs only as targeted, explicitly documented exceptions
+- keep host `system.stateVersion` unchanged by this policy shift
+
+Rationale:
+
+- reduces split-package-set complexity and exception churn in active development
+- keeps package provenance consistent across hosts/modules while preserving explicit rollback via future documented exceptions
+- avoids incorrectly coupling package baseline changes to state-version migration semantics
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

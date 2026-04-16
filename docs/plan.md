@@ -12,6 +12,7 @@ Transition this repository from legacy `dev-vps` orientation to a clean, modular
 - repository currently contains significant legacy configuration and documentation
 - migration should reduce confusion, not increase parallel architectures
 - initial service baseline should remain operationally simple
+- active package baseline is `nixos-unstable` by default; fallback package-set divergence is exception-only and must be explicitly documented
 
 ## Execution Strategy
 

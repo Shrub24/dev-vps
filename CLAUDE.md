@@ -28,7 +28,7 @@ Canonical human-facing architecture and migration guidance lives under `docs/` (
 ### Core Technologies
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| NixOS | 25.11 stable | Base OS and package set | Use the current stable release line for first-host bring-up. It gives you current kernel/userspace, official `aarch64-linux` install media, and less churn than `nixos-unstable` while the repo shape is still settling. |
+| NixOS | nixos-unstable (active baseline) | Base OS and package set | Active fleet code defaults to `nixos-unstable`; add stable fallback only as an explicit, documented exception when a concrete regression appears. |
 | Flakes | Built into current Nix (`nix` 2.34.0 on nixos.org) | Reproducible repo entrypoint | A fleet repo should have one pinned lockfile, one set of inputs, and one canonical way to build hosts. Flakes are the standard way to do that in 2025-era Nix infra repos. |
 | `nixos-anywhere` | 1.13.0 | Remote bootstrap | This is the standard bootstrap tool for unattended remote installs. It already composes with `disko`, pushes your flake-defined config, and is purpose-built for SSH-driven installs. |
 | `disko` | 1.13.0 | Declarative partitioning and filesystems | It removes the last major manual install step. For a fleet repo, disk layout must live in code next to host config, not in a one-off runbook. |
@@ -39,10 +39,10 @@ Canonical human-facing architecture and migration guidance lives under `docs/` (
 ### Supporting Libraries
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| NixOS `services.tailscale` | From `nixos-25.11` | Private networking and admin access | Enable on every host from day 0. Use tagged auth keys, MagicDNS, and Tailscale-only service exposure first. |
-| NixOS `services.syncthing` | From `nixos-25.11` / upstream 2.0.15 line | Bidirectional media sync | Use for the initial library authority model. Turn on folder versioning and explicit device/folder IDs before trusting it with important media. |
-| NixOS `services.navidrome` | From `nixos-25.11` / upstream 0.60.3 line | Music streaming service | Use after the Tailscale and storage baseline is stable. Point it directly at the Syncthing-managed music path; do not add an ingest pipeline yet. |
-| NixOS `hardware.facter.reportPath` | In nixpkgs 25.11 | Host fact import | Use for `oci-melb-1` after first install so OCI/UEFI details are captured, not guessed. |
+| NixOS `services.tailscale` | From active nixpkgs baseline | Private networking and admin access | Enable on every host from day 0. Use tagged auth keys, MagicDNS, and Tailscale-only service exposure first. |
+| NixOS `services.syncthing` | From active nixpkgs baseline / upstream 2.0.15 line | Bidirectional media sync | Use for the initial library authority model. Turn on folder versioning and explicit device/folder IDs before trusting it with important media. |
+| NixOS `services.navidrome` | From active nixpkgs baseline / upstream 0.60.3 line | Music streaming service | Use after the Tailscale and storage baseline is stable. Point it directly at the Syncthing-managed music path; do not add an ingest pipeline yet. |
+| NixOS `hardware.facter.reportPath` | In active nixpkgs baseline | Host fact import | Use for `oci-melb-1` after first install so OCI/UEFI details are captured, not guessed. |
 | `ssh-to-age` | Current nixpkgs package | Convert admin or host SSH keys to age recipients | Use when adding new machine recipients into `.sops.yaml` without introducing GPG. |
 ### Development Tools
 | Tool | Purpose | Notes |
@@ -86,10 +86,10 @@ Canonical human-facing architecture and migration guidance lives under `docs/` (
 ## Version Compatibility
 | Package A | Compatible With | Notes |
 |-----------|-----------------|-------|
-| `nixpkgs@nixos-25.11` | NixOS 25.11 | Current stable base according to nixos.org download page. |
+| `nixpkgs@nixos-unstable` | Active host configs | Primary package baseline for active fleet code. |
 | `nixos-anywhere@1.13.0` | `disko@1.13.0+`, flake-based installs | `nixos-anywhere` explicitly uses `disko` for partitioning during remote install. |
 | `sops-nix` | `sops@3.12.2`, `age@1.3.1` | Use flakes and pin the input revision; `sops-nix` decrypts during activation, not evaluation. |
-| `nixos-facter@0.4.3` | nixpkgs 25.11 `hardware.facter.reportPath` | The old external `nixos-facter-modules` repo is deprecated because the module is upstreamed to nixpkgs. |
+| `nixos-facter@0.4.3` | active nixpkgs `hardware.facter.reportPath` | The old external `nixos-facter-modules` repo is deprecated because the module is upstreamed to nixpkgs. |
 | Tailscale / Syncthing / Navidrome on `aarch64-linux` | Oracle Ampere A1 | All three upstreams publish current ARM64 builds, so OCI ARM is a first-class target rather than an afterthought. |
 ## Recommended First-Host Shape
 - **Bootstrap:** Temporary OCI Ubuntu/Oracle Linux image -> `nixos-anywhere` over SSH -> `disko` applies GPT/EFI/root/data layout -> switch to NixOS.

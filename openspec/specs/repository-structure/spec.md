@@ -3,9 +3,7 @@
 ## Purpose
 
 Define repository layout contracts that preserve modular host composition, clear ownership boundaries, and durable documentation authority.
-
 ## Requirements
-
 ### Requirement: Host and module boundaries are explicit
 Repository structure SHALL separate host composition from reusable module domains.
 
@@ -33,3 +31,11 @@ Architecture/decision/process documents SHALL remain centralized and referenced 
 #### Scenario: Structure or workflow changes are introduced
 - **WHEN** significant layout/workflow updates are made
 - **THEN** authoritative docs are updated in the same change window
+
+### Requirement: Canonical docs reflect active package baseline policy
+Canonical repository documentation SHALL describe the active package baseline policy and SHALL remain synchronized with flake input behavior.
+
+#### Scenario: Baseline policy changes
+- **WHEN** primary package baseline policy is changed in active code
+- **THEN** canonical docs (`docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`) are updated in the same change window to reflect the new default policy
+

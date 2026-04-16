@@ -7,7 +7,6 @@
 }:
 let
   cfg = config.applications.admin;
-  unstablePkgs = import inputs.nixpkgs-unstable { system = pkgs.system; };
   hasGatusOidcEnv = lib.hasAttrByPath [
     "sops"
     "templates"
@@ -69,7 +68,7 @@ in
     services.cockpit = {
       enable = cfg.cockpit.enable;
       openFirewall = false;
-      package = unstablePkgs.cockpit;
+      package = pkgs.cockpit;
     };
 
     environment.systemPackages = lib.optionals cfg.cockpit.enable [
