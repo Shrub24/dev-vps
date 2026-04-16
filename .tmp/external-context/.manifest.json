@@ -9,6 +9,16 @@
           "source": "Context7 API"
         }
       ]
+    },
+    "cloudflare": {
+      "files": [
+        {
+          "filename": "cloudflare-provider-v5-permissions.md",
+          "topic": "terraform provider v5 api token permissions",
+          "fetched": "2026-04-16T00:00:00Z",
+          "source": "Context7 API"
+        }
+      ]
     }
   }
 }
