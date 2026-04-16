@@ -44,6 +44,11 @@ in
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
 
+  systemd.tmpfiles.rules = [
+    "d ${config.applications.admin.dataRoot} 0755 root root - -"
+    "z ${config.applications.admin.dataRoot} 0755 root root - -"
+  ];
+
   sops.defaultSopsFile = ../../secrets/common.yaml;
 
   sops.secrets = lib.mkIf (builtins.pathExists ../../hosts/do-admin-1/secrets.yaml) {
@@ -157,12 +162,16 @@ in
         owner = "root";
         group = "root";
         mode = "0400";
+        restartUnits = [
+          "podman-termix.service"
+        ];
         content = ''
           OIDC_CLIENT_ID=${config.sops.placeholder.termix_oidc_client_id}
           OIDC_CLIENT_SECRET=${config.sops.placeholder.termix_oidc_client_secret}
           OIDC_ISSUER_URL=https://id.shrublab.xyz
-          OIDC_AUTHORIZATION_URL=https://id.shrublab.xyz/oauth/authorize
-          OIDC_TOKEN_URL=https://id.shrublab.xyz/oauth/token
+          OIDC_AUTHORIZATION_URL=https://id.shrublab.xyz/authorize
+          OIDC_TOKEN_URL=https://id.shrublab.xyz/api/oidc/token
+          OIDC_USERINFO_URL=https://id.shrublab.xyz/api/oidc/userinfo
           OIDC_SCOPES=openid email profile
         '';
       };
@@ -172,6 +181,42 @@ in
   };
 
   services.resolved.enable = true;
+
+  networking.firewall.trustedInterfaces = lib.mkAfter [
+    "podman0"
+    "cni-podman0"
+  ];
+
+  networking.nat = {
+    enable = true;
+    externalInterface = "ens3";
+    internalInterfaces = [
+      "podman0"
+      "cni-podman0"
+    ];
+  };
+
+  # Split DNS for Termix container traffic:
+  # - tailnet names route to Tailscale MagicDNS
+  # - everything else routes to public resolvers
+  services.dnsmasq = {
+    enable = true;
+    settings = {
+      no-resolv = true;
+      server = [
+        "/tail0fe19b.ts.net/100.100.100.100"
+        "1.1.1.1"
+        "8.8.8.8"
+      ];
+      "listen-address" = [
+        "127.0.0.1"
+        "10.88.0.1"
+      ];
+      "bind-dynamic" = true;
+      "cache-size" = 1000;
+    };
+  };
+
   networking.nameservers = [
     "1.1.1.1"
     "8.8.8.8"

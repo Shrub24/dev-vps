@@ -207,3 +207,62 @@ variable "access_session_duration" {
   type        = string
   default     = "730h"
 }
+
+# -----------------------------------------------------------------------------
+# Zone rulesets (WAF/firewall/cache posture)
+# -----------------------------------------------------------------------------
+
+variable "managed_waf_enabled" {
+  description = "Enable execution of Cloudflare managed WAF ruleset for in-scope public service hosts"
+  type        = bool
+  default     = true
+}
+
+variable "firewall_country_allowlist_enabled" {
+  description = "Enable custom firewall country allow-list enforcement for in-scope public service hosts"
+  type        = bool
+  default     = false
+}
+
+variable "firewall_allowed_countries" {
+  description = "ISO 3166-1 alpha-2 country codes allowed when firewall_country_allowlist_enabled is true"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for code in var.firewall_allowed_countries : length(trimspace(code)) == 2
+    ])
+    error_message = "firewall_allowed_countries entries must be 2-letter ISO country codes (for example: \"AU\", \"GB\")."
+  }
+}
+
+variable "navidrome_cache_bypass_enabled" {
+  description = "Enable cache bypass ruleset for Navidrome host so streaming is never CDN cached"
+  type        = bool
+  default     = true
+}
+
+variable "rate_limit_enabled" {
+  description = "Enable zone-level rate limiting for in-scope public service hosts"
+  type        = bool
+  default     = true
+}
+
+variable "rate_limit_characteristics" {
+  description = "Rate limiting characteristics used for counters"
+  type        = list(string)
+  default     = ["ip.src", "cf.colo.id"]
+}
+
+variable "rate_limit_requests_per_period" {
+  description = "Allowed requests per period before mitigation"
+  type        = number
+  default     = 200
+}
+
+variable "rate_limit_requests_to_origin" {
+  description = "Whether to count only requests that reach origin"
+  type        = bool
+  default     = true
+}

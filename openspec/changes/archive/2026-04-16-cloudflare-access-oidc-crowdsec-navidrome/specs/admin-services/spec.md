@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Admin app auth SHALL support Pocket ID OIDC for phase-1 supported services
 The admin baseline SHALL support app-native OIDC using Pocket ID as shared issuer for the phase-1 app set (`gatus`, `beszel`, `termix`) while keeping explicit exceptions for services that are not in scope for this auth wave.

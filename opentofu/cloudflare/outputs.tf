@@ -99,3 +99,33 @@ output "zone_always_use_https" {
   description = "Cloudflare zone Always Use HTTPS setting"
   value       = cloudflare_zone_setting.always_use_https.value
 }
+
+output "zone_security_rulesets" {
+  description = "Zone-level firewall/WAF rulesets managed by OpenTofu"
+  value = {
+    managed_waf = {
+      id      = cloudflare_ruleset.zone_firewall_managed.id
+      phase   = cloudflare_ruleset.zone_firewall_managed.phase
+      enabled = var.managed_waf_enabled
+    }
+    custom_firewall = {
+      id      = cloudflare_ruleset.zone_firewall_custom.id
+      phase   = cloudflare_ruleset.zone_firewall_custom.phase
+      enabled = var.firewall_country_allowlist_enabled
+    }
+    rate_limit = {
+      id      = cloudflare_ruleset.zone_rate_limit.id
+      phase   = cloudflare_ruleset.zone_rate_limit.phase
+      enabled = var.rate_limit_enabled
+    }
+  }
+}
+
+output "navidrome_cache_bypass_ruleset" {
+  description = "Navidrome cache bypass ruleset metadata when enabled"
+  value = length(cloudflare_ruleset.navidrome_cache_bypass) > 0 ? {
+    id      = cloudflare_ruleset.navidrome_cache_bypass[0].id
+    phase   = cloudflare_ruleset.navidrome_cache_bypass[0].phase
+    enabled = var.navidrome_cache_bypass_enabled
+  } : null
+}

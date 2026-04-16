@@ -55,6 +55,8 @@ CrowdSec and the firewall bouncer are not part of this rollout.
 
 **Rationale:** avoids bouncer credential/runtime complexity during this identity and route-posture migration.
 
+**Implementation note:** active runtime/test code in this repo no longer carries CrowdSec/bouncer wiring for this change; remaining mentions in OpenSpec docs are intentional historical/context references.
+
 ### Decision CO-6: Cloudflare edge controls are primary traffic blocking layer
 Traffic blocking and firewalling in this rollout are handled by Cloudflare controls in the control plane rather than host-level CrowdSec.
 

@@ -57,6 +57,7 @@
           };
           category = "admin";
           access.oidc.enabled = true;
+          access.requireCloudflareAccess = false;
         };
 
         pocket-id-admin = {
