@@ -15,12 +15,11 @@ let
   mediaUntaggedDir = "${mediaQuarantineDir}/untagged";
   mediaApprovedDir = "${mediaQuarantineDir}/approved";
 
-  pkgsUnstable = import inputs.nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; };
-  beetsRuntime = pkgsUnstable.python3Packages.beets.override {
+  beetsRuntime = pkgs.python3Packages.beets.override {
     pluginOverrides = {
       bandcamp = {
         enable = true;
-        propagatedBuildInputs = [ pkgsUnstable.python3Packages.beetcamp ];
+        propagatedBuildInputs = [ pkgs.python3Packages.beetcamp ];
       };
     };
   };

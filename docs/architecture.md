@@ -71,6 +71,11 @@ Fleet direction:
 - first host bootstrap should optimize for reliability and recoverability
 - avoid unnecessary complexity before fleet scale requires it
 
+5. Single package baseline by default
+
+- active host and module code uses primary `nixpkgs` pinned to `nixos-unstable`
+- stable fallback inputs are introduced only as explicit, documented exceptions
+
 ## Logical Repository Shape (Target)
 
 The exact file tree can evolve, but the intended shape is:

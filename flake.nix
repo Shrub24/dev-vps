@@ -2,8 +2,7 @@
   description = "Modular NixOS fleet infrastructure";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     disko.url = "github:nix-community/disko";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -15,7 +14,6 @@
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
       disko,
       sops-nix,
       deploy-rs,
@@ -30,11 +28,10 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
-          pkgsUnstable = import nixpkgs-unstable { inherit system; };
         in
         pkgs.mkShell {
           packages = with pkgs; [
-            pkgsUnstable.just
+            just
             git
             jq
             yq
