@@ -6,6 +6,7 @@
     path = "/";
     declarePublic = true;
     stripPrefix = false;
+    responseHeaders = { };
 
     access = {
       requireCloudflareAccess = true;
@@ -47,6 +48,28 @@
             authenticatedOriginPulls = true;
           };
           health.path = "/ping";
+        };
+
+        soulsync = {
+          subdomain = "soulsync";
+          origin = {
+            scheme = "http";
+            host = "oci-melb-1.tail0fe19b.ts.net";
+            port = 8008;
+          };
+          exposureMode = "tailscale-upstream";
+          declarePublic = true;
+          category = "app";
+          access.requireCloudflareAccess = true;
+          cloudflare = {
+            proxied = true;
+            authenticatedOriginPulls = true;
+          };
+          responseHeaders = {
+            Content-Security-Policy = "media-src 'none'";
+            Permissions-Policy = "autoplay=()";
+          };
+          health.path = "/";
         };
 
         termix-admin = {

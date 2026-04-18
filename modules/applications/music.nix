@@ -5,6 +5,67 @@
 }:
 let
   cfg = config.applications.music;
+  hasSoulSyncConfig = lib.hasAttrByPath [
+    "sops"
+    "templates"
+    "soulsync-config.json"
+    "path"
+  ] config;
+  hasSoulSyncEnv = lib.hasAttrByPath [
+    "sops"
+    "templates"
+    "soulsync.env"
+    "path"
+  ] config;
+
+  hasSlskdEnv = lib.hasAttrByPath [
+    "sops"
+    "templates"
+    "slskd.env"
+    "path"
+  ] config;
+
+  optionalSoulSyncEnvTemplates = lib.filter (path: path != null) [
+    (
+      if
+        lib.hasAttrByPath [
+          "sops"
+          "templates"
+          "soulsync-spotify.env"
+          "path"
+        ] config
+      then
+        config.sops.templates."soulsync-spotify.env".path
+      else
+        null
+    )
+    (
+      if
+        lib.hasAttrByPath [
+          "sops"
+          "templates"
+          "soulsync-deezer.env"
+          "path"
+        ] config
+      then
+        config.sops.templates."soulsync-deezer.env".path
+      else
+        null
+    )
+    (
+      if
+        lib.hasAttrByPath [
+          "sops"
+          "templates"
+          "soulsync-youtube.env"
+          "path"
+        ] config
+      then
+        config.sops.templates."soulsync-youtube.env".path
+      else
+        null
+    )
+  ];
 in
 {
   imports = [
@@ -12,6 +73,7 @@ in
     ../../modules/services/navidrome.nix
     ../../modules/services/slskd.nix
     ../../modules/services/beets-inbox.nix
+    ../../modules/services/soulsync.nix
   ];
 
   options.applications.music = {
@@ -97,7 +159,8 @@ in
     };
 
     services.navidrome = {
-      mediaRoot = cfg.mediaRoot;
+      libraryDir = cfg.libraryDir;
+      quarantineDir = cfg.quarantineDir;
       dataDir = "${cfg.dataRoot}/navidrome";
     };
 
@@ -109,11 +172,37 @@ in
       quarantineDir = cfg.quarantineDir;
     };
 
+    systemd.paths.beets-inbox-watch.enable = false;
+    systemd.paths.beets-quarantine-promote-watch.enable = false;
+    systemd.timers.beets-inbox-backstop.enable = false;
+    systemd.timers.beets-quarantine-promote-backstop.enable = false;
+
     services.slskd = {
       downloadsPath = "${cfg.mediaRoot}/inbox/slskd";
       incompletePath = "${cfg.mediaRoot}/slskd-incomplete";
       domain = "oci-melb-1";
-      environmentFile = "/var/lib/slskd/environment";
+      environmentFile =
+        if hasSlskdEnv then config.sops.templates."slskd.env".path else "/var/lib/slskd/environment";
+    };
+
+    services.soulsync = {
+      enable = true;
+      dataDir = "${cfg.dataRoot}/soulsync";
+      mediaRoot = cfg.mediaRoot;
+      downloadPath = "${cfg.mediaRoot}/inbox/slskd";
+      transferPath = cfg.libraryDir;
+      stagingPath = "${cfg.quarantineDir}/approved";
+      unresolvedPath = "${cfg.quarantineDir}/untagged";
+      timeZone = config.time.timeZone;
+      configTemplateFile =
+        if hasSoulSyncConfig then config.sops.templates."soulsync-config.json".path else null;
+      environmentFile = if hasSoulSyncEnv then config.sops.templates."soulsync.env".path else null;
+      optionalEnvironmentFiles = optionalSoulSyncEnvTemplates;
+      conservativeDefaults = {
+        metadataFallbackSource = "discogs";
+        disableBroadRepairJobs = true;
+        controlPlaneOnly = true;
+      };
     };
 
     systemd.tmpfiles.rules = [
