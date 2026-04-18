@@ -5,11 +5,11 @@
 Define the declarative media-service contracts for the music stack so Syncthing, Navidrome, slskd, and Beets can operate with explicit ownership boundaries, predictable data flow, and private-network operation.
 ## Requirements
 ### Requirement: Music application composes the media stack
-The system SHALL compose Syncthing, Navidrome, slskd, and Beets from `modules/applications/music.nix` and SHALL define required collaboration groups for media operations.
+The system SHALL compose Syncthing, Navidrome, slskd, and SoulSync from `modules/applications/music.nix` and SHALL define required collaboration groups for media operations.
 
 #### Scenario: Music composition is enabled
 - **WHEN** `applications.music.enable` is configured on a host
-- **THEN** the host includes Syncthing, Navidrome, slskd, and Beets with shared group boundaries (`music-ingest`, `media`)
+- **THEN** the host includes Syncthing, Navidrome, slskd, and SoulSync with shared group boundaries (`music-ingest`, `media`)
 
 ### Requirement: Shared media roots are app-owned and created via tmpfiles
 The system SHALL treat media shared roots as application-owned boundaries and SHALL create them via `systemd.tmpfiles.rules`.
@@ -42,9 +42,12 @@ Syncthing SHALL run with default ports closed and SHALL use per-folder versionin
 ### Requirement: Navidrome reads composed media paths without owning media root
 Navidrome SHALL consume application/service-composed media paths, SHALL not own shared media roots via tmpfiles, and SHALL remain private-network only.
 
+For this change scope, Navidrome media scope SHALL include `library` and `quarantine` and SHALL exclude `inbox` from the listening surface.
+
 #### Scenario: Navidrome starts after media prerequisites
 - **WHEN** Navidrome service is started
 - **THEN** it depends on required mount/service ordering and reads configured media/library paths without creating shared media roots itself
+- **AND** inbox content is not included in Navidrome media scope
 
 ### Requirement: slskd path and share scope are explicit
 slskd SHALL expose explicit path controls (`downloadsPath`, `incompletePath`) and SHALL restrict `shares.directories` to configured slskd directories instead of sharing the full media root.

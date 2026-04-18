@@ -39,6 +39,33 @@ locals {
 
   navidrome_service = try(local.public_service_records.navidrome, null)
   navidrome_host    = local.navidrome_service != null ? "${local.navidrome_service.subdomain}.${var.primary_domain}" : null
+
+  soulsync_service = try(local.public_service_records.soulsync, null)
+  soulsync_host    = local.soulsync_service != null ? "${local.soulsync_service.subdomain}.${var.primary_domain}" : null
+
+  cache_bypass_rules = concat(
+    (var.navidrome_cache_bypass_enabled && local.navidrome_host != null) ? [{
+      ref         = "navidrome_bypass_cache"
+      description = "Disable cache for Navidrome host"
+      expression  = format("http.host eq \"%s\"", local.navidrome_host)
+      action      = "set_cache_settings"
+      enabled     = true
+      action_parameters = {
+        cache = false
+      }
+    }] : [],
+    (var.soulsync_cache_bypass_enabled && local.soulsync_host != null) ? [{
+      ref         = "soulsync_bypass_cache"
+      description = "Disable cache for SoulSync host"
+      expression  = format("http.host eq \"%s\"", local.soulsync_host)
+      action      = "set_cache_settings"
+      enabled     = true
+      action_parameters = {
+        cache = false
+      }
+    }] : []
+  )
+
 }
 
 # ---------------------------------------------------------------------------
@@ -260,23 +287,14 @@ resource "cloudflare_ruleset" "zone_rate_limit" {
   }]
 }
 
-resource "cloudflare_ruleset" "navidrome_cache_bypass" {
-  count = var.navidrome_cache_bypass_enabled && local.navidrome_host != null ? 1 : 0
+resource "cloudflare_ruleset" "service_cache_bypass" {
+  count = length(local.cache_bypass_rules) > 0 ? 1 : 0
 
   zone_id     = var.cloudflare_zone_id
-  name        = "zone-navidrome-cache-bypass"
-  description = "Bypass CDN cache for Navidrome streaming host"
+  name        = "zone-service-cache-bypass"
+  description = "Bypass CDN cache for selected service hosts"
   phase       = "http_request_cache_settings"
   kind        = "zone"
 
-  rules = [{
-    ref         = "navidrome_bypass_cache"
-    description = "Disable cache for Navidrome host"
-    expression  = format("http.host eq \"%s\"", local.navidrome_host)
-    action      = "set_cache_settings"
-    enabled     = true
-    action_parameters = {
-      cache = false
-    }
-  }]
+  rules = local.cache_bypass_rules
 }

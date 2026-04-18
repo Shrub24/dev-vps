@@ -82,6 +82,8 @@ let
         find "$LIBRARY_ROOT" -type d -exec chmod 2775 {} +
         find "$LIBRARY_ROOT" -type f -exec chgrp media {} +
         find "$LIBRARY_ROOT" -type f -exec chmod 0664 {} +
+        setfacl -R -m g:media:rwx "$LIBRARY_ROOT"
+        find "$LIBRARY_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
       fi
 
       if [[ -d "$QUARANTINE_ROOT" ]]; then
@@ -89,18 +91,18 @@ let
         find "$QUARANTINE_ROOT" -type d -exec chmod 2775 {} +
         find "$QUARANTINE_ROOT" -type f -exec chgrp music-ingest {} +
         find "$QUARANTINE_ROOT" -type f -exec chmod 0664 {} +
-        setfacl -R -m g:media:r-x "$QUARANTINE_ROOT"
-        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
+        setfacl -R -m g:media:rwx "$QUARANTINE_ROOT"
+        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
       fi
 
       if [[ -d "$UNTAGGED_ROOT" ]]; then
-        setfacl -R -m g:media:r-x "$UNTAGGED_ROOT"
-        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
+        setfacl -R -m g:media:rwx "$UNTAGGED_ROOT"
+        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
       fi
 
       if [[ -d "$APPROVED_ROOT" ]]; then
-        setfacl -R -m g:media:r-x "$APPROVED_ROOT"
-        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
+        setfacl -R -m g:media:rwx "$APPROVED_ROOT"
+        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
       fi
     '';
   };
@@ -163,13 +165,15 @@ in
       "a+ ${config.services.beets-inbox.dataDir}/logs - - - - user:dev:r-x"
       "a+ ${config.services.beets-inbox.dataDir}/logs - - - - default:user:dev:r-x"
       "d ${mediaLibraryDir} 2775 root media - -"
+      "a+ ${mediaLibraryDir} - - - - group:media:rwx"
+      "a+ ${mediaLibraryDir} - - - - default:group:media:rwX"
       "d ${mediaQuarantineDir} 2775 root music-ingest - -"
       "d ${mediaUntaggedDir} 2775 root music-ingest - -"
       "d ${mediaApprovedDir} 2775 root music-ingest - -"
-      "a+ ${mediaUntaggedDir} - - - - group:media:r-x"
-      "a+ ${mediaUntaggedDir} - - - - default:group:media:r-X"
-      "a+ ${mediaApprovedDir} - - - - group:media:r-x"
-      "a+ ${mediaApprovedDir} - - - - default:group:media:r-X"
+      "a+ ${mediaUntaggedDir} - - - - group:media:rwx"
+      "a+ ${mediaUntaggedDir} - - - - default:group:media:rwX"
+      "a+ ${mediaApprovedDir} - - - - group:media:rwx"
+      "a+ ${mediaApprovedDir} - - - - default:group:media:rwX"
     ];
 
     systemd.services.beets-inbox-run = {
