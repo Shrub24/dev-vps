@@ -27,6 +27,11 @@ let
     name: route:
     let
       id = sanitize name;
+      responseHeaders = lib.concatStringsSep "\n          " (
+        lib.mapAttrsToList (
+          headerName: headerValue: "header ${headerName} ${builtins.toJSON headerValue}"
+        ) route.responseHeaders
+      );
       accessGuard =
         if needsAccessHeader route then
           ''
@@ -41,6 +46,7 @@ let
         # ${name} (${route.exposureMode})
         handle {
           ${accessGuard}
+          ${responseHeaders}
           reverse_proxy ${route.upstream}
         }
       ''
@@ -49,6 +55,7 @@ let
         # ${name} (${route.exposureMode})
         handle_path ${route.path}* {
           ${accessGuard}
+          ${responseHeaders}
           reverse_proxy ${route.upstream}
         }
       ''
@@ -58,6 +65,7 @@ let
         @${id}_path path ${route.path}*
         handle @${id}_path {
           ${accessGuard}
+          ${responseHeaders}
           reverse_proxy ${route.upstream}
         }
       '';
@@ -289,6 +297,12 @@ in
               type = lib.types.bool;
               default = false;
               description = "Use handle_path to strip path prefix before proxying.";
+            };
+
+            responseHeaders = lib.mkOption {
+              type = lib.types.attrsOf lib.types.str;
+              default = { };
+              description = "Optional response headers injected before proxying for this route.";
             };
 
             authenticatedOriginPullsRequired = lib.mkOption {

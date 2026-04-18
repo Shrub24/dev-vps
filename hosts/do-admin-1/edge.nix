@@ -15,6 +15,7 @@ let
       category
       stripPrefix
       declarePublic
+      responseHeaders
       upstream
       ;
     cloudflareAccessRequired = svc.access.requireCloudflareAccess;

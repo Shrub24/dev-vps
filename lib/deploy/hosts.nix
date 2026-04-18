@@ -1,6 +1,7 @@
 {
   oci-melb-1 = {
     hostName = "oci-melb-1";
+    # hostName = "161.33.71.82";
     sshUser = "dev";
     system = "aarch64-linux";
     remoteBuild = true;

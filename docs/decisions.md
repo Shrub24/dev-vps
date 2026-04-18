@@ -434,6 +434,37 @@ Rationale:
 - keeps package provenance consistent across hosts/modules while preserving explicit rollback via future documented exceptions
 - avoids incorrectly coupling package baseline changes to state-version migration semantics
 
+## D-029: SoulSync is primary ingest; beets is fallback rescue
+
+Status: Accepted
+
+Decision:
+
+- make SoulSync the primary ingest/promotion control-plane service for `oci-melb-1`
+- retain canonical media paths:
+  - download inbox: `/srv/media/inbox/slskd`
+  - canonical library: `/srv/media/library`
+  - unresolved lane: `/srv/media/quarantine/untagged`
+  - approved rescue/staging lane: `/srv/media/quarantine/approved`
+- keep beets installed as operator-controlled fallback rescue tooling; beets no longer owns default automated ingest
+- scope Navidrome to `library + quarantine` and exclude inbox from playback surface
+- publish SoulSync as an approved public service via canonical edge policy (`tailscale-upstream`, Cloudflare Access, AOP)
+- keep day-1 SoulSync public posture control-plane-first with best-effort playback suppression/hiding and documented residual behavior if upstream player controls cannot be fully disabled without forking
+- keep optional provider integrations optional-by-secret so missing provider credentials do not break host convergence
+
+Rationale:
+
+- aligns ingest behavior with track-first DJ workflows and mixed singles/partial-release handling
+- preserves existing `/srv/media` contracts and review lanes while replacing beets-first ingestion ownership
+- keeps public exposure aligned with existing edge security posture instead of ad-hoc origin exposure
+- avoids high-risk upstream patching while still constraining day-1 public UI behavior
+
+Supersedes/updates:
+
+- supersedes D-022 default beets auto-promotion ownership
+- supersedes D-023 as the default ingest automation model (beets path/timer model retained only for fallback tooling)
+- supersedes D-024 Navidrome media-root visibility assumption (`/srv/media` broad root) with explicit `library + quarantine` scope
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.
