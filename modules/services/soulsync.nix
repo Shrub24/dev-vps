@@ -124,10 +124,10 @@ in
       "d ${cfg.dataDir}/logs 0750 root root - -"
       "d ${cfg.stagingPath} 2775 root music-ingest - -"
       "d ${cfg.unresolvedPath} 2775 root music-ingest - -"
-      "a+ ${cfg.unresolvedPath} - - - - group:media:r-x"
-      "a+ ${cfg.unresolvedPath} - - - - default:group:media:r-X"
-      "a+ ${cfg.stagingPath} - - - - group:media:r-x"
-      "a+ ${cfg.stagingPath} - - - - default:group:media:r-X"
+      "a+ ${cfg.unresolvedPath} - - - - group:media:rwx"
+      "a+ ${cfg.unresolvedPath} - - - - default:group:media:rwX"
+      "a+ ${cfg.stagingPath} - - - - group:media:rwx"
+      "a+ ${cfg.stagingPath} - - - - default:group:media:rwX"
     ];
 
     systemd.services.soulsync-config = lib.mkIf (cfg.configTemplateFile != null) {

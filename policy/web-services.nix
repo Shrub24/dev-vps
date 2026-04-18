@@ -184,7 +184,7 @@
           category = "admin";
         };
 
-        slskd-admin = {
+        slskd = {
           subdomain = "slskd";
           origin = {
             scheme = "http";
@@ -192,7 +192,7 @@
             port = 5030;
           };
           exposureMode = "tailscale-upstream";
-          category = "admin";
+          category = "app";
         };
 
         webhook-admin = {

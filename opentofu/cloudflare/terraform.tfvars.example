@@ -39,3 +39,4 @@ aop_enabled = true
 # rate_limit_requests_per_period = 200
 # rate_limit_requests_to_origin = true
 # navidrome_cache_bypass_enabled = true
+# soulsync_cache_bypass_enabled  = true

@@ -24,6 +24,6 @@
 ## 5. Validation and Documentation
 
 - [x] 5.1 Run validation checks (`nix flake check` and relevant host evaluations) and resolve option/type regressions
-- [ ] 5.2 Smoke test core flows: trusted ingest to library, unresolved to `quarantine/untagged`, rescue handoff through `quarantine/approved`, and SoulSync promotion path
-- [ ] 5.3 Smoke test public `soulsync` route behavior (Access gate, AOP compatibility, mobile UI usability) and confirm no direct-origin exposure on `oci-melb-1`
+- [x] 5.2 Smoke test core flows: trusted ingest to library, unresolved to `quarantine/untagged`, rescue handoff through `quarantine/approved`, and SoulSync promotion path
+- [x] 5.3 Smoke test public `soulsync` route behavior (Access gate, AOP compatibility, mobile UI usability) and confirm no direct-origin exposure on `oci-melb-1`
 - [x] 5.4 Update docs/decisions to reflect SoulSync-primary ingest, beets fallback posture, Navidrome scope change, and deferred future automated beets fallback policy

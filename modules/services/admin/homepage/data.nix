@@ -124,10 +124,10 @@ in
           Slskd = {
             icon = "slskd";
             description = "Soulseek queue and transfer status";
-            href = serviceHref "slskd-admin";
+            href = serviceHref "slskd";
             widget = {
               type = "slskd";
-              url = (requireRoute "slskd-admin").upstream;
+              url = (requireRoute "slskd").upstream;
               key = "{{HOMEPAGE_VAR_SLSKD_KEY}}";
             };
           };

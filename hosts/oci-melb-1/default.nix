@@ -29,6 +29,10 @@ in
     "1.1.1.1"
     "8.8.8.8"
   ];
+  networking.firewall.interfaces.podman0.allowedTCPPorts = [
+    5030
+    4533
+  ];
 
   disko.devices.disk.main.device = "/dev/sda";
   disko.devices.disk.media.device = "/dev/sdb";
@@ -124,7 +128,7 @@ in
       SLSKD_API_KEY=${config.sops.placeholder.soulsync_slskd_api_key}
       SLSKD_NO_AUTH=false
       SLSKD_USERNAME=api-only
-      SLSKD_PASSWORD=${config.sops.placeholder.soulsync_slskd_api_key}
+      SLSKD_PASSWORD=${config.sops.placeholder.slskd_web_password}
     '';
   };
 
@@ -157,7 +161,7 @@ in
   };
 
   sops.secrets =
-    (lib.mkIf hasHostSecrets {
+    (lib.optionalAttrs hasHostSecrets {
       tailscale_auth_key = {
         sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
         key = "tailscale/auth_key";
@@ -237,7 +241,7 @@ in
         mode = "0400";
       };
     })
-    // (lib.mkIf hasProviderSecrets {
+    // (lib.optionalAttrs hasProviderSecrets {
       soulsync_spotify_client_id = {
         sopsFile = ../../hosts/oci-melb-1/secrets.providers.yaml;
         key = "soulsync/spotify_client_id";
