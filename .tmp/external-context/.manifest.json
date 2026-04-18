@@ -17,6 +17,18 @@
           "topic": "terraform provider v5 api token permissions",
           "fetched": "2026-04-16T00:00:00Z",
           "source": "Context7 API"
+        },
+        {
+          "filename": "cloudflare-ruleset-cache-and-speed-settings.md",
+          "topic": "ruleset cache settings and speed features",
+          "fetched": "2026-04-18T00:00:00Z",
+          "source": "official docs + Cloudflare Terraform provider docs"
+        },
+        {
+          "filename": "cloudflare-zone-settings-speed-features.md",
+          "topic": "zone settings speed features",
+          "fetched": "2026-04-18T00:00:00Z",
+          "source": "official docs + Cloudflare Terraform provider docs"
         }
       ]
     }
