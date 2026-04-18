@@ -96,7 +96,6 @@ resource "cloudflare_zero_trust_access_application" "service" {
   for_each = local.access_app_service_records
 
   account_id = var.cloudflare_account_id
-  zone_id    = var.cloudflare_zone_id
   name       = each.key
   domain     = "${each.value.subdomain}.${var.primary_domain}"
   type       = "self_hosted"
@@ -112,7 +111,9 @@ resource "cloudflare_zero_trust_access_application" "service" {
     cloudflare_zero_trust_access_identity_provider.main[0].id
   ] : null
 
-  app_launcher_visible = false
+  app_launcher_visible     = false
+  enable_binding_cookie    = false
+  options_preflight_bypass = false
 
   session_duration          = var.access_session_duration
   auto_redirect_to_identity = true
@@ -215,7 +216,7 @@ resource "cloudflare_ruleset" "zone_firewall_managed" {
     action      = "execute"
     enabled     = var.managed_waf_enabled
     action_parameters = {
-      id = "efb7b8c949ac4650a09736fc376e9aee"
+      id = "77454fe2d30c4220b5701f6fdfb893ba"
     }
   }]
 }

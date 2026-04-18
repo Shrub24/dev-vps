@@ -21,3 +21,7 @@ creation_rules:
       - age:
           - *owner_age
           - *do_admin_1_age
+  - path_regex: ^secrets/opentofu/.*$
+    key_groups:
+      - age:
+          - *owner_age

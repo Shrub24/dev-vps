@@ -147,15 +147,37 @@ tofu-sync host="do-admin-1":
   @./lib/export-web-services-policy.sh {{host}}
   @./lib/check-web-services-policy.sh {{host}}
 
+tofu-runtime:
+  @./lib/render-opentofu-cloudflare-runtime.sh
+
 tofu-init:
-  @tofu -chdir=opentofu/cloudflare init
+  @just tofu-init-local
+
+tofu-init-local:
+  @tofu -chdir=opentofu/cloudflare init -reconfigure -backend=false
+
+tofu-init-remote:
+  @just tofu-runtime
+  @tofu -chdir=opentofu/cloudflare init -reconfigure -backend-config=backend.hcl
+
+tofu-init-remote-migrate:
+  @just tofu-runtime
+  @tofu -chdir=opentofu/cloudflare init -migrate-state -backend-config=backend.hcl
 
 tofu-check:
   @tofu -chdir=opentofu/cloudflare fmt -check
   @tofu -chdir=opentofu/cloudflare validate
 
 tofu-plan:
-  @tofu -chdir=opentofu/cloudflare plan -var-file=terraform.tfvars
+  @just tofu-plan-local
+
+tofu-plan-local:
+  @just tofu-init-local
+  @tofu -chdir=opentofu/cloudflare plan
 
 tofu-apply:
-  @tofu -chdir=opentofu/cloudflare apply -var-file=terraform.tfvars
+  @just tofu-apply-local
+
+tofu-apply-local:
+  @just tofu-init-local
+  @tofu -chdir=opentofu/cloudflare apply
