@@ -1,0 +1,4 @@
+- [x] 1. Update SoulSync runtime identity to align with host ingest groups (`music-ingest`, `media`) via container runtime options.
+- [x] 2. Refactor ACL rules so ingest/promotion paths grant write to `music-ingest` and read-oriented access to `media`.
+- [x] 3. Align beets permission reconcile and tmpfiles ACL behavior with the same role model.
+- [x] 4. Run validation (`just check`, relevant `nix eval` ACL/runtime checks) and fix regressions.

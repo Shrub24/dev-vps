@@ -124,10 +124,14 @@ in
       "d ${cfg.dataDir}/logs 0750 root root - -"
       "d ${cfg.stagingPath} 2775 root music-ingest - -"
       "d ${cfg.unresolvedPath} 2775 root music-ingest - -"
-      "a+ ${cfg.unresolvedPath} - - - - group:media:rwx"
-      "a+ ${cfg.unresolvedPath} - - - - default:group:media:rwX"
-      "a+ ${cfg.stagingPath} - - - - group:media:rwx"
-      "a+ ${cfg.stagingPath} - - - - default:group:media:rwX"
+      "a+ ${cfg.unresolvedPath} - - - - group:music-ingest:rwx"
+      "a+ ${cfg.unresolvedPath} - - - - default:group:music-ingest:rwX"
+      "a+ ${cfg.unresolvedPath} - - - - group:media:r-X"
+      "a+ ${cfg.unresolvedPath} - - - - default:group:media:r-X"
+      "a+ ${cfg.stagingPath} - - - - group:music-ingest:rwx"
+      "a+ ${cfg.stagingPath} - - - - default:group:music-ingest:rwX"
+      "a+ ${cfg.stagingPath} - - - - group:media:r-X"
+      "a+ ${cfg.stagingPath} - - - - default:group:media:r-X"
     ];
 
     systemd.services.soulsync-config = lib.mkIf (cfg.configTemplateFile != null) {
@@ -157,6 +161,8 @@ in
       ];
       environment = {
         FLASK_ENV = "production";
+        PUID = "1000";
+        PGID = toString config.users.groups.music-ingest.gid;
         PYTHONPATH = "/app";
         TZ = cfg.timeZone;
         SOULSYNC_CONFIG_PATH = "/app/data/config.json";
@@ -203,6 +209,7 @@ in
         cfg.stagingPath
         cfg.unresolvedPath
       ];
+      serviceConfig.SupplementaryGroups = lib.mkAfter [ "music-ingest" ];
     };
   };
 }

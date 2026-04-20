@@ -78,12 +78,14 @@ let
       APPROVED_ROOT=${mediaApprovedDir}
 
       if [[ -d "$LIBRARY_ROOT" ]]; then
-        find "$LIBRARY_ROOT" -type d -exec chgrp media {} +
+        find "$LIBRARY_ROOT" -type d -exec chgrp music-ingest {} +
         find "$LIBRARY_ROOT" -type d -exec chmod 2775 {} +
-        find "$LIBRARY_ROOT" -type f -exec chgrp media {} +
+        find "$LIBRARY_ROOT" -type f -exec chgrp music-ingest {} +
         find "$LIBRARY_ROOT" -type f -exec chmod 0664 {} +
-        setfacl -R -m g:media:rwx "$LIBRARY_ROOT"
-        find "$LIBRARY_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
+        setfacl -R -m g:music-ingest:rwx "$LIBRARY_ROOT"
+        find "$LIBRARY_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
+        setfacl -R -m g:media:r-X "$LIBRARY_ROOT"
+        find "$LIBRARY_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
       fi
 
       if [[ -d "$QUARANTINE_ROOT" ]]; then
@@ -91,18 +93,24 @@ let
         find "$QUARANTINE_ROOT" -type d -exec chmod 2775 {} +
         find "$QUARANTINE_ROOT" -type f -exec chgrp music-ingest {} +
         find "$QUARANTINE_ROOT" -type f -exec chmod 0664 {} +
-        setfacl -R -m g:media:rwx "$QUARANTINE_ROOT"
-        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
+        setfacl -R -m g:music-ingest:rwx "$QUARANTINE_ROOT"
+        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
+        setfacl -R -m g:media:r-X "$QUARANTINE_ROOT"
+        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
       fi
 
       if [[ -d "$UNTAGGED_ROOT" ]]; then
-        setfacl -R -m g:media:rwx "$UNTAGGED_ROOT"
-        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
+        setfacl -R -m g:music-ingest:rwx "$UNTAGGED_ROOT"
+        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
+        setfacl -R -m g:media:r-X "$UNTAGGED_ROOT"
+        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
       fi
 
       if [[ -d "$APPROVED_ROOT" ]]; then
-        setfacl -R -m g:media:rwx "$APPROVED_ROOT"
-        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:media:rwX {} +
+        setfacl -R -m g:music-ingest:rwx "$APPROVED_ROOT"
+        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
+        setfacl -R -m g:media:r-X "$APPROVED_ROOT"
+        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
       fi
     '';
   };
@@ -164,16 +172,22 @@ in
       "d ${config.services.beets-inbox.dataDir}/logs 0750 beets beets - -"
       "a+ ${config.services.beets-inbox.dataDir}/logs - - - - user:dev:r-x"
       "a+ ${config.services.beets-inbox.dataDir}/logs - - - - default:user:dev:r-x"
-      "d ${mediaLibraryDir} 2775 root media - -"
-      "a+ ${mediaLibraryDir} - - - - group:media:rwx"
-      "a+ ${mediaLibraryDir} - - - - default:group:media:rwX"
+      "d ${mediaLibraryDir} 2775 root music-ingest - -"
+      "a+ ${mediaLibraryDir} - - - - group:music-ingest:rwx"
+      "a+ ${mediaLibraryDir} - - - - default:group:music-ingest:rwX"
+      "a+ ${mediaLibraryDir} - - - - group:media:r-X"
+      "a+ ${mediaLibraryDir} - - - - default:group:media:r-X"
       "d ${mediaQuarantineDir} 2775 root music-ingest - -"
       "d ${mediaUntaggedDir} 2775 root music-ingest - -"
       "d ${mediaApprovedDir} 2775 root music-ingest - -"
-      "a+ ${mediaUntaggedDir} - - - - group:media:rwx"
-      "a+ ${mediaUntaggedDir} - - - - default:group:media:rwX"
-      "a+ ${mediaApprovedDir} - - - - group:media:rwx"
-      "a+ ${mediaApprovedDir} - - - - default:group:media:rwX"
+      "a+ ${mediaUntaggedDir} - - - - group:music-ingest:rwx"
+      "a+ ${mediaUntaggedDir} - - - - default:group:music-ingest:rwX"
+      "a+ ${mediaUntaggedDir} - - - - group:media:r-X"
+      "a+ ${mediaUntaggedDir} - - - - default:group:media:r-X"
+      "a+ ${mediaApprovedDir} - - - - group:music-ingest:rwx"
+      "a+ ${mediaApprovedDir} - - - - default:group:music-ingest:rwX"
+      "a+ ${mediaApprovedDir} - - - - group:media:r-X"
+      "a+ ${mediaApprovedDir} - - - - default:group:media:r-X"
     ];
 
     systemd.services.beets-inbox-run = {
