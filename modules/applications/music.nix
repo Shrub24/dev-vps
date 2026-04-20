@@ -142,8 +142,8 @@ in
   };
 
   config = {
-    users.groups.music-ingest = { };
-    users.groups.media = { };
+    users.groups.music-ingest.gid = 990;
+    users.groups.media.gid = 987;
 
     users.users.dev.extraGroups = lib.mkAfter [
       "beets"
