@@ -28,11 +28,21 @@ let
     builtins.readFile ../../scripts/beets-config.yaml
   );
 
+  beetsApprovedConfig = pkgs.writeText "beets-approved-config.yaml" (
+    builtins.readFile ../../scripts/beets-approved-config.yaml
+  );
+
   beetsConfigSource =
     if lib.hasAttrByPath [ "sops" "templates" "beets-config.yaml" "path" ] config then
       config.sops.templates."beets-config.yaml".path
     else
       beetsConfig;
+
+  beetsApprovedConfigSource =
+    if lib.hasAttrByPath [ "sops" "templates" "beets-approved-config.yaml" "path" ] config then
+      config.sops.templates."beets-approved-config.yaml".path
+    else
+      beetsApprovedConfig;
 
   beetsInboxRunner = pkgs.writeShellApplication {
     name = "beets-inbox-runner";
@@ -44,6 +54,7 @@ let
     ];
     text = ''
       BEETS_CONFIG_SOURCE=${beetsConfigSource}
+      BEETS_APPROVED_CONFIG_SOURCE=${beetsApprovedConfigSource}
       ${builtins.readFile ../../scripts/beets-inbox-runner.sh}
     '';
   };

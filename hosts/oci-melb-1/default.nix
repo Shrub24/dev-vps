@@ -73,6 +73,17 @@ in
         (builtins.readFile ../../scripts/beets-config.yaml);
   };
 
+  sops.templates."beets-approved-config.yaml" = lib.mkIf hasHostSecrets {
+    owner = "beets";
+    group = "beets";
+    mode = "0440";
+    content =
+      builtins.replaceStrings
+        [ "REPLACE_WITH_DISCOGS_USER_TOKEN" ]
+        [ config.sops.placeholder.beets_discogs_token ]
+        (builtins.readFile ../../scripts/beets-approved-config.yaml);
+  };
+
   sops.templates."soulsync.env" = lib.mkIf hasHostSecrets {
     owner = "root";
     group = "root";
