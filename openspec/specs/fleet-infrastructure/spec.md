@@ -79,3 +79,11 @@ Fleet host outputs SHALL consume the primary repository package baseline from `n
 - **WHEN** `nixosConfigurations.oci-melb-1` and `nixosConfigurations.do-admin-1` are built from the flake
 - **THEN** both host outputs resolve packages from the primary unstable baseline input
 
+### Requirement: Cloudflare control-plane OpenTofu state SHALL support concurrent operators
+Cloudflare OpenTofu state for this repository SHALL use a shared remote backend so multiple concurrent worktrees/operators do not diverge state ownership.
+
+#### Scenario: Multiple worktrees run OpenTofu operations
+- **WHEN** two operator worktrees run init/plan/apply for `opentofu/cloudflare`
+- **THEN** both resolve the same remote state object
+- **AND** backend locking prevents concurrent state mutation races
+

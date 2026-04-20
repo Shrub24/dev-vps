@@ -258,6 +258,36 @@ Rationale:
 - adds controlled remote admin capability while preserving private-origin boundaries and explicit edge policy
 - keeps runtime/container specifics isolated from host composition and canonical docs
 
+## D-030: Homepage authenticated widgets use host-scoped caller-owned machine-auth env wiring
+
+Status: Accepted
+
+Decision:
+
+- Homepage authenticated widgets consume credentials via a dedicated host-scoped SOPS template environment file (`homepage-auth.env`)
+- credential ownership stays with Homepage caller wiring (`modules/services/admin/homepage/**`) instead of route policy metadata
+- keep explicit auth exceptions minimal:
+  - Caddy widget remains local no-auth (loopback admin API)
+  - Gatus widget remains URL-only/read-only
+  - Filebrowser widget auth remains out of scope in this wave
+- Beszel Homepage integration uses a dedicated read-only account, with visibility only to explicitly shared systems
+
+Rationale:
+
+- preserves separation of concerns between route exposure policy and caller integration auth
+- keeps secret blast radius host-scoped and avoids new shared secrets
+- provides practical day-1 machine-auth coverage for Homepage without forcing unnecessary credentials
+
+Operational notes (one-time Beszel bootstrap):
+
+1. Sign in to Beszel at `https://beszel-admin.shrublab.xyz` as admin.
+2. Create a dedicated Homepage read-only user (non-admin) with a strong generated password.
+3. Share only required systems with that user (explicit system list; no global sharing).
+4. Store the username/password in `hosts/do-admin-1/secrets.yaml` under:
+   - `homepage/beszel/username`
+   - `homepage/beszel/password`
+5. Re-encrypt with `sops` and deploy so `homepage-auth.env` is regenerated.
+
 ## D-019: Music app owns generic ingest boundary and slskd is confined to service subtree
 
 Status: Accepted

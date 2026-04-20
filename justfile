@@ -151,10 +151,7 @@ tofu-runtime:
   @./lib/render-opentofu-cloudflare-runtime.sh
 
 tofu-init:
-  @just tofu-init-local
-
-tofu-init-local:
-  @tofu -chdir=opentofu/cloudflare init -reconfigure -backend=false
+  @just tofu-init-remote
 
 tofu-init-remote:
   @just tofu-runtime
@@ -169,15 +166,9 @@ tofu-check:
   @tofu -chdir=opentofu/cloudflare validate
 
 tofu-plan:
-  @just tofu-plan-local
-
-tofu-plan-local:
-  @just tofu-init-local
+  @just tofu-init-remote
   @tofu -chdir=opentofu/cloudflare plan
 
 tofu-apply:
-  @just tofu-apply-local
-
-tofu-apply-local:
-  @just tofu-init-local
+  @just tofu-init-remote
   @tofu -chdir=opentofu/cloudflare apply

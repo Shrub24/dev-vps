@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   ...
 }:
 {
@@ -85,6 +84,78 @@
       group = "root";
       mode = "0400";
     };
+
+    homepage_tailscale_device_id = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/tailscale/device_id";
+      path = "/run/secrets/homepage.tailscale.device_id";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_tailscale_api_key = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/tailscale/api_key";
+      path = "/run/secrets/homepage.tailscale.api_key";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_navidrome_user = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/navidrome/user";
+      path = "/run/secrets/homepage.navidrome.user";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_navidrome_token = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/navidrome/token";
+      path = "/run/secrets/homepage.navidrome.token";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_navidrome_salt = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/navidrome/salt";
+      path = "/run/secrets/homepage.navidrome.salt";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_slskd_key = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/slskd/key";
+      path = "/run/secrets/homepage.slskd.key";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_beszel_username = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/beszel/username";
+      path = "/run/secrets/homepage.beszel.username";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    homepage_beszel_password = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "homepage/beszel/password";
+      path = "/run/secrets/homepage.beszel.password";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
   };
 
   sops.templates."caddy-cloudflare.env" = {
@@ -124,6 +195,22 @@
         config.applications.admin.policyServices."pocket-id-admin".publicUrl
       }/api/oidc/userinfo
       OIDC_SCOPES=openid email profile
+    '';
+  };
+
+  sops.templates."homepage-auth.env" = {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      HOMEPAGE_VAR_TAILSCALE_DEVICEID=${config.sops.placeholder.homepage_tailscale_device_id}
+      HOMEPAGE_VAR_TAILSCALE_API_KEY=${config.sops.placeholder.homepage_tailscale_api_key}
+      HOMEPAGE_VAR_NAVIDROME_USER=${config.sops.placeholder.homepage_navidrome_user}
+      HOMEPAGE_VAR_NAVIDROME_TOKEN=${config.sops.placeholder.homepage_navidrome_token}
+      HOMEPAGE_VAR_NAVIDROME_SALT=${config.sops.placeholder.homepage_navidrome_salt}
+      HOMEPAGE_VAR_SLSKD_KEY=${config.sops.placeholder.homepage_slskd_key}
+      HOMEPAGE_VAR_BESZEL_USER=${config.sops.placeholder.homepage_beszel_username}
+      HOMEPAGE_VAR_BESZEL_PASSWORD=${config.sops.placeholder.homepage_beszel_password}
     '';
   };
 

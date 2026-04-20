@@ -58,6 +58,8 @@ in
             widget = {
               type = "beszel";
               url = (requireRoute "beszel-admin").upstream;
+              username = "{{HOMEPAGE_VAR_BESZEL_USER}}";
+              password = "{{HOMEPAGE_VAR_BESZEL_PASSWORD}}";
             };
           };
         }
@@ -67,6 +69,7 @@ in
             description = "Edge proxy runtime";
             href = serviceHref "admin-homepage";
             widget = {
+              # Explicit local-only no-auth exception (loopback admin API).
               type = "caddy";
               url = "http://127.0.0.1:2019";
             };
@@ -90,6 +93,7 @@ in
             description = "Health checks and status";
             href = serviceHref "gatus-admin";
             widget = {
+              # Keep URL-only/read-only posture for this wave.
               type = "gatus";
               url = (requireRoute "gatus-admin").upstream;
             };
@@ -101,6 +105,7 @@ in
             description = "Data root browser";
             href = serviceHref "filebrowser-admin";
             widget = {
+              # Filebrowser machine-auth wiring is intentionally out of scope.
               type = "filebrowser";
               url = (requireRoute "filebrowser-admin").upstream;
             };

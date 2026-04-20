@@ -59,41 +59,28 @@ This keeps one source of truth while separating runtime wiring from control-plan
 | `navidrome_cache_bypass_enabled` | `true` | Enable hostname cache bypass ruleset for Navidrome |
 | `soulsync_cache_bypass_enabled` | `true` | Enable hostname cache bypass ruleset for SoulSync |
 
-## Suggested workflow (phase 1: local recovery)
+## Suggested workflow (remote backend)
 
 1. Export canonical policy JSON and verify:
    - `just tofu-sync`
-2. Prepare tfvars split:
+2. Prepare tfvars + backend runtime files:
    - `opentofu/cloudflare/config.auto.tfvars` (committed, non-sensitive only)
-   - `opentofu/cloudflare/secrets.auto.tfvars` (local ignored)
-3. Initialize local state mode:
+   - `opentofu/cloudflare/secrets.auto.tfvars` (generated/ignored)
+   - `opentofu/cloudflare/backend.hcl` (generated/ignored)
+3. Initialize remote backend mode:
    - `just tofu-init`
 4. Run OpenTofu commands:
    - `just tofu-check`
-   - `just tofu-plan-local`
-   - `just tofu-apply-local`
+   - `just tofu-plan`
+   - `just tofu-apply`
 
-### Local state override (while remote backend is unavailable)
-
-When R2 backend is temporarily unavailable (for example TLS/endpoint bring-up), force local state with:
-
-- `just tofu-init-local`
-- `just tofu-plan-local`
-- `just tofu-apply-local`
-
-These commands always run `tofu init -reconfigure -backend=false` first.
-
-Current repo default keeps local-state mode active until remote backend is re-enabled.
-
-### Secret split model (phase 1)
+### Secret split model
 
 - `config.auto.tfvars` is committed and must contain non-sensitive config only.
-- `secrets.auto.tfvars` is local-only and ignored.
+- `secrets.auto.tfvars` is generated from SOPS and ignored.
 - Do not place identifying values (emails, account/zone IDs, client IDs, IPs, endpoints, hostnames) in `config.auto.tfvars`.
 
-### Optional phase 2 (deferred in this change)
-
-SOPS + generated runtime files are now supported for OpenTofu operations.
+### SOPS + generated runtime files
 
 1. Create encrypted source secrets:
    - `secrets/opentofu/cloudflare.yaml` (sops-encrypted)
@@ -156,7 +143,7 @@ Use this when Cloudflare resources exist but local OpenTofu state is empty/stale
 1. Sync canonical policy input:
    - `just tofu-sync`
 2. Ensure split tfvars are present (`config.auto.tfvars` + local `secrets.auto.tfvars`).
-3. Initialize local state:
+3. Initialize remote backend:
    - `just tofu-init`
 4. Import declared resources from `main.tf` addresses only:
    - DNS records: `cloudflare_dns_record.service["<service>"]`, optional `cloudflare_dns_record.origin[0]`
@@ -165,5 +152,5 @@ Use this when Cloudflare resources exist but local OpenTofu state is empty/stale
 5. Triage duplicates explicitly (common in account-wide Access objects):
    - If duplicate policy/IdP objects exist, choose the canonical object ID and import that ID consistently.
 6. Verify drift after recovery:
-   - `just tofu-plan-local`
+   - `just tofu-plan`
    - Treat null/false provider normalization as noise; treat policy/idp remaps or missing resources as semantic drift requiring an explicit decision.
