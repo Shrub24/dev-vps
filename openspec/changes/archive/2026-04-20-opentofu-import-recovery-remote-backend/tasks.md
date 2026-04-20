@@ -5,9 +5,9 @@
 
 ## 2. Add Cloudflare R2 remote backend
 
-- [ ] 2.1 Add backend configuration for `opentofu/cloudflare` using S3-compatible backend settings for Cloudflare R2 with lockfile behavior and non-AWS compatibility flags. *(Deferred until R2 TLS endpoint is stable.)*
-- [ ] 2.2 Add/adjust ignored generated backend runtime config path(s) and update `justfile` OpenTofu init flow to use backend config render/init contract. *(Deferred until backend is re-enabled.)*
-- [ ] 2.3 Reinitialize OpenTofu against R2 backend and verify state visibility from a second worktree/session (read-only validation acceptable). *(Deferred to phase 2.)*
+- [x] 2.1 Add backend configuration for `opentofu/cloudflare` using S3-compatible backend settings for Cloudflare R2 with lockfile behavior and non-AWS compatibility flags.
+- [x] 2.2 Add/adjust ignored generated backend runtime config path(s) and update `justfile` OpenTofu init flow to use backend config render/init contract.
+- [x] 2.3 Reinitialize OpenTofu against R2 backend and verify state visibility from a second worktree/session (read-only validation acceptable).
 
 ## 3. Scope backend/runtime secrets through SOPS
 

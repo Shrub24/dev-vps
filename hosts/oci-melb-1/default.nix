@@ -132,6 +132,17 @@ in
     '';
   };
 
+  sops.templates."beszel-agent.env" = lib.mkIf hasHostSecrets {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      KEY=${config.sops.placeholder.beszel_agent_key}
+      TOKEN=${config.sops.placeholder.beszel_agent_token}
+      HUB_URL=${config.sops.placeholder.beszel_agent_hub_url}
+    '';
+  };
+
   sops.templates."soulsync-spotify.env" = lib.mkIf hasProviderSecrets {
     owner = "root";
     group = "root";
@@ -240,6 +251,33 @@ in
         group = "slskd";
         mode = "0400";
       };
+
+      beszel_agent_key = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "beszel/agent/key";
+        path = "/run/secrets/beszel.agent.key";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      beszel_agent_token = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "beszel/agent/token";
+        path = "/run/secrets/beszel.agent.token";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      beszel_agent_hub_url = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "beszel/agent/hub_url";
+        path = "/run/secrets/beszel.agent.hub_url";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
     })
     // (lib.optionalAttrs hasProviderSecrets {
       soulsync_spotify_client_id = {
@@ -281,6 +319,18 @@ in
 
   services.tailscale = lib.mkIf hasHostSecrets {
     authKeyFile = "/run/secrets/tailscale.auth_key";
+  };
+
+  assertions = [
+    {
+      assertion = !config.services.beszel.agent.enable || lib.hasAttrByPath [ "sops" "templates" "beszel-agent.env" "path" ] config;
+      message = "Beszel agent is enabled but sops template beszel-agent.env is missing.";
+    }
+  ];
+
+  services.beszel.agent = lib.mkIf hasHostSecrets {
+    enable = true;
+    environmentFile = config.sops.templates."beszel-agent.env".path;
   };
 
   programs.nix-ld = {
