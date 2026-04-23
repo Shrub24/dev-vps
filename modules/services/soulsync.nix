@@ -138,7 +138,6 @@ in
       description = "Render SoulSync config from host template";
       wantedBy = [ "multi-user.target" ];
       before = [ "podman-soulsync.service" ];
-      after = [ "srv-data.mount" ];
       unitConfig = {
         RequiresMountsFor = [ cfg.dataDir ];
         ConditionPathExists = cfg.configTemplateFile;
@@ -194,14 +193,8 @@ in
       ++ lib.optionals (cfg.configTemplateFile != null) [ "soulsync-config.service" ];
       after = [
         "network-online.target"
-        "srv-data.mount"
-        "srv-media.mount"
       ]
       ++ lib.optionals (cfg.configTemplateFile != null) [ "soulsync-config.service" ];
-      requires = [
-        "srv-data.mount"
-        "srv-media.mount"
-      ];
       unitConfig.RequiresMountsFor = [
         cfg.dataDir
         cfg.downloadPath

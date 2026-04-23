@@ -213,8 +213,6 @@ in
       ];
       unitConfig.ConditionPathIsDirectory = mediaInboxDir;
       after = [
-        "srv-data.mount"
-        "srv-media.mount"
         "systemd-tmpfiles-setup.service"
       ];
       serviceConfig = {
@@ -265,8 +263,6 @@ in
       ];
       unitConfig.ConditionPathIsDirectory = mediaApprovedDir;
       after = [
-        "srv-data.mount"
-        "srv-media.mount"
         "systemd-tmpfiles-setup.service"
       ];
       serviceConfig = {
@@ -311,7 +307,6 @@ in
         cfg.mediaRoot
         mediaInboxDir
       ];
-      after = [ "srv-media.mount" ];
       pathConfig.PathModified = mediaInboxDir;
       pathConfig.Unit = "beets-inbox-run.service";
     };
@@ -322,7 +317,6 @@ in
         cfg.mediaRoot
         mediaApprovedDir
       ];
-      after = [ "srv-media.mount" ];
       pathConfig.PathModified = mediaApprovedDir;
       pathConfig.Unit = "beets-quarantine-promote-run.service";
     };
