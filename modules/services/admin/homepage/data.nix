@@ -100,14 +100,14 @@ in
           };
         }
         {
-          Filebrowser = {
+          Quantum = {
             icon = "filebrowser";
             description = "Data root browser";
-            href = serviceHref "filebrowser-admin";
+            href = serviceHref "quantum-admin";
             widget = {
-              # Filebrowser machine-auth wiring is intentionally out of scope.
+              # File-manager machine-auth wiring is intentionally out of scope.
               type = "filebrowser";
-              url = (requireRoute "filebrowser-admin").upstream;
+              url = (requireRoute "quantum-admin").upstream;
             };
           };
         }

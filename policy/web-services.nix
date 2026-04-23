@@ -151,8 +151,8 @@
           access.requireCloudflareAccess = false;
         };
 
-        filebrowser-admin = {
-          subdomain = "filebrowser";
+        quantum-admin = {
+          subdomain = "quantum";
           origin = {
             scheme = "http";
             host = "127.0.0.1";

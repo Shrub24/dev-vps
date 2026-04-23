@@ -17,7 +17,7 @@ in
     ../../services/admin/ntfy.nix
     ../../services/admin/gatus/default.nix
     ../../services/admin/vaultwarden.nix
-    ../../services/admin/filebrowser.nix
+    ../../services/admin/quantum.nix
     ../../services/admin/homepage/default.nix
     ../../services/admin/beszel.nix
     ./identity.nix
@@ -49,7 +49,7 @@ in
       ntfy.enable = lib.mkDefault true;
       gatus.enable = lib.mkDefault true;
       vaultwarden.enable = lib.mkDefault true;
-      filebrowser.enable = lib.mkDefault false;
+      quantum.enable = lib.mkDefault false;
       homepage.enable = lib.mkDefault true;
       beszel.enable = lib.mkDefault true;
     };

@@ -49,6 +49,51 @@
       mode = "0400";
     };
 
+    quantum_oidc_client_id = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "pocket_id/apps/quantum/client_id";
+      path = "/run/secrets/pocket-id.quantum.client_id";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    quantum_oidc_client_secret = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "pocket_id/apps/quantum/client_secret";
+      path = "/run/secrets/pocket-id.quantum.client_secret";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    admin_ssh_identity = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "admin/ssh/identity";
+      path = "/run/secrets/admin.ssh.identity";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    admin_ssh_known_hosts = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "admin/ssh/known_hosts";
+      path = "/run/secrets/admin.ssh.known_hosts";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
+    quantum_admin_password = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "quantum/admin_password";
+      path = "/run/secrets/quantum.admin_password";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
     homepage_tailscale_device_id = {
       sopsFile = ../../hosts/do-admin-1/secrets.yaml;
       key = "homepage/tailscale/device_id";
@@ -150,6 +195,25 @@
         config.applications.admin.policyServices."pocket-id-admin".publicUrl
       }/api/oidc/userinfo
       OIDC_SCOPES=openid email profile
+    '';
+  };
+
+  sops.templates."quantum-oidc.env" = {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      FILEBROWSER_OIDC_CLIENT_ID=${config.sops.placeholder.quantum_oidc_client_id}
+      FILEBROWSER_OIDC_CLIENT_SECRET=${config.sops.placeholder.quantum_oidc_client_secret}
+    '';
+  };
+
+  sops.templates."quantum-auth.env" = {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      FILEBROWSER_ADMIN_PASSWORD=${config.sops.placeholder.quantum_admin_password}
     '';
   };
 

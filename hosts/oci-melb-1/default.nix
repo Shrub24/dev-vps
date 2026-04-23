@@ -44,7 +44,25 @@ in
     "z ${config.applications.music.dataRoot} 0755 root root - -"
     "d ${config.applications.music.mediaRoot} 0755 root root - -"
     "z ${config.applications.music.mediaRoot} 0755 root root - -"
+    "a+ ${config.applications.music.dataRoot} - - - - user:dev:r-X"
+    "a+ ${config.applications.music.dataRoot} - - - - default:user:dev:r-X"
   ];
+
+  systemd.services.music-dev-data-access-reconcile = {
+    description = "Reconcile dev read/traverse access on music data root";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-tmpfiles-setup.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeShellScript "music-dev-data-access-reconcile" ''
+        set -euo pipefail
+        if [ -d "${config.applications.music.dataRoot}" ]; then
+          ${pkgs.acl}/bin/setfacl -m u:dev:rX "${config.applications.music.dataRoot}"
+          find "${config.applications.music.dataRoot}" -xdev -type d -exec ${pkgs.acl}/bin/setfacl -m d:u:dev:rX {} +
+        fi
+      '';
+    };
+  };
 
   applications."edge-ingress" = {
     enable = true;
