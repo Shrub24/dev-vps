@@ -77,8 +77,6 @@ in
         "syncthing.service"
       ];
       after = [
-        "srv-data.mount"
-        "srv-media.mount"
         "network-online.target"
         "syncthing.service"
       ];
