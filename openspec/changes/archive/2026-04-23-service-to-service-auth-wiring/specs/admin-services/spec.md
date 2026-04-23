@@ -32,6 +32,22 @@ Homepage integrations that run without app credentials SHALL be explicit excepti
 - **THEN** no new broad machine credential is required for that widget
 - **AND** exception rationale remains documented in change artifacts
 
+### Requirement: Homepage-Gatus local API path SHALL be unauthenticated and loopback-only
+Homepage integration for Gatus SHALL use a local unauthenticated API path, and Gatus SHALL be explicitly bound to loopback so that this unauthenticated API surface is not exposed beyond the local host.
+
+#### Scenario: Homepage retrieves Gatus data over local API
+- **WHEN** Homepage Gatus widget/integration is configured on `do-admin-1`
+- **THEN** Homepage requests use local API access without bearer/basic/OIDC credentials
+- **AND** Gatus web listener is explicitly configured with loopback bind (`127.0.0.1`)
+
+### Requirement: Human Gatus access SHALL be edge-gated rather than app-OIDC-gated
+Human browser access to Gatus SHALL rely on edge access controls (Cloudflare Access) and SHALL NOT require app-native OIDC wiring in Gatus for this wave.
+
+#### Scenario: Browser user opens Gatus public route
+- **WHEN** a user accesses `gatus.shrublab.xyz`
+- **THEN** edge access controls enforce browser authentication
+- **AND** Gatus app configuration does not require local OIDC client credentials for this flow
+
 ### Requirement: Filebrowser widget auth SHALL remain out of scope in this wave
 This change SHALL NOT require Filebrowser widget machine-auth wiring.
 

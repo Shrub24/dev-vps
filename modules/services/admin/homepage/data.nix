@@ -60,6 +60,7 @@ in
               url = (requireRoute "beszel-admin").upstream;
               username = "{{HOMEPAGE_VAR_BESZEL_USER}}";
               password = "{{HOMEPAGE_VAR_BESZEL_PASSWORD}}";
+              version = 2;
             };
           };
         }
@@ -93,7 +94,6 @@ in
             description = "Health checks and status";
             href = serviceHref "gatus-admin";
             widget = {
-              # Keep URL-only/read-only posture for this wave.
               type = "gatus";
               url = (requireRoute "gatus-admin").upstream;
             };

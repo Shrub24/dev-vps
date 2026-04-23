@@ -31,24 +31,6 @@
       mode = "0400";
     };
 
-    gatus_oidc_client_id = {
-      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
-      key = "pocket_id/apps/gatus/client_id";
-      path = "/run/secrets/pocket-id.gatus.client_id";
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
-
-    gatus_oidc_client_secret = {
-      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
-      key = "pocket_id/apps/gatus/client_secret";
-      path = "/run/secrets/pocket-id.gatus.client_secret";
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
-
     termix_oidc_client_id = {
       sopsFile = ../../hosts/do-admin-1/secrets.yaml;
       key = "pocket_id/apps/termix/client_id";
@@ -62,24 +44,6 @@
       sopsFile = ../../hosts/do-admin-1/secrets.yaml;
       key = "pocket_id/apps/termix/client_secret";
       path = "/run/secrets/pocket-id.termix.client_secret";
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
-
-    cloudflare_access_oidc_client_id = {
-      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
-      key = "cloudflare_access/upstream_oidc/client_id";
-      path = "/run/secrets/cloudflare-access.oidc.client_id";
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
-
-    cloudflare_access_oidc_client_secret = {
-      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
-      key = "cloudflare_access/upstream_oidc/client_secret";
-      path = "/run/secrets/cloudflare-access.oidc.client_secret";
       owner = "root";
       group = "root";
       mode = "0400";
@@ -156,6 +120,7 @@
       group = "root";
       mode = "0400";
     };
+
   };
 
   sops.templates."caddy-cloudflare.env" = {
@@ -164,16 +129,6 @@
     mode = "0400";
     content = ''
       CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder.cloudflare_dns_api_token}
-    '';
-  };
-
-  sops.templates."gatus-oidc.env" = {
-    owner = "root";
-    group = "root";
-    mode = "0400";
-    content = ''
-      GATUS_OIDC_CLIENT_ID=${config.sops.placeholder.gatus_oidc_client_id}
-      GATUS_OIDC_CLIENT_SECRET=${config.sops.placeholder.gatus_oidc_client_secret}
     '';
   };
 

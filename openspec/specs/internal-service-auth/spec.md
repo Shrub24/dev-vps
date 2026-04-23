@@ -1,5 +1,8 @@
-## ADDED Requirements
+# internal-service-auth Specification
 
+## Purpose
+TBD - created by archiving change service-to-service-auth-wiring. Update Purpose after archive.
+## Requirements
 ### Requirement: Caller-owned service-to-service auth inventory SHALL be explicit
 Internal service-to-service authentication metadata SHALL be owned by the caller application module and SHALL define per-integration auth method and secret references.
 
@@ -28,10 +31,19 @@ Credentials used for caller-owned internal integrations SHALL be defined in host
 - **THEN** they are sourced from `hosts/<host>/secrets.yaml` and templated for runtime use
 - **AND** they are not introduced in `secrets/common.yaml` by default
 
-### Requirement: Beszel agent machine-auth SHALL be host-scoped and per-agent
-Beszel agent authentication credentials SHALL be unique per host and injected from host-scoped secret templates, not shared globally.
+### Requirement: Beszel agent auth SHALL use shared KEY and host-scoped TOKEN
+Beszel agent SSH auth SHALL source `KEY` from shared common secret scope and source `TOKEN` from host-scoped secret scope, while remaining injected via runtime environment template.
 
-#### Scenario: Beszel agent auth is configured on an origin host
+#### Scenario: Beszel agent auth is configured on a host
 - **WHEN** an origin host enables Beszel agent connectivity to the Beszel hub
-- **THEN** agent credentials are sourced from host-scoped secrets and materialized via host-local environment template
-- **AND** credentials are not introduced in `secrets/common.yaml` or reused as a universal cross-host token
+- **THEN** `KEY` is sourced from `secrets/common.yaml` and `TOKEN` is sourced from `hosts/<host>/secrets.yaml`
+- **AND** each host may use a distinct Beszel system token
+
+### Requirement: Beszel agent auth wiring SHALL be reusable and host-configurable
+Beszel agent auth wiring SHALL be implemented as a reusable module that hosts can enable/configure explicitly, rather than hardcoding agent wiring in one host file.
+
+#### Scenario: New host needs Beszel agent enrollment
+- **WHEN** a host chooses to enroll in Beszel agent monitoring
+- **THEN** the host enables a shared Beszel agent auth module and sets host token secret source configuration
+- **AND** the host does not require copy/paste of bespoke agent wiring logic from another host file
+
