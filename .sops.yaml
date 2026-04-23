@@ -7,10 +7,8 @@ creation_rules:
     key_groups:
       - age:
           - *owner_age
-  - path_regex: ^secrets/secrets\.ya?ml$
-    key_groups:
-      - age:
-          - *owner_age
+          - *oci_melb_1_age
+          - *do_admin_1_age
   - path_regex: ^hosts/oci-melb-1/secrets\.ya?ml$
     key_groups:
       - age:

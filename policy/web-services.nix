@@ -138,7 +138,6 @@
             port = 8087;
           };
           category = "admin";
-          access.oidc.enabled = true;
         };
 
         vaultwarden-admin = {

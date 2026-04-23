@@ -49,24 +49,34 @@ Use precedence: explicit local-only no-auth exception -> native API token/key ->
 
 ### Decision HB-2: Widget-specific handling
 - Keep Caddy widget no-auth local exception (already operational on loopback).
-- Keep Gatus widget URL-only/read-only posture for Homepage.
+- Use authenticated Homepage access for Gatus via request-capable widget configuration.
 - Add Beszel widget with dedicated read-only account credentials.
 - Keep Filebrowser auth out of scope now.
 
 **Rationale:** Balances operational value with least-privilege and avoids forcing high-risk credentials where not needed.
+
+### Decision GATUS-1: Cloudflare-only human auth + loopback no-auth local API
+Use edge Cloudflare Access for human/browser auth to `gatus.shrublab.xyz` and remove app-native Gatus OIDC auth wiring. For Homepage integration, use unauthenticated local API calls and explicitly bind Gatus to `127.0.0.1`.
+
+**Rationale:** Gatus OIDC API behavior is unreliable for machine API usage in this flow; Homepage native Gatus widget does not support auth fields; bearer-token customapi path adds unnecessary complexity for same-host access. Loopback bind preserves least exposure for no-auth local API.
+
+**Alternatives considered:**
+- Keep Gatus app OIDC for both humans and API: rejected due to API incompatibility and login/API coupling.
+- Caddy-local auth for Homepage API path: rejected for added local auth surface/complexity without clear benefit in this wave.
+- Bearer-token customapi path: rejected for operational friction versus loopback-only local API.
 
 ### Decision OPS-1: Beszel bootstrap is declarative-plus-manual
 Use one-time manual Beszel account bootstrap (read-only user + explicit system sharing), then persist credentials in host-scoped SOPS.
 
 **Rationale:** Beszel account provisioning is app-level; this keeps Nix wiring declarative without pretending full lifecycle automation exists.
 
-### Decision AGENT-1: Beszel agent auth is host-scoped and env-file injected
-Beszel agent credentials (KEY/TOKEN and host-appropriate HUB_URL) are wired per host through host-scoped secrets/templates and injected via `services.beszel.agent.environmentFile`.
+### Decision AGENT-1: Beszel agent auth uses shared KEY + host token and env-file injection
+Beszel agent credentials use `KEY` from shared common secret scope and `TOKEN` from host-scoped secret scope, injected via `services.beszel.agent.environmentFile`.
 
-**Rationale:** Keeps machine credentials least-privilege and rotatable by host, avoids universal token blast-radius, and aligns with existing sops template patterns.
+**Rationale:** Aligns with SSH-first host enrollment and per-system token control while avoiding duplication of hub public key material.
 
 **Alternatives considered:**
-- Single shared universal token for all hosts: rejected (high blast radius and weak auditability).
+- Universal token for all hosts: rejected for SSH-first per-system enrollment requirements and weaker host-level token isolation.
 - Inline credentials in module config: rejected (non-secret-safe, poor rotation ergonomics).
 
 ## Risks / Trade-offs

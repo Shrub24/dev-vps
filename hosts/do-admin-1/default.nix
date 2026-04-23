@@ -27,6 +27,10 @@
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
   services.admin.cockpit.enable = false;
+  services.beszel-agent-auth = {
+    enable = true;
+    tokenSopsFile = ../../hosts/do-admin-1/secrets.yaml;
+  };
 
   systemd.tmpfiles.rules = [
     "d ${config.applications.admin.dataRoot} 0755 root root - -"
