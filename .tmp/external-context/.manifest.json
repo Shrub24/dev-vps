@@ -1,34 +1,14 @@
 {
+  "version": 1,
   "libraries": {
-    "gatus": {
+    "homepage": {
       "files": [
         {
-          "filename": "oidc-env-syntax.md",
-          "topic": "oidc env syntax",
-          "fetched": "2026-04-15T00:00:00Z",
+          "filename": "gatus-widget-headers.md",
+          "topic": "Gatus widget headers support",
+          "tech_stack": "Homepage",
+          "fetched": "2026-04-21T00:00:00Z",
           "source": "Context7 API"
-        }
-      ]
-    },
-    "cloudflare": {
-      "files": [
-        {
-          "filename": "cloudflare-provider-v5-permissions.md",
-          "topic": "terraform provider v5 api token permissions",
-          "fetched": "2026-04-16T00:00:00Z",
-          "source": "Context7 API"
-        },
-        {
-          "filename": "cloudflare-ruleset-cache-and-speed-settings.md",
-          "topic": "ruleset cache settings and speed features",
-          "fetched": "2026-04-18T00:00:00Z",
-          "source": "official docs + Cloudflare Terraform provider docs"
-        },
-        {
-          "filename": "cloudflare-zone-settings-speed-features.md",
-          "topic": "zone settings speed features",
-          "fetched": "2026-04-18T00:00:00Z",
-          "source": "official docs + Cloudflare Terraform provider docs"
         }
       ]
     }
