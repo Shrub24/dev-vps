@@ -28,5 +28,7 @@ in
     ];
 
     services.udisks2.enable = true;
+
+    systemd.services.cockpit-ws-user.unitConfig.DefaultDependencies = false;
   };
 }

@@ -101,3 +101,7 @@
 - [x] 17.1 Change `oci-melb-1` remote mount path from `/srv/data` to `/srv` so both `/srv/data` and `/srv/media` are available.
 - [x] 17.2 Remove separate `arch-home` SSHFS mount and keep a single `arch-root` mount at `/`.
 - [x] 17.3 Run targeted validation (`nix fmt`, `do-admin-1` build/eval check, strict OpenSpec validation) and mark complete.
+
+## 18. Deferred follow-up: Homepage-authenticated Quantum widget
+
+- [x] 18.1 Defer Homepage filebrowser/Quantum widget auth integration for now (low immediate value vs added auth/proxy complexity); revisit in a follow-up change if needed.
