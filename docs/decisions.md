@@ -269,7 +269,7 @@ Decision:
 - keep explicit auth exceptions minimal:
   - Caddy widget remains local no-auth (loopback admin API)
   - Gatus widget remains URL-only/read-only
-  - Filebrowser widget auth remains out of scope in this wave
+  - Quantum widget auth remains out of scope in this wave
 - Beszel Homepage integration uses a dedicated read-only account, with visibility only to explicitly shared systems
 
 Rationale:

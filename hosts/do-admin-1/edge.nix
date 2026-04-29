@@ -18,6 +18,10 @@ let
       responseHeaders
       upstream
       ;
+    forceTrailingSlash = svc.forceTrailingSlash or false;
+    upstreamTlsInsecure = svc.upstreamTlsInsecure or false;
+    upstreamTlsCaCertFile = svc.upstreamTlsCaCertFile or null;
+    upstreamTlsServerName = svc.upstreamTlsServerName or null;
     cloudflareAccessRequired = svc.access.requireCloudflareAccess;
     authenticatedOriginPullsRequired = svc.cloudflare.authenticatedOriginPulls;
   }) resolvedRoutes;

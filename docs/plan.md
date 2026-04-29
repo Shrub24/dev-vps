@@ -73,6 +73,7 @@ Track D: Service baseline
 - keep quarantine in synced scope and visible playback surface while library remains canonical promotion target
 - keep music service composition explicit through `modules/applications/music.nix`
 - keep private admin service composition explicit through `modules/applications/admin/default.nix`
+- keep the admin surface split between reusable service modules and host-owned source/route inputs (for example Quantum sources and Cockpit host overlays)
 - evolve Beets via native systemd-based inbox-to-library promotion under `/srv/media/library` while keeping `/srv/media` playback visibility
 - support a secondary approved-quarantine promotion runner for manual re-attempt workflows
 
@@ -119,5 +120,7 @@ Active implementation anchor paths that must stay reflected in docs:
 - `modules/profiles/base-server.nix`
 - `modules/services/tailscale.nix`
 - `modules/services/termix.nix`
+- `modules/services/admin/quantum.nix`
+- `modules/services/admin/cockpit.nix`
 
 Maintenance requirement: changes to active architecture paths, trust boundaries, or operator/CI commands must update canonical docs in the same change window.

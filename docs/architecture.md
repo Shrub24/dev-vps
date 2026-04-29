@@ -184,6 +184,33 @@ Current model:
 - `tailscale-only` remains the mode for routes that must not be publicly rendered
 - SoulSync route (`soulsync.<primaryDomain>`) is exposed via `tailscale-upstream`, Cloudflare Access, and AOP; day-1 posture is control-plane-first with best-effort playback suppression and documented residual UI behavior if upstream playback controls cannot be fully disabled
 
+## Admin Surface Model
+
+Current admin-service shape:
+
+- `do-admin-1` hosts the private admin surface composition under `modules/applications/admin/default.nix`
+- Quantum replaces Filebrowser as the file-management UI
+- Quantum source topology is split between reusable service wiring and host-owned source declarations:
+  - reusable runtime/container logic lives in `modules/services/admin/quantum.nix`
+  - host-specific source declarations live beside the host, currently `hosts/do-admin-1/quantum.nix`
+- Quantum on `do-admin-1` exposes:
+  - a local `do-admin-1` source
+  - remote host sources that are explicitly declared and mounted through the chosen transport model
+
+Current Cockpit shape:
+
+- Cockpit uses per-host sessions rather than login-page host chaining
+- public entrypoints are shared-host subpaths:
+  - `cockpit.shrublab.xyz/do-admin-1`
+  - `cockpit.shrublab.xyz/oci-melb-1`
+- `do-admin-1` local Cockpit upstream is proxied over localhost HTTPS with a host-local generated CA/leaf pair trusted explicitly by Caddy
+- `oci-melb-1` is exposed through host-local `tailscale serve --https=9443`, and the edge host proxies to that Tailscale HTTPS endpoint
+- Cockpit-specific transport ownership stays in Cockpit-owned modules:
+  - `modules/services/admin/cockpit.nix`
+  - `modules/services/admin/cockpit/loopback-tls.nix`
+  - `modules/services/admin/cockpit/tailscale-serve.nix`
+- host overlays such as `hosts/do-admin-1/cockpit-auth.nix` and `hosts/oci-melb-1/cockpit-auth.nix` only provide host-specific values (service-user secret path, local enable flags, public host/urlRoot overrides)
+
 Potential later model:
 
 - edge HA/failover and advanced policy hardening once phase-1 operational posture is stable
