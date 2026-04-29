@@ -49,7 +49,7 @@ in
 
       termix = {
         autoStart = true;
-        image = "ghcr.io/lukegus/termix:release-2.0.0";
+        image = "ghcr.io/lukegus/termix:release-2.1.0";
         dependsOn = [ "guacd" ];
         environment = {
           GUACD_HOST = "127.0.0.1";
@@ -70,6 +70,7 @@ in
         ];
         extraOptions = [
           "--dns-search=tail0fe19b.ts.net"
+          "--dns=100.100.100.100"
         ];
         volumes = [
           "${cfg.dataDir}/data:/app/data"
