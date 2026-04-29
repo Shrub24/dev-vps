@@ -41,12 +41,13 @@ Provider-appropriate break-glass recovery SHALL be documented and operationally 
 - **THEN** documented recovery procedures can be used to regain control
 
 ### Requirement: Admin application SHALL enable native admin operations services
-`applications.admin` composition SHALL wire Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Quantum, Homepage Dashboard, and Beszel hub through service-level admin modules under `modules/services/admin/` so the admin profile provides a unified operational baseline without monolithic application wiring.
+`applications.admin` composition SHALL wire Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Quantum, Homepage Dashboard, Beszel hub, and Termix through service-level admin modules under `modules/services/admin/` so the admin profile provides a unified operational baseline without monolithic application wiring or generic-service wrapper indirection.
 
 #### Scenario: Admin profile enables expanded baseline service set
 - **WHEN** a host imports and enables the admin application profile
 - **THEN** the host configuration includes `services.cockpit.enable`, `services.webhook.enable`, `services.ntfy-sh.enable`, `services.gatus.enable`, `services.vaultwarden.enable`, `services.homepage-dashboard.enable`, and `services.beszel.hub.enable`
 - **AND** Quantum service wiring is enabled through `services.admin.quantum`
+- **AND** Termix service wiring is enabled through `services.admin.termix`
 - **AND** service-owned wiring resides in admin service modules rather than one large application module file
 
 ### Requirement: Admin service state SHALL use predictable data root mapping
@@ -229,7 +230,7 @@ Cockpit-specific loopback TLS generation, trusted upstream configuration, and Ta
 The `do-admin-1` Cockpit public subpath SHALL proxy to the local Cockpit listener over HTTPS using a host-local CA and explicit upstream trust, without steady-state `tls_insecure_skip_verify`.
 
 #### Scenario: do-admin-1 local Cockpit upstream is rendered
-- **WHEN** the `cockpit-admin` route is evaluated
+- **WHEN** the `cockpit-do-admin-1` route is evaluated
 - **THEN** the upstream uses HTTPS to the local Cockpit listener
 - **AND** Caddy trusts a declaratively generated local CA for that hop
 - **AND** insecure upstream TLS verification bypass is not required in steady state
@@ -238,6 +239,7 @@ The `do-admin-1` Cockpit public subpath SHALL proxy to the local Cockpit listene
 The `oci-melb-1` Cockpit entrypoint SHALL use host-local Tailscale Serve HTTPS as the upstream exposure mechanism rather than direct cross-host socket binding.
 
 #### Scenario: OCI Cockpit route is evaluated
-- **WHEN** the `cockpit-oci-admin` route is resolved
+- **WHEN** the `cockpit-oci-melb-1` route is resolved
 - **THEN** its upstream targets the OCI host over Tailscale Serve HTTPS
 - **AND** the OCI host keeps Cockpit socket ownership local to the host itself
+

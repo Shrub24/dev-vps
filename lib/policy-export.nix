@@ -7,4 +7,4 @@ let
   policy = import ../policy/web-services.nix;
   policyLib = import ./policy.nix { inherit lib; };
 in
-policyLib.resolveHostServices policy hostName
+ policyLib.exportHostPolicy policy hostName

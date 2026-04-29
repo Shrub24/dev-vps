@@ -8,7 +8,6 @@ let
 in
 {
   imports = [
-    ../../services/termix.nix
     ../../services/pocket-id.nix
     ../../services/admin/termix.nix
     ../../services/admin/pocket-id.nix

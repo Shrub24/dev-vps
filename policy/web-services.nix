@@ -109,7 +109,7 @@
           category = "admin";
         };
 
-        cockpit-admin = {
+        cockpit-do-admin-1 = {
           subdomain = "cockpit";
           path = "/do-admin-1";
           forceTrailingSlash = true;
@@ -123,7 +123,7 @@
           category = "admin";
         };
 
-        cockpit-oci-admin = {
+        cockpit-oci-melb-1 = {
           subdomain = "cockpit";
           path = "/oci-melb-1";
           forceTrailingSlash = true;

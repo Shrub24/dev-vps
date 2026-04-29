@@ -13,20 +13,17 @@ terraform {
 
 locals {
   web_services_policy = jsondecode(file("../../generated/policy/web-services.json"))
+  cloudflare_hosts    = try(local.web_services_policy.cloudflare.hosts, {})
+  web_service_routes  = try(local.web_services_policy.routes, local.web_services_policy)
 
-  # All declared-public, non-tailscale-only services with a subdomain get a DNS record.
-  public_service_records = {
-    for service_name, service in local.web_services_policy : service_name => service
-    if try(service.declarePublic, false) == true
-    && try(service.exposureMode, "") != "tailscale-only"
-    && try(service.subdomain, "") != ""
-  }
+  # All declared-public, non-tailscale-only public hosts get one DNS record.
+  public_service_records = local.cloudflare_hosts
 
-  # Services that need a Cloudflare Access application.
-  # requireCloudflareAccess = false → no Access app (e.g. navidrome, vaultwarden).
+  # Public hosts that need a Cloudflare Access application.
+  # access = null/absent → no Access app (e.g. navidrome, vaultwarden).
   access_app_service_records = {
-    for service_name, service in local.public_service_records : service_name => service
-    if service.access.requireCloudflareAccess == true
+    for public_host, host in local.public_service_records : public_host => host
+    if try(host.access.requireCloudflareAccess, false) == true
   }
 
   policy_resources_by_name = {
@@ -39,11 +36,11 @@ locals {
     join(" ", [for cc in var.firewall_allowed_countries : format("\"%s\"", upper(cc))])
   ) : "ip.geoip.country in {\"__none__\"}"
 
-  navidrome_service = try(local.public_service_records.navidrome, null)
-  navidrome_host    = local.navidrome_service != null ? "${local.navidrome_service.subdomain}.${var.primary_domain}" : null
+  navidrome_service = try(local.web_service_routes.navidrome, null)
+  navidrome_host    = local.navidrome_service != null ? local.navidrome_service.publicHost : null
 
-  soulsync_service = try(local.public_service_records.soulsync, null)
-  soulsync_host    = local.soulsync_service != null ? "${local.soulsync_service.subdomain}.${var.primary_domain}" : null
+  soulsync_service = try(local.web_service_routes.soulsync, null)
+  soulsync_host    = local.soulsync_service != null ? local.soulsync_service.publicHost : null
 
   cache_bypass_rules = concat(
     (var.navidrome_cache_bypass_enabled && local.navidrome_host != null) ? [{
@@ -78,11 +75,11 @@ resource "cloudflare_dns_record" "service" {
   for_each = local.public_service_records
 
   zone_id = var.cloudflare_zone_id
-  name    = each.value.subdomain
+  name    = each.value.hostname
   type    = var.dns_record_type
   ttl     = 1
   content = var.edge_record_target
-  proxied = try(each.value.cloudflare.proxied, true)
+  proxied = try(each.value.proxied, true)
 
   comment = "Managed by OpenTofu from policy/web-services.nix"
 }
@@ -125,8 +122,8 @@ resource "cloudflare_zero_trust_access_application" "service" {
   for_each = local.access_app_service_records
 
   account_id = var.cloudflare_account_id
-  name       = each.key
-  domain     = "${each.value.subdomain}.${var.primary_domain}"
+  name       = each.value.publicHost
+  domain     = each.value.publicHost
   type       = "self_hosted"
 
   policies = [
