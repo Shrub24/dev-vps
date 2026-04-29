@@ -124,9 +124,9 @@ output "zone_security_rulesets" {
 output "service_cache_bypass_ruleset" {
   description = "Combined service cache bypass ruleset metadata when any host-scoped bypass is enabled"
   value = length(cloudflare_ruleset.service_cache_bypass) > 0 ? {
-    id                        = cloudflare_ruleset.service_cache_bypass[0].id
-    phase                     = cloudflare_ruleset.service_cache_bypass[0].phase
-    navidrome_bypass_enabled  = var.navidrome_cache_bypass_enabled
-    soulsync_bypass_enabled   = var.soulsync_cache_bypass_enabled
+    id                       = cloudflare_ruleset.service_cache_bypass[0].id
+    phase                    = cloudflare_ruleset.service_cache_bypass[0].phase
+    navidrome_bypass_enabled = var.navidrome_cache_bypass_enabled
+    soulsync_bypass_enabled  = var.soulsync_cache_bypass_enabled
   } : null
 }

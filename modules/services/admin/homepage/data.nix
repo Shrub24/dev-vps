@@ -143,16 +143,16 @@ in
           Cockpit = {
             icon = "mdi-console-network";
             description = "do-admin-1 server administration";
-            href = serviceHref "cockpit-admin";
-            siteMonitor = (requireRoute "cockpit-admin").healthUrl;
+            href = serviceHref "cockpit-do-admin-1";
+            siteMonitor = (requireRoute "cockpit-do-admin-1").healthUrl;
           };
         }
         {
           "Cockpit (OCI)" = {
             icon = "mdi-console-network";
             description = "oci-melb-1 server administration";
-            href = serviceHref "cockpit-oci-admin";
-            siteMonitor = (requireRoute "cockpit-oci-admin").healthUrl;
+            href = serviceHref "cockpit-oci-melb-1";
+            siteMonitor = (requireRoute "cockpit-oci-melb-1").healthUrl;
           };
         }
         {

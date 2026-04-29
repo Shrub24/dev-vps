@@ -55,15 +55,13 @@ Routine operations SHALL be supported by executable checks and documented break-
 - **THEN** contract checks and recovery guidance are available before and after deployment
 
 ### Requirement: Cloudflare DNS records SHALL be policy-driven
-Cloudflare DNS records for published web services SHALL be declared in OpenTofu and generated from canonical policy exports rather than hand-managed per record.
+Cloudflare DNS and Zero Trust application resources for published web services SHALL be declared in OpenTofu and generated from canonical policy exports, with hostname-scoped resources deduped by public hostname rather than emitted once per internal route key.
 
-#### Scenario: DNS records are planned
-- **WHEN** OpenTofu evaluates Cloudflare resources
-- **THEN** record definitions are derived from generated policy JSON exported from `policy/web-services.nix`
-
-#### Scenario: Grey-cloud service is declared
-- **WHEN** a service policy sets `cloudflare.proxied = false`
-- **THEN** the DNS record is planned as DNS-only (not proxied)
+#### Scenario: Multiple routes share one public hostname
+- **WHEN** `just tofu-sync` exports policy data for OpenTofu consumption
+- **THEN** the generated Cloudflare view contains one DNS record definition for the shared public hostname
+- **AND** it contains at most one Access application definition for that public hostname
+- **AND** route-level policy data remains available separately for non-Cloudflare consumers
 
 ### Requirement: Shared origin endpoint SHALL be managed declaratively
 The shared origin endpoint used as CNAME target for published service records SHALL be managed in OpenTofu.

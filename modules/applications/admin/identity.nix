@@ -32,7 +32,7 @@ in
       appUrl = pocketIdBaseUrl;
     };
 
-    services.termix = lib.mkIf config.services.admin.termix.enable {
+    services.admin.termix = lib.mkIf config.services.admin.termix.enable {
       dataDir = "${cfg.dataRoot}/termix";
       oidc = {
         enabled = termixOidcEnabled;
