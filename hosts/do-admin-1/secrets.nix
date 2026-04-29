@@ -94,6 +94,15 @@
       mode = "0400";
     };
 
+    cockpit_service_user_password_hash = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "cockpit/service_user/password_hash";
+      path = "/run/secrets/cockpit.service_user.password_hash";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+
     homepage_tailscale_device_id = {
       sopsFile = ../../hosts/do-admin-1/secrets.yaml;
       key = "homepage/tailscale/device_id";

@@ -20,6 +20,8 @@ in
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-root.nix
     ../../modules/core/users.nix
+    ../../modules/services/admin/cockpit.nix
+    ./cockpit-auth.nix
   ]
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
@@ -267,6 +269,15 @@ in
         path = "/run/secrets/slskd.web_password";
         owner = "slskd";
         group = "slskd";
+        mode = "0400";
+      };
+
+      cockpit_service_user_password_hash = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "cockpit/service_user/password_hash";
+        path = "/run/secrets/cockpit.service_user.password_hash";
+        owner = "root";
+        group = "root";
         mode = "0400";
       };
 

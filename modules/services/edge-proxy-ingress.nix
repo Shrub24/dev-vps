@@ -40,6 +40,25 @@ let
           ''
         else
           "";
+      upstreamTransport =
+        if
+          route.upstreamTlsInsecure
+          || route.upstreamTlsCaCertFile != null
+          || route.upstreamTlsServerName != null
+        then
+          ''
+            transport http {
+              ${lib.optionalString route.upstreamTlsInsecure "tls_insecure_skip_verify"}
+              ${lib.optionalString (
+                route.upstreamTlsCaCertFile != null
+              ) "tls_trust_pool file ${route.upstreamTlsCaCertFile}"}
+              ${lib.optionalString (
+                route.upstreamTlsServerName != null
+              ) "tls_server_name ${route.upstreamTlsServerName}"}
+            }
+          ''
+        else
+          "";
     in
     if route.path == "/" then
       ''
@@ -47,7 +66,12 @@ let
         handle {
           ${accessGuard}
           ${responseHeaders}
-          reverse_proxy ${route.upstream}
+          reverse_proxy ${route.upstream} {
+            header_up Host {host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-For {remote_host}
+            ${upstreamTransport}
+          }
         }
       ''
     else if route.stripPrefix then
@@ -56,17 +80,28 @@ let
         handle_path ${route.path}* {
           ${accessGuard}
           ${responseHeaders}
-          reverse_proxy ${route.upstream}
+          reverse_proxy ${route.upstream} {
+            header_up Host {host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-For {remote_host}
+            ${upstreamTransport}
+          }
         }
       ''
     else
       ''
         # ${name} (${route.exposureMode})
+        ${lib.optionalString route.forceTrailingSlash "redir ${route.path} ${route.path}/ 308"}
         @${id}_path path ${route.path}*
         handle @${id}_path {
           ${accessGuard}
           ${responseHeaders}
-          reverse_proxy ${route.upstream}
+          reverse_proxy ${route.upstream} {
+            header_up Host {host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-For {remote_host}
+            ${upstreamTransport}
+          }
         }
       '';
 
@@ -299,6 +334,12 @@ in
               description = "Use handle_path to strip path prefix before proxying.";
             };
 
+            forceTrailingSlash = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Redirect the exact route path to a trailing-slash variant before proxying.";
+            };
+
             responseHeaders = lib.mkOption {
               type = lib.types.attrsOf lib.types.str;
               default = { };
@@ -309,6 +350,24 @@ in
               type = lib.types.bool;
               default = true;
               description = "Whether this route requires Cloudflare Authenticated Origin Pulls (mTLS) at host TLS layer.";
+            };
+
+            upstreamTlsInsecure = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Disable TLS verification when proxying to HTTPS upstream with self-signed/private certs.";
+            };
+
+            upstreamTlsCaCertFile = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Optional CA certificate file trusted for HTTPS upstream verification.";
+            };
+
+            upstreamTlsServerName = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Optional TLS server name override used when verifying HTTPS upstreams.";
             };
           };
         }
@@ -341,6 +400,17 @@ in
       {
         assertion = !(builtins.any hostHasMixedAopRequirement siteHosts);
         message = "edge-proxy-ingress cannot mix authenticatedOriginPullsRequired true/false routes on the same host.";
+      }
+      {
+        assertion =
+          !(builtins.any (
+            name:
+            let
+              route = routeByName name;
+            in
+            route.upstreamTlsInsecure && route.upstreamTlsCaCertFile != null
+          ) routeNames);
+        message = "edge-proxy-ingress routes cannot set both upstreamTlsInsecure=true and upstreamTlsCaCertFile.";
       }
       {
         assertion = cfg.role == "edge" || cfg.routes == { };

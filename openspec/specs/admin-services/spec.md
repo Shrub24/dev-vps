@@ -41,11 +41,12 @@ Provider-appropriate break-glass recovery SHALL be documented and operationally 
 - **THEN** documented recovery procedures can be used to regain control
 
 ### Requirement: Admin application SHALL enable native admin operations services
-`applications.admin` composition SHALL wire Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Filebrowser, Homepage Dashboard, and Beszel hub through service-level admin modules under `modules/services/admin/` so the admin profile provides a unified operational baseline without monolithic application wiring.
+`applications.admin` composition SHALL wire Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Quantum, Homepage Dashboard, and Beszel hub through service-level admin modules under `modules/services/admin/` so the admin profile provides a unified operational baseline without monolithic application wiring.
 
 #### Scenario: Admin profile enables expanded baseline service set
 - **WHEN** a host imports and enables the admin application profile
-- **THEN** the host configuration includes `services.cockpit.enable`, `services.webhook.enable`, `services.ntfy-sh.enable`, `services.gatus.enable`, `services.vaultwarden.enable`, `services.filebrowser.enable`, `services.homepage-dashboard.enable`, and `services.beszel.hub.enable`
+- **THEN** the host configuration includes `services.cockpit.enable`, `services.webhook.enable`, `services.ntfy-sh.enable`, `services.gatus.enable`, `services.vaultwarden.enable`, `services.homepage-dashboard.enable`, and `services.beszel.hub.enable`
+- **AND** Quantum service wiring is enabled through `services.admin.quantum`
 - **AND** service-owned wiring resides in admin service modules rather than one large application module file
 
 ### Requirement: Admin service state SHALL use predictable data root mapping
@@ -56,7 +57,7 @@ For each newly wired admin service that supports configurable state/data paths, 
 - **THEN** supported service state paths resolve under `${applications.admin.dataRoot}/<service>` rather than implicit unmanaged defaults
 
 ### Requirement: Admin expansion SHALL preserve private-first exposure defaults
-The admin profile augmentation SHALL NOT introduce public-ingress defaults for Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Filebrowser, Homepage Dashboard, or Beszel and SHALL remain compatible with the existing Tailscale-first access model after module decomposition.
+The admin profile augmentation SHALL NOT introduce public-ingress defaults for Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Quantum, Homepage Dashboard, or Beszel and SHALL remain compatible with the existing Tailscale-first access model after module decomposition.
 
 #### Scenario: No public-ingress baseline is introduced
 - **WHEN** the admin module refactor is evaluated
@@ -94,13 +95,13 @@ Pocket ID OIDC app credentials used by admin services SHALL be defined as host-s
 - **THEN** they are sourced from host-scoped secret files/templates for `do-admin-1`
 - **AND** they are not introduced under shared/common secret scope by default
 
-### Requirement: Cockpit lifecycle SHALL support temporary host-level disable exceptions
-Cockpit SHALL remain part of admin service-module ownership and composition contracts, while allowing an explicit temporary host-level `enable = false` exception when an upstream regression is active.
+### Requirement: Cockpit runtime SHALL include the ws-user dependency workaround
+Cockpit service wiring SHALL include the upstream `cockpit-ws-user.service` dependency workaround required to avoid the known shutdown-ordering regression.
 
-#### Scenario: Upstream cockpit regression is active
-- **WHEN** host policy applies temporary exception for cockpit
-- **THEN** cockpit module wiring remains present in the admin composition structure
-- **AND** runtime activation is disabled through host-level enable override until the exception is lifted
+#### Scenario: Cockpit runtime is rendered
+- **WHEN** Cockpit service wiring is evaluated
+- **THEN** `cockpit-ws-user.service` has the required dependency override applied
+- **AND** the workaround remains part of the declarative Cockpit service baseline rather than host-local ad hoc patching
 
 ### Requirement: Gatus endpoint inventory SHALL derive from web services policy
 Admin monitoring wiring SHALL derive Gatus endpoint inventory for a host from resolved service entries in `policy/web-services.nix` via policy resolution helpers, using policy-defined origin and health metadata.
@@ -175,11 +176,68 @@ Human browser access to Gatus SHALL rely on edge access controls (Cloudflare Acc
 - **THEN** edge access controls enforce browser authentication
 - **AND** Gatus app configuration does not require local OIDC client credentials for this flow
 
-### Requirement: Filebrowser widget auth SHALL remain out of scope in this wave
-This change SHALL NOT require Filebrowser widget machine-auth wiring.
+### Requirement: Quantum Homepage widget auth SHALL remain out of scope in this wave
+This change SHALL NOT require Quantum widget machine-auth wiring.
 
 #### Scenario: Auth coverage is reviewed for current wave
 - **WHEN** implementation scope is validated
-- **THEN** Filebrowser widget auth wiring is excluded from required deliverables
-- **AND** no Filebrowser-specific Homepage credential contract is introduced in this change
+- **THEN** Quantum widget auth wiring is excluded from required deliverables
+- **AND** no Quantum-specific Homepage credential contract is introduced in this change
 
+### Requirement: Quantum SHALL replace Filebrowser for admin file management
+The admin baseline SHALL expose Quantum as the file-management UI in place of Filebrowser, with local and remote host data sources configured declaratively.
+
+#### Scenario: Quantum replaces the legacy file-management service
+- **WHEN** the admin baseline is evaluated for `do-admin-1`
+- **THEN** Filebrowser-specific admin wiring is absent
+- **AND** Quantum is provided through `services.admin.quantum`
+- **AND** Quantum state is mapped under `${applications.admin.dataRoot}/quantum`
+
+### Requirement: Quantum SHALL support host-local and remote data sources
+Quantum on `do-admin-1` SHALL expose a local source for that host and remote sources for approved hosts using the declared transport model for each source.
+
+#### Scenario: Quantum source topology is rendered
+- **WHEN** `do-admin-1` admin services are evaluated
+- **THEN** Quantum exposes a host-local source for `do-admin-1`
+- **AND** approved remote sources remain explicitly declared rather than discovered implicitly
+
+### Requirement: Quantum auth SHALL support Pocket ID OIDC with controlled fallback
+Quantum SHALL support Pocket ID OIDC and MAY retain local password fallback only where the host configuration still chooses to keep that fallback enabled.
+
+#### Scenario: Quantum auth posture is evaluated
+- **WHEN** Quantum auth configuration is rendered
+- **THEN** Pocket ID OIDC wiring is present
+- **AND** any local password fallback remains an explicit host-owned choice rather than an implicit default for all environments
+
+### Requirement: Cockpit SHALL use per-host sessions instead of login-page chaining
+Cockpit access SHALL be exposed as separate per-host sessions rather than relying on the login-page `Connect to:` chaining model.
+
+#### Scenario: Operator opens Cockpit from the admin surface
+- **WHEN** Cockpit entrypoints are presented to operators
+- **THEN** `do-admin-1` and `oci-melb-1` are exposed as separate entrypoints
+- **AND** `LoginTo` remains disabled for the shared public Cockpit surface
+
+### Requirement: Cockpit transport ownership SHALL stay module-centered
+Cockpit-specific loopback TLS generation, trusted upstream configuration, and Tailscale Serve exposure SHALL remain owned by Cockpit modules, while host overlays only declare host-specific values such as URL root, public host, and local service-user secrets.
+
+#### Scenario: Cockpit configuration ownership is reviewed
+- **WHEN** host overlays and reusable modules are inspected
+- **THEN** Cockpit transport behavior is defined in Cockpit-owned modules
+- **AND** host overlays contain only host-specific Cockpit inputs
+
+### Requirement: do-admin-1 local Cockpit upstream SHALL use explicit trusted loopback TLS
+The `do-admin-1` Cockpit public subpath SHALL proxy to the local Cockpit listener over HTTPS using a host-local CA and explicit upstream trust, without steady-state `tls_insecure_skip_verify`.
+
+#### Scenario: do-admin-1 local Cockpit upstream is rendered
+- **WHEN** the `cockpit-admin` route is evaluated
+- **THEN** the upstream uses HTTPS to the local Cockpit listener
+- **AND** Caddy trusts a declaratively generated local CA for that hop
+- **AND** insecure upstream TLS verification bypass is not required in steady state
+
+### Requirement: oci-melb-1 Cockpit SHALL be exposed through host-local Tailscale Serve HTTPS
+The `oci-melb-1` Cockpit entrypoint SHALL use host-local Tailscale Serve HTTPS as the upstream exposure mechanism rather than direct cross-host socket binding.
+
+#### Scenario: OCI Cockpit route is evaluated
+- **WHEN** the `cockpit-oci-admin` route is resolved
+- **THEN** its upstream targets the OCI host over Tailscale Serve HTTPS
+- **AND** the OCI host keeps Cockpit socket ownership local to the host itself

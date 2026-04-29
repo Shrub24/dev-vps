@@ -4,9 +4,7 @@
 }:
 let
   requireRoute = name: policyServices.${name};
-  host = name: (requireRoute name).publicHost;
-
-  serviceHref = name: "https://${host name}";
+  serviceHref = name: (requireRoute name).publicUrl;
 in
 {
   settings = {
@@ -144,9 +142,17 @@ in
         {
           Cockpit = {
             icon = "mdi-console-network";
-            description = "Server administration";
+            description = "do-admin-1 server administration";
             href = serviceHref "cockpit-admin";
             siteMonitor = (requireRoute "cockpit-admin").healthUrl;
+          };
+        }
+        {
+          "Cockpit (OCI)" = {
+            icon = "mdi-console-network";
+            description = "oci-melb-1 server administration";
+            href = serviceHref "cockpit-oci-admin";
+            siteMonitor = (requireRoute "cockpit-oci-admin").healthUrl;
           };
         }
         {

@@ -18,6 +18,7 @@
     ../../modules/core/users.nix
     ./secrets.nix
     ./quantum.nix
+    ./cockpit-auth.nix
     ./edge.nix
     ./networking.nix
   ]
