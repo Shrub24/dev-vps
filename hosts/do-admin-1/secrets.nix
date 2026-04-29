@@ -175,6 +175,51 @@
       mode = "0400";
     };
 
+    vaultwarden_admin_token = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "vaultwarden/admin_token";
+      path = "/run/secrets/vaultwarden.admin_token";
+      owner = "vaultwarden";
+      group = "vaultwarden";
+      mode = "0400";
+    };
+
+    vaultwarden_smtp_username = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "vaultwarden/smtp_username";
+      path = "/run/secrets/vaultwarden.smtp_username";
+      owner = "vaultwarden";
+      group = "vaultwarden";
+      mode = "0400";
+    };
+
+    vaultwarden_smtp_password = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "vaultwarden/smtp_password";
+      path = "/run/secrets/vaultwarden.smtp_password";
+      owner = "vaultwarden";
+      group = "vaultwarden";
+      mode = "0400";
+    };
+
+    vaultwarden_push_installation_id = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "vaultwarden/push_installation_id";
+      path = "/run/secrets/vaultwarden.push_installation_id";
+      owner = "vaultwarden";
+      group = "vaultwarden";
+      mode = "0400";
+    };
+
+    vaultwarden_push_installation_key = {
+      sopsFile = ../../hosts/do-admin-1/secrets.yaml;
+      key = "vaultwarden/push_installation_key";
+      path = "/run/secrets/vaultwarden.push_installation_key";
+      owner = "vaultwarden";
+      group = "vaultwarden";
+      mode = "0400";
+    };
+
   };
 
   sops.templates."caddy-cloudflare.env" = {
@@ -239,6 +284,19 @@
       HOMEPAGE_VAR_SLSKD_KEY=${config.sops.placeholder.homepage_slskd_key}
       HOMEPAGE_VAR_BESZEL_USER=${config.sops.placeholder.homepage_beszel_username}
       HOMEPAGE_VAR_BESZEL_PASSWORD=${config.sops.placeholder.homepage_beszel_password}
+    '';
+  };
+
+  sops.templates."vaultwarden.env" = {
+    owner = "vaultwarden";
+    group = "vaultwarden";
+    mode = "0400";
+    content = ''
+      ADMIN_TOKEN='${config.sops.placeholder.vaultwarden_admin_token}'
+      SMTP_USERNAME=${config.sops.placeholder.vaultwarden_smtp_username}
+      SMTP_PASSWORD=${config.sops.placeholder.vaultwarden_smtp_password}
+      PUSH_INSTALLATION_ID=${config.sops.placeholder.vaultwarden_push_installation_id}
+      PUSH_INSTALLATION_KEY=${config.sops.placeholder.vaultwarden_push_installation_key}
     '';
   };
 

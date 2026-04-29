@@ -29,6 +29,7 @@
   disko-root-extra = "100%";
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
+  services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz"; # ← SET YOUR RESEND VERIFIED ADDRESS
   services.beszel-agent-auth = {
     enable = true;
     tokenSopsFile = ../../hosts/do-admin-1/secrets.yaml;

@@ -45,9 +45,9 @@ in
     };
 
     trustedProxyCidrs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Optional override for trusted proxy CIDR ranges.";
+      type = lib.types.nullOr (lib.types.listOf lib.types.str);
+      default = null;
+      description = "Override trusted proxy CIDR ranges. Uses Cloudflare defaults (from services.edge-proxy-ingress) when null.";
     };
 
     authenticatedOriginPulls = {
@@ -72,17 +72,21 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services."edge-proxy-ingress" = {
-      inherit (cfg)
-        role
-        primaryDomain
-        acmeEmail
-        cloudflareCredentialsFile
-        trustedProxyCidrs
-        routes
-        ;
+    services."edge-proxy-ingress" = lib.mkMerge [
+      {
+        inherit (cfg)
+          role
+          primaryDomain
+          acmeEmail
+          cloudflareCredentialsFile
+          routes
+          ;
 
-      authenticatedOriginPulls = cfg.authenticatedOriginPulls;
-    };
+        authenticatedOriginPulls = cfg.authenticatedOriginPulls;
+      }
+      (lib.mkIf (cfg.trustedProxyCidrs != null) {
+        trustedProxyCidrs = cfg.trustedProxyCidrs;
+      })
+    ];
   };
 }
