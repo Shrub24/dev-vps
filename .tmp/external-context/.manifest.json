@@ -1,14 +1,14 @@
 {
   "version": 1,
   "libraries": {
-    "homepage": {
+    "cockpit-caddy-upstream-tls": {
       "files": [
         {
-          "filename": "gatus-widget-headers.md",
-          "topic": "Gatus widget headers support",
-          "tech_stack": "Homepage",
-          "fetched": "2026-04-21T00:00:00Z",
-          "source": "Context7 API"
+          "filename": "cockpit-caddy-upstream-tls.md",
+          "topic": "local reverse proxy upstream TLS",
+          "tech_stack": "Cockpit + Caddy + NixOS",
+          "fetched": "2026-04-28T00:00:00Z",
+          "source": "Context7 API + official docs"
         }
       ]
     }
