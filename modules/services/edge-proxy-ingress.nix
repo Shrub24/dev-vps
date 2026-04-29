@@ -134,14 +134,14 @@ let
     else
       "";
 
-  trustedProxyLines = lib.concatStringsSep "\n          " cfg.trustedProxyCidrs;
+  trustedProxyArgs = lib.concatStringsSep " " cfg.trustedProxyCidrs;
 
   caddyGlobal =
     if cfg.role == "edge" then
       ''
         {
           servers {
-            trusted_proxies static ${trustedProxyLines}
+            trusted_proxies static ${trustedProxyArgs}
             client_ip_headers CF-Connecting-IP X-Forwarded-For
           }
         }
@@ -419,12 +419,10 @@ in
     ]
     ++ routeAssertions;
 
-    networking.firewall.allowedTCPPorts = lib.mkIf (cfg.role == "edge" && publicRouteNames != [ ]) (
-      lib.mkAfter [
-        80
-        443
-      ]
-    );
+    networking.firewall.allowedTCPPorts = lib.mkIf (cfg.role == "edge" && publicRouteNames != [ ]) [
+      80
+      443
+    ];
 
     security.acme = lib.mkIf (cfg.role == "edge") {
       acceptTerms = true;

@@ -297,3 +297,48 @@ resource "cloudflare_ruleset" "service_cache_bypass" {
 
   rules = local.cache_bypass_rules
 }
+
+# ---------------------------------------------------------------------------
+# Resend email sending domain DNS
+# ---------------------------------------------------------------------------
+
+resource "cloudflare_dns_record" "resend_send_spf" {
+  count   = var.resend_send_enabled ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+  name    = var.resend_spf_name
+  type    = "TXT"
+  ttl     = 1
+  content = var.resend_spf_value
+  comment = "Managed by OpenTofu: Resend SPF for send.shrublab.xyz"
+}
+
+resource "cloudflare_dns_record" "resend_send_mx" {
+  count    = var.resend_send_enabled ? 1 : 0
+  zone_id  = var.cloudflare_zone_id
+  name     = var.resend_mx_name
+  type     = "MX"
+  ttl      = 1
+  content  = var.resend_mx_target
+  priority = var.resend_mx_priority
+  comment  = "Managed by OpenTofu: Resend return-path MX for send.shrublab.xyz"
+}
+
+resource "cloudflare_dns_record" "resend_send_dkim" {
+  for_each = var.resend_send_enabled ? { for k in var.resend_dkim_records : k.name => k } : {}
+  zone_id  = var.cloudflare_zone_id
+  name     = each.value.name
+  type     = "TXT"
+  ttl      = 1
+  content  = each.value.value
+  comment  = "Managed by OpenTofu: Resend DKIM record ${each.key}"
+}
+
+resource "cloudflare_dns_record" "resend_send_dmarc" {
+  count   = var.resend_send_enabled && trimspace(var.resend_dmarc_value) != "" ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+  name    = var.resend_dmarc_name
+  type    = "TXT"
+  ttl     = 1
+  content = var.resend_dmarc_value
+  comment = "Managed by OpenTofu: Resend DMARC for send.shrublab.xyz"
+}
