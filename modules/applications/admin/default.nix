@@ -1,26 +1,31 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }:
 let
   cfg = config.applications.admin;
+  hasTermixOidcEnv = lib.hasAttrByPath [ "sops" "templates" "termix-oidc.env" "path" ] config;
+  hasQuantumOidcEnv = lib.hasAttrByPath [ "sops" "templates" "quantum-oidc.env" "path" ] config;
+  termixEnabled = config.services.admin.termix.enable;
+  termixRoute = cfg.policyServices."termix-admin";
+  termixOidcEnabled = termixEnabled && termixRoute.access.oidc.enabled;
+  quantumOidcEnabled = config.services.admin.quantum.enable && config.services.admin.quantum.oidc.enabled;
+  pocketIdBaseUrl = cfg.policyServices."pocket-id-admin".publicUrl;
 in
 {
   imports = [
-    ../../services/pocket-id.nix
     ../../services/admin/termix.nix
     ../../services/admin/pocket-id.nix
     ../../services/admin/cockpit.nix
     ../../services/admin/webhook.nix
     ../../services/admin/ntfy.nix
-    ../../services/admin/gatus/default.nix
+    ../../services/admin/gatus.nix
     ../../services/admin/vaultwarden.nix
     ../../services/admin/quantum.nix
     ../../services/admin/homepage/default.nix
     ../../services/admin/beszel.nix
-    ./identity.nix
-    ./access.nix
   ];
 
   options.applications.admin = {
@@ -39,18 +44,90 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    services.admin = {
-      termix.enable = lib.mkDefault true;
-      pocket-id.enable = lib.mkDefault true;
-      cockpit.enable = lib.mkDefault true;
-      webhook.enable = lib.mkDefault true;
-      ntfy.enable = lib.mkDefault true;
-      gatus.enable = lib.mkDefault true;
-      vaultwarden.enable = lib.mkDefault true;
-      quantum.enable = lib.mkDefault false;
-      homepage.enable = lib.mkDefault true;
-      beszel.enable = lib.mkDefault true;
-    };
-  };
+  config = lib.mkIf cfg.enable (lib.mkMerge [
+    {
+      assertions = [
+        {
+          assertion = !termixOidcEnabled || hasTermixOidcEnv;
+          message = "OIDC is enabled for termix-admin in policyServices, but sops template termix-oidc.env is missing.";
+        }
+        {
+          assertion = !quantumOidcEnabled || hasQuantumOidcEnv;
+          message = "Quantum OIDC is enabled, but sops template quantum-oidc.env is missing.";
+        }
+      ];
+
+      services.admin.termix.enable = lib.mkDefault true;
+      services.admin."pocket-id".enable = lib.mkDefault true;
+      services.admin.cockpit.enable = lib.mkDefault true;
+      services.admin.webhook.enable = lib.mkDefault true;
+      services.admin.ntfy.enable = lib.mkDefault true;
+      services.admin.gatus.enable = lib.mkDefault true;
+      services.admin.vaultwarden.enable = lib.mkDefault true;
+      services.admin.quantum.enable = lib.mkDefault false;
+      services.admin.homepage.enable = lib.mkDefault true;
+      services.admin.beszel.enable = lib.mkDefault true;
+    }
+
+    (lib.mkIf config.services.admin.pocket-id.enable {
+      services.admin."pocket-id" = {
+        dataDir = "${cfg.dataRoot}/pocket-id";
+        appUrl = pocketIdBaseUrl;
+      };
+    })
+
+    (lib.mkIf termixEnabled {
+      services.admin.termix = {
+        dataDir = "${cfg.dataRoot}/termix";
+        oidc = {
+          enabled = termixOidcEnabled;
+          issuerUrl = pocketIdBaseUrl;
+          environmentFile = if termixOidcEnabled then config.sops.templates."termix-oidc.env".path else null;
+        };
+      };
+
+      systemd.services.tailscale-serve-termix = {
+        description = "Expose Termix via dedicated Tailscale HTTPS port";
+        requires = [
+          "tailscaled.service"
+          "podman-termix.service"
+        ];
+        wants = [
+          "tailscaled-autoconnect.service"
+          "tailscaled.service"
+          "podman-termix.service"
+        ];
+        after = [
+          "tailscaled-autoconnect.service"
+          "tailscaled.service"
+          "podman-termix.service"
+        ];
+        partOf = [
+          "tailscaled.service"
+          "podman-termix.service"
+        ];
+        restartIfChanged = true;
+        stopIfChanged = true;
+        wantedBy = [ "multi-user.target" ];
+
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = ''
+            ${pkgs.tailscale}/bin/tailscale serve --yes --bg --https=8443 ${termixRoute.upstream}
+          '';
+          ExecStop = ''
+            ${pkgs.tailscale}/bin/tailscale serve --https=8443 off
+          '';
+        };
+      };
+    })
+
+    (lib.mkIf config.services.admin.quantum.enable {
+      services.admin.quantum.oidc = {
+        issuerUrl = pocketIdBaseUrl;
+        environmentFile = if quantumOidcEnabled then config.sops.templates."quantum-oidc.env".path else null;
+      };
+    })
+  ]);
 }
