@@ -57,6 +57,11 @@ nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".ro
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."pocket-id-admin".cloudflareProxied == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."pocket-id-admin".authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes."filebrowser-admin".cloudflareAccessRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.tagr.subdomain == "tagr"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.tagr.exposureMode == "tailscale-upstream"' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.tagr.cloudflareAccessRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.tagr.authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.tagr.cloudflareProxied == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 
 nix eval --no-write-lock-file --apply 'cfg: cfg.services."edge-proxy-ingress".routes.termix-admin.authenticatedOriginPullsRequired == true' path:.#nixosConfigurations.do-admin-1.config | rg --fixed-strings --quiet 'true'
 

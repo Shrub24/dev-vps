@@ -163,6 +163,17 @@ in
     '';
   };
 
+  sops.templates."tagr.env" = lib.mkIf hasHostSecrets {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      AUTH_SECRET=${config.sops.placeholder.tagr_auth_secret}
+      AUTH_USER=${config.sops.placeholder.tagr_auth_user}
+      AUTH_PASSWORD=${config.sops.placeholder.tagr_auth_password}
+    '';
+  };
+
   sops.templates."soulsync-spotify.env" = lib.mkIf hasProviderSecrets {
     owner = "root";
     group = "root";
@@ -276,6 +287,32 @@ in
         sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
         key = "cockpit/service_user/password_hash";
         path = "/run/secrets/cockpit.service_user.password_hash";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+      tagr_auth_secret = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "tagr/auth_secret";
+        path = "/run/secrets/tagr.auth_secret";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      tagr_auth_user = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "tagr/auth_user";
+        path = "/run/secrets/tagr.auth_user";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      tagr_auth_password = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "tagr/auth_password";
+        path = "/run/secrets/tagr.auth_password";
         owner = "root";
         group = "root";
         mode = "0400";

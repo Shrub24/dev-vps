@@ -211,6 +211,24 @@
           category = "app";
         };
 
+        tagr = {
+          subdomain = "tagr";
+          origin = {
+            scheme = "http";
+            host = "oci-melb-1.tail0fe19b.ts.net";
+            port = 3000;
+          };
+          exposureMode = "tailscale-upstream";
+          declarePublic = true;
+          category = "app";
+          access.requireCloudflareAccess = true;
+          cloudflare = {
+            proxied = true;
+            authenticatedOriginPulls = true;
+          };
+          health.path = "/";
+        };
+
         webhook-admin = {
           subdomain = "webhook";
           origin = {
