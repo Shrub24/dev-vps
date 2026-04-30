@@ -22,7 +22,7 @@
           host = "oci-melb-1.tail0fe19b.ts.net";
           user = "dev";
           remotePath = "/srv";
-          readOnly = true;
+          readOnly = false;
         }
         {
           name = "arch-root";

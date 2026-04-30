@@ -25,6 +25,13 @@ let
     "path"
   ] config;
 
+  hasTagrEnv = lib.hasAttrByPath [
+    "sops"
+    "templates"
+    "tagr.env"
+    "path"
+  ] config;
+
   optionalSoulSyncEnvTemplates = lib.filter (path: path != null) [
     (
       if
@@ -74,6 +81,7 @@ in
     ../../modules/services/slskd.nix
     ../../modules/services/beets-inbox.nix
     ../../modules/services/soulsync.nix
+    ../../modules/services/tagr.nix
   ];
 
   options.applications.music = {
@@ -107,6 +115,12 @@ in
       description = "Shared quarantine directory composed at the application layer.";
     };
 
+    versionArchiveRoot = lib.mkOption {
+      type = lib.types.str;
+      default = "${cfg.mediaRoot}/.versions";
+      description = "Media-local root for Syncthing version archives kept outside scanned music trees.";
+    };
+
     syncthingDevices = lib.mkOption {
       type = lib.types.attrsOf lib.types.attrs;
       default = {
@@ -123,13 +137,27 @@ in
         library = {
           path = cfg.libraryDir;
           type = "sendreceive";
+          versioning = {
+            type = "staggered";
+            params = {
+              fsPath = "${cfg.versionArchiveRoot}/library";
+            };
+          };
+          ignorePerms = true;
           ensureDir = true;
           ensureMarker = true;
           ensureAcl = true;
+          devices = [ "arch" ];
         };
         quarantine = {
           path = cfg.quarantineDir;
           type = "sendreceive";
+          versioning = {
+            type = "staggered";
+            params = {
+              fsPath = "${cfg.versionArchiveRoot}/quarantine";
+            };
+          };
           ignorePerms = true;
           ensureDir = true;
           ensureMarker = true;
@@ -186,7 +214,7 @@ in
     };
 
     services.soulsync = {
-      enable = true;
+      enable = false;
       dataDir = "${cfg.dataRoot}/soulsync";
       mediaRoot = cfg.mediaRoot;
       downloadPath = "${cfg.mediaRoot}/inbox/slskd";
@@ -205,12 +233,34 @@ in
       };
     };
 
+    services.tagr = {
+      enable = true;
+      dataDir = "${cfg.dataRoot}/tagr";
+      mediaRoot = cfg.mediaRoot;
+      environmentFile =
+        if hasTagrEnv then config.sops.templates."tagr.env".path else "/var/lib/tagr/environment";
+    };
+
     systemd.tmpfiles.rules = [
       "d ${cfg.mediaRoot} 0755 root root - -"
       "z ${cfg.mediaRoot} 0755 root root - -"
+      "d ${cfg.versionArchiveRoot} 2775 root media - -"
+      "d ${cfg.versionArchiveRoot}/library 2775 root media - -"
+      "d ${cfg.versionArchiveRoot}/quarantine 2775 root media - -"
+      "d ${cfg.libraryDir} 2775 root music-ingest - -"
+      "a+ ${cfg.libraryDir} - - - - group:music-ingest:rwx"
+      "a+ ${cfg.libraryDir} - - - - default:group:music-ingest:rwX"
+      "a+ ${cfg.libraryDir} - - - - group:media:r-X"
+      "a+ ${cfg.libraryDir} - - - - default:group:media:r-X"
+      "d ${cfg.quarantineDir} 2775 root music-ingest - -"
+      "a+ ${cfg.quarantineDir} - - - - group:music-ingest:rwx"
+      "a+ ${cfg.quarantineDir} - - - - default:group:music-ingest:rwX"
+      "a+ ${cfg.quarantineDir} - - - - group:media:r-X"
+      "a+ ${cfg.quarantineDir} - - - - default:group:media:r-X"
       "d ${cfg.inboxDir} 2775 root music-ingest - -"
       "z ${cfg.inboxDir} 2775 root music-ingest - -"
       "f /var/lib/slskd/environment 0640 slskd slskd - -"
+      "f /var/lib/tagr/environment 0640 root root - -"
     ];
   };
 }

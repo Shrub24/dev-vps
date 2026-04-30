@@ -135,6 +135,14 @@ in
             };
           };
         }
+        {
+          Tagr = {
+            icon = "mdi-tag-multiple";
+            description = "Manual metadata and artwork fallback";
+            href = serviceHref "tagr";
+            siteMonitor = (requireRoute "tagr").healthUrl;
+          };
+        }
       ];
     }
     {

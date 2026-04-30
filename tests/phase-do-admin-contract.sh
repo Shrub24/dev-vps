@@ -46,6 +46,8 @@ nix eval --no-write-lock-file --apply 'v: v == "true"' path:.#nixosConfiguration
 nix eval --no-write-lock-file --apply 'v: v == "true"' path:.#nixosConfigurations.do-admin-1.config.services.beszel.hub.environment.USER_CREATION | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'v: v == true' path:.#nixosConfigurations.do-admin-1.config.services."edge-proxy-ingress".routes."filebrowser-admin".cloudflareAccessRequired | rg --fixed-strings --quiet 'true'
 nix eval --no-write-lock-file --apply 'v: v == true' path:.#nixosConfigurations.do-admin-1.config.services."edge-proxy-ingress".routes."admin-homepage".cloudflareAccessRequired | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'v: v == true' path:.#nixosConfigurations.do-admin-1.config.services."edge-proxy-ingress".routes.tagr.cloudflareAccessRequired | rg --fixed-strings --quiet 'true'
+nix eval --no-write-lock-file --apply 'v: v == "tagr"' path:.#nixosConfigurations.do-admin-1.config.services."edge-proxy-ingress".routes.tagr.subdomain | rg --fixed-strings --quiet 'true'
 
 rg --fixed-strings --quiet 'services.homepage-dashboard = {' 'modules/applications/admin.nix'
 rg --fixed-strings --quiet 'Glance = [' 'modules/applications/admin.nix'
@@ -99,6 +101,8 @@ rg --fixed-strings --quiet 'icon = "si-oracle";' 'modules/applications/admin.nix
 rg --fixed-strings --quiet 'icon = "si-digitalocean";' 'modules/applications/admin.nix'
 rg --fixed-strings --quiet 'icon = "si-github";' 'modules/applications/admin.nix'
 rg --fixed-strings --quiet 'icon = "si-tailscale";' 'modules/applications/admin.nix'
+rg --fixed-strings --quiet 'Tagr = {' 'modules/services/admin/homepage/data.nix'
+rg --fixed-strings --quiet 'href = serviceHref "tagr";' 'modules/services/admin/homepage/data.nix'
 
 rg --fixed-strings --quiet 'hostName = "do-admin-1";' "$DO_BOOTSTRAP_FILE"
 rg --fixed-strings --quiet 'bootstrapUser = "root";' "$DO_BOOTSTRAP_FILE"
