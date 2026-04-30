@@ -20,3 +20,16 @@ Portable `applications.admin` composition SHALL keep tightly coupled access and 
 - **THEN** Termix Tailscale Serve exposure and shared OIDC composition are defined in the reusable `modules/applications/admin/` module
 - **AND** equivalent host-local duplication is not required
 
+### Requirement: Admin application SHALL source OIDC issuer from Pocket ID module
+`applications.admin` composition SHALL source OIDC issuer URLs for Termix and Quantum from `config.services.admin.pocket-id.oidc.issuerUrl` rather than deriving from a local `pocketIdBaseUrl` variable.
+
+#### Scenario: Termix OIDC issuer is sourced from provider module
+- **WHEN** admin application composition is evaluated for `do-admin-1`
+- **THEN** `services.admin.termix.oidc.issuerUrl` is set to `config.services.admin.pocket-id.oidc.issuerUrl`
+- **AND** no local `pocketIdBaseUrl` variable is used for the Termix issuer derivation
+
+#### Scenario: Quantum OIDC issuer is sourced from provider module
+- **WHEN** admin application composition is evaluated for `do-admin-1`
+- **THEN** `services.admin.quantum.oidc.issuerUrl` is set to `config.services.admin.pocket-id.oidc.issuerUrl`
+- **AND** no local `pocketIdBaseUrl` variable is used for the Quantum issuer derivation
+

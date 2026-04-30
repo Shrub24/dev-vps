@@ -79,3 +79,11 @@ Tagr credentials and session secret for `oci-melb-1` SHALL be sourced from host-
 - **THEN** they are stored under `hosts/oci-melb-1/secrets.yaml` and rendered via host-scoped templates
 - **AND** `.sops.yaml` path-scoped rules do not broaden decryption access beyond explicit host recipients
 
+### Requirement: Termix OIDC env template SHALL consume provider-owned endpoint outputs
+The Termix OIDC environment template for `do-admin-1` SHALL source OIDC endpoint values from `config.services.admin.pocket-id.oidc.*` rather than independently constructing endpoint URIs.
+
+#### Scenario: Termix OIDC env is rendered from SSOT
+- **WHEN** `do-admin-1` termix-oidc.env template is evaluated
+- **THEN** `OIDC_ISSUER_URL`, `OIDC_AUTHORIZATION_URL`, `OIDC_TOKEN_URL`, and `OIDC_USERINFO_URL` are resolved from Pocket ID module outputs
+- **AND** no local URL derivation from a raw `pocketIdBaseUrl` is used
+

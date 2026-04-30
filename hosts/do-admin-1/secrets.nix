@@ -238,16 +238,10 @@
     content = ''
       OIDC_CLIENT_ID=${config.sops.placeholder.termix_oidc_client_id}
       OIDC_CLIENT_SECRET=${config.sops.placeholder.termix_oidc_client_secret}
-      OIDC_ISSUER_URL=${config.applications.admin.policyServices."pocket-id-admin".publicUrl}
-      OIDC_AUTHORIZATION_URL=${
-        config.applications.admin.policyServices."pocket-id-admin".publicUrl
-      }/authorize
-      OIDC_TOKEN_URL=${
-        config.applications.admin.policyServices."pocket-id-admin".publicUrl
-      }/api/oidc/token
-      OIDC_USERINFO_URL=${
-        config.applications.admin.policyServices."pocket-id-admin".publicUrl
-      }/api/oidc/userinfo
+      OIDC_ISSUER_URL=${config.services.admin.pocket-id.oidc.issuerUrl}
+      OIDC_AUTHORIZATION_URL=${config.services.admin.pocket-id.oidc.authorizationUrl}
+      OIDC_TOKEN_URL=${config.services.admin.pocket-id.oidc.tokenUrl}
+      OIDC_USERINFO_URL=${config.services.admin.pocket-id.oidc.userinfoUrl}
       OIDC_SCOPES=openid email profile
     '';
   };
