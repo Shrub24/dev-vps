@@ -12,7 +12,7 @@ let
   termixRoute = cfg.policyServices."termix-admin";
   termixOidcEnabled = termixEnabled && termixRoute.access.oidc.enabled;
   quantumOidcEnabled = config.services.admin.quantum.enable && config.services.admin.quantum.oidc.enabled;
-  pocketIdBaseUrl = cfg.policyServices."pocket-id-admin".publicUrl;
+  pocketIdOidc = config.services.admin.pocket-id.oidc;
 in
 {
   imports = [
@@ -72,7 +72,7 @@ in
     (lib.mkIf config.services.admin.pocket-id.enable {
       services.admin."pocket-id" = {
         dataDir = "${cfg.dataRoot}/pocket-id";
-        appUrl = pocketIdBaseUrl;
+        appUrl = cfg.policyServices."pocket-id-admin".publicUrl;
       };
     })
 
@@ -81,7 +81,7 @@ in
         dataDir = "${cfg.dataRoot}/termix";
         oidc = {
           enabled = termixOidcEnabled;
-          issuerUrl = pocketIdBaseUrl;
+          issuerUrl = pocketIdOidc.issuerUrl;
           environmentFile = if termixOidcEnabled then config.sops.templates."termix-oidc.env".path else null;
         };
       };
@@ -125,7 +125,7 @@ in
 
     (lib.mkIf config.services.admin.quantum.enable {
       services.admin.quantum.oidc = {
-        issuerUrl = pocketIdBaseUrl;
+        issuerUrl = pocketIdOidc.issuerUrl;
         environmentFile = if quantumOidcEnabled then config.sops.templates."quantum-oidc.env".path else null;
       };
     })
