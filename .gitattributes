@@ -1,0 +1,7 @@
+.openspec/** linguist-generated=true
+.opencode/** linguist-generated=true
+.tmp/** linguist-generated=true
+generated/** linguist-generated=true
+.planning/** linguist-generated=true
+certs/** linguist-generated=true
+
