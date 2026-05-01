@@ -8,6 +8,13 @@
 let
   hasHostSecrets = builtins.pathExists ../../hosts/oci-melb-1/secrets.yaml;
   hasProviderSecrets = builtins.pathExists ../../hosts/oci-melb-1/secrets.providers.yaml;
+  policyLib = import ../../lib/policy.nix { inherit lib; };
+  webServicesPolicy = import ../../policy/web-services.nix;
+  globals = import ../../policy/globals.nix;
+  doAdminServices = policyLib.resolveHostServices webServicesPolicy "do-admin-1";
+  pocketIdWellknownUrl = "${
+    doAdminServices."pocket-id-admin".publicUrl
+  }/.well-known/openid-configuration";
 in
 {
   imports = [
@@ -21,6 +28,7 @@ in
     ../../modules/storage/disko-root.nix
     ../../modules/core/users.nix
     ../../modules/services/admin/cockpit.nix
+    ../../modules/services/karakeep.nix
     ./cockpit-auth.nix
   ]
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
@@ -108,6 +116,17 @@ in
     enable = true;
     role = "origin";
   };
+
+  services.karakeep-oci.enable = true;
+  services.karakeep-oci.environmentFile = config.sops.templates."karakeep.environment".path;
+  services.karakeep-oci.oidc = {
+    enable = true;
+    wellknownUrl = pocketIdWellknownUrl;
+    providerName = "Pocket ID";
+    autoRedirect = true;
+    disablePasswordAuth = true;
+  };
+  services.karakeep-oci.storage.s3.enable = true;
 
   # Configurable root size — set here so it's visible in one place per host.
   disko-root-extra = "20G";
@@ -209,6 +228,23 @@ in
       AUTH_SECRET=${config.sops.placeholder.tagr_auth_secret}
       AUTH_USER=${config.sops.placeholder.tagr_auth_user}
       AUTH_PASSWORD=${config.sops.placeholder.tagr_auth_password}
+    '';
+  };
+
+  sops.templates."karakeep.environment" = lib.mkIf hasHostSecrets {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      NEXTAUTH_SECRET=${config.sops.placeholder.karakeep_nextauth_secret}
+      MEILI_MASTER_KEY=${config.sops.placeholder.karakeep_meilisearch_master_key}
+      OAUTH_CLIENT_ID=${config.sops.placeholder.karakeep_oidc_client_id}
+      OAUTH_CLIENT_SECRET=${config.sops.placeholder.karakeep_oidc_client_secret}
+      ASSET_STORE_S3_ENDPOINT=${globals.s3.endpoint}
+      ASSET_STORE_S3_REGION=${globals.s3.region}
+      ASSET_STORE_S3_BUCKET=${globals.s3.bucket}
+      ASSET_STORE_S3_ACCESS_KEY_ID=${config.sops.placeholder.karakeep_asset_store_s3_access_key_id}
+      ASSET_STORE_S3_SECRET_ACCESS_KEY=${config.sops.placeholder.karakeep_asset_store_s3_secret_access_key}
     '';
   };
 
@@ -356,6 +392,59 @@ in
         mode = "0400";
       };
 
+      karakeep_nextauth_secret = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "karakeep/nextauth_secret";
+        path = "/run/secrets/karakeep.nextauth_secret";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      karakeep_meilisearch_master_key = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "karakeep/meilisearch_master_key";
+        path = "/run/secrets/karakeep.meilisearch_master_key";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      karakeep_oidc_client_id = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "karakeep/oidc_client_id";
+        path = "/run/secrets/karakeep.oidc_client_id";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      karakeep_oidc_client_secret = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "karakeep/oidc_client_secret";
+        path = "/run/secrets/karakeep.oidc_client_secret";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      karakeep_asset_store_s3_access_key_id = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "karakeep/asset_store_s3_access_key_id";
+        path = "/run/secrets/karakeep.asset_store_s3_access_key_id";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      karakeep_asset_store_s3_secret_access_key = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "karakeep/asset_store_s3_secret_access_key";
+        path = "/run/secrets/karakeep.asset_store_s3_secret_access_key";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
     })
     // (lib.optionalAttrs hasProviderSecrets {
       soulsync_spotify_client_id = {

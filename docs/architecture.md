@@ -152,7 +152,7 @@ Initial media/data flow:
 - SoulSync is the primary ingest and promotion control-plane service
 - Tagr is available as an operator-invoked manual metadata/cover fallback editor against canonical media paths
 - `/srv/media` remains the authoritative shared media root
-- `/srv/data` remains the service-state mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/soulsync`, `/srv/data/tagr`)
+- `/srv/data` remains the service-state mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/soulsync`, `/srv/data/tagr`, `/srv/data/karakeep`)
 - canonical ingest/promotion paths:
   - download inbox: `/srv/media/inbox/slskd`
   - canonical library: `/srv/media/library`
