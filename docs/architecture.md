@@ -152,7 +152,7 @@ Initial media/data flow:
 - SoulSync is the primary ingest and promotion control-plane service
 - Tagr is available as an operator-invoked manual metadata/cover fallback editor against canonical media paths
 - `/srv/media` remains the authoritative shared media root
-- `/srv/data` remains the service-state mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/soulsync`, `/srv/data/tagr`, `/srv/data/karakeep`)
+- `/srv/data` remains the service-state mount (`/srv/data/syncthing/config`, `/srv/data/navidrome`, `/srv/data/soulsync`, `/srv/data/tagr`, `/srv/data/karakeep`, `/srv/data/bifrost`)
 - canonical ingest/promotion paths:
   - download inbox: `/srv/media/inbox/slskd`
   - canonical library: `/srv/media/library`
@@ -184,6 +184,8 @@ Current model:
 - `direct` is reserved for explicit edge-local localhost upstream exceptions
 - `tailscale-only` remains the mode for routes that must not be publicly rendered
 - SoulSync route (`soulsync.<primaryDomain>`) is exposed via `tailscale-upstream`, Cloudflare Access, and AOP; day-1 posture is control-plane-first with best-effort playback suppression and documented residual UI behavior if upstream playback controls cannot be fully disabled
+- Bifrost baseline mode is file-driven and host-local on `oci-melb-1`; `config_store`, UI-managed config mutation, and other runtime-mutated control-plane state are intentionally out of baseline scope
+- Repo-owned AI gateway aliases (`shrublab-text`, `shrublab-image`, `shrublab-embedding`, `shrublab-fallback`) sit behind one host-local OpenAI-compatible endpoint for downstream consumers such as Karakeep
 
 ## Admin Surface Model
 
