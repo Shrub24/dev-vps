@@ -1,18 +1,15 @@
 {
-  "version": 1,
-  "generated": "2026-04-29T00:00:00Z",
-  "entries": [
-    {
-      "file": ".tmp/external-context/syncthing/folder-versioning-and-stversions.md",
-      "source": "Syncthing docs",
-      "topic": "folder versioning and stversions",
-      "official_docs": "https://docs.syncthing.net/users/versioning.html"
-    },
-    {
-      "file": ".tmp/external-context/karakeep/deployment-runtime.md",
-      "source": "official docs + Context7",
-      "topic": "deployment-runtime expectations",
-      "official_docs": "https://docs.karakeep.app/installation/docker"
+  "libraries": {
+    "bifrost": {
+      "files": [
+        {
+          "filename": "docker-image-reference.md",
+          "topic": "docker image reference",
+          "tech_stack": "Bifrost",
+          "fetched": "2026-05-01",
+          "source": "Official Bifrost repo/docs"
+        }
+      ]
     }
-  ]
+  }
 }

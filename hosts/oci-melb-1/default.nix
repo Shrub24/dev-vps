@@ -28,6 +28,7 @@ in
     ../../modules/storage/disko-root.nix
     ../../modules/core/users.nix
     ../../modules/services/admin/cockpit.nix
+    ../../modules/services/bifrost-gateway.nix
     ../../modules/services/karakeep.nix
     ./cockpit-auth.nix
   ]
@@ -115,6 +116,30 @@ in
   applications."edge-ingress" = {
     enable = true;
     role = "origin";
+  };
+
+  services.bifrost-gateway = {
+    enable = true;
+    dataDir = "/srv/data/bifrost";
+    environmentFile = config.sops.templates."bifrost.environment".path;
+    settings = {
+      version = 2;
+      encryption_key = "env.BIFROST_ENCRYPTION_KEY";
+      providers.openai.keys = [
+        {
+          name = "openai-primary";
+          value = "env.OPENAI_API_KEY";
+          weight = 1;
+          models = [ "*" ];
+          aliases = {
+            "${globals.aiGateway.aliases.text}" = globals.aiGateway.upstreamModels.text;
+            "${globals.aiGateway.aliases.image}" = globals.aiGateway.upstreamModels.image;
+            "${globals.aiGateway.aliases.embedding}" = globals.aiGateway.upstreamModels.embedding;
+            "${globals.aiGateway.aliases.fallback}" = globals.aiGateway.upstreamModels.fallback;
+          };
+        }
+      ];
+    };
   };
 
   services.karakeep-oci.enable = true;
@@ -240,11 +265,26 @@ in
       MEILI_MASTER_KEY=${config.sops.placeholder.karakeep_meilisearch_master_key}
       OAUTH_CLIENT_ID=${config.sops.placeholder.karakeep_oidc_client_id}
       OAUTH_CLIENT_SECRET=${config.sops.placeholder.karakeep_oidc_client_secret}
+      OPENAI_BASE_URL=${config.services.bifrost-gateway.endpoint.containerBaseUrl}
+      OPENAI_API_KEY=bifrost-local
+      INFERENCE_TEXT_MODEL=${globals.aiGateway.aliases.text}
+      INFERENCE_IMAGE_MODEL=${globals.aiGateway.aliases.image}
+      EMBEDDING_TEXT_MODEL=${globals.aiGateway.aliases.embedding}
       ASSET_STORE_S3_ENDPOINT=${globals.s3.endpoint}
       ASSET_STORE_S3_REGION=${globals.s3.region}
       ASSET_STORE_S3_BUCKET=${globals.s3.bucket}
       ASSET_STORE_S3_ACCESS_KEY_ID=${config.sops.placeholder.karakeep_asset_store_s3_access_key_id}
       ASSET_STORE_S3_SECRET_ACCESS_KEY=${config.sops.placeholder.karakeep_asset_store_s3_secret_access_key}
+    '';
+  };
+
+  sops.templates."bifrost.environment" = lib.mkIf hasHostSecrets {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      BIFROST_ENCRYPTION_KEY=${config.sops.placeholder.bifrost_encryption_key}
+      OPENAI_API_KEY=${config.sops.placeholder.bifrost_openai_api_key}
     '';
   };
 
@@ -441,6 +481,24 @@ in
         sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
         key = "karakeep/asset_store_s3_secret_access_key";
         path = "/run/secrets/karakeep.asset_store_s3_secret_access_key";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      bifrost_encryption_key = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "bifrost/encryption_key";
+        path = "/run/secrets/bifrost.encryption_key";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      bifrost_openai_api_key = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "bifrost/openai_api_key";
+        path = "/run/secrets/bifrost.openai_api_key";
         owner = "root";
         group = "root";
         mode = "0400";
