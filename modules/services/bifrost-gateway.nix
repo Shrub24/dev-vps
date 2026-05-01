@@ -6,16 +6,11 @@
 }:
 let
   cfg = config.services.bifrost-gateway;
-  jsonFormat = pkgs.formats.json { };
   hostBase = "http://127.0.0.1:${toString cfg.port}";
   containerBase = "http://host.containers.internal:${toString cfg.port}";
   appDir = "${cfg.dataDir}/app";
   configPath = "${appDir}/config.json";
-  baseSettings = {
-    "$schema" = "https://www.getbifrost.ai/schema";
-    client.enable_logging = true;
-    config_store.enabled = false;
-  };
+  parsedConfig = builtins.fromJSON (builtins.readFile cfg.configFile);
 in
 {
   options.services.bifrost-gateway = {
@@ -23,7 +18,7 @@ in
 
     image = lib.mkOption {
       type = lib.types.str;
-      default = "docker.io/maximhq/bifrost:v1.4.22";
+      default = "docker.io/maximhq/bifrost:v1.5.0-prerelease8";
       description = "Pinned Bifrost container image.";
     };
 
@@ -63,10 +58,9 @@ in
       description = "Listen port for the local Bifrost HTTP service.";
     };
 
-    settings = lib.mkOption {
-      type = jsonFormat.type;
-      default = { };
-      description = "Repo-owned Bifrost config.json settings merged into the file-driven baseline.";
+    configFile = lib.mkOption {
+      type = lib.types.path;
+      description = "Literal repo-owned Bifrost config.json source file rendered for file-driven mode.";
     };
 
     runtimePaths.appDir = lib.mkOption {
@@ -122,8 +116,8 @@ in
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = !(lib.attrByPath [ "config_store" "enabled" ] false cfg.settings);
-        message = "services.bifrost-gateway.settings.config_store.enabled must remain false in baseline file-driven mode.";
+        assertion = !(lib.attrByPath [ "config_store" "enabled" ] false parsedConfig);
+        message = "services.bifrost-gateway.configFile must keep config_store.enabled=false in baseline file-driven mode.";
       }
     ];
 
@@ -155,7 +149,7 @@ in
           install -d -m 0775 -o ${toString cfg.runtimeUid} -g ${toString cfg.runtimeGid} "${cfg.runtimePaths.logsDir}"
           install -d -m 0775 -o ${toString cfg.runtimeUid} -g ${toString cfg.runtimeGid} "${cfg.runtimePaths.cacheDir}"
           install -d -m 0775 -o ${toString cfg.runtimeUid} -g ${toString cfg.runtimeGid} "${cfg.runtimePaths.vectorDir}"
-          install -m 0644 -o ${toString cfg.runtimeUid} -g ${toString cfg.runtimeGid} ${jsonFormat.generate "bifrost-config.json" (lib.recursiveUpdate baseSettings cfg.settings)} "${cfg.runtimePaths.configPath}"
+          install -m 0644 -o ${toString cfg.runtimeUid} -g ${toString cfg.runtimeGid} "${cfg.configFile}" "${cfg.runtimePaths.configPath}"
         '';
       };
     };
@@ -190,6 +184,9 @@ in
         cfg.dataDir
         cfg.runtimePaths.appDir
       ];
+      restartTriggers = [
+        cfg.configFile
+      ] ++ lib.optionals (cfg.environmentFile != null) [ cfg.environmentFile ];
     };
   };
 }

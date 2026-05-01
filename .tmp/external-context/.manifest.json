@@ -1,15 +1,14 @@
 {
-  "libraries": {
-    "bifrost": {
-      "files": [
-        {
-          "filename": "docker-image-reference.md",
-          "topic": "docker image reference",
-          "tech_stack": "Bifrost",
-          "fetched": "2026-05-01",
-          "source": "Official Bifrost repo/docs"
-        }
-      ]
+  "version": 1,
+  "entries": [
+    {
+      "path": ".tmp/external-context/cockpit-caddy-upstream-tls.md",
+      "source": "previous"
+    },
+    {
+      "path": ".tmp/external-context/llm-gateway/model-id-recommendations.md",
+      "source": "official provider docs",
+      "topic": "model ID recommendations"
     }
-  }
+  ]
 }
