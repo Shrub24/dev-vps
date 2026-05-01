@@ -1,82 +1,89 @@
 {
-  description = "Reproducible NixOS dev VPS with CodeNomad + Tailscale";
+  description = "Modular NixOS fleet infrastructure";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     disko.url = "github:nix-community/disko";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    {
+    inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
       disko,
       sops-nix,
-      home-manager,
+      deploy-rs,
       ...
     }:
     let
-      system = "x86_64-linux";
+      devShellSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      mkDevShell =
+        system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        pkgs.mkShell {
+          packages = with pkgs; [
+            just
+            git
+            jq
+            yq
+            opentofu
+            sops
+            age
+            nixos-anywhere
+            deploy-rs.packages.${system}.default
+            nix-output-monitor
+            nixfmt
+            statix
+            ssh-to-age
+          ];
+        };
 
-      overlay = final: prev: {
-        codenomad = prev.callPackage ./pkgs/codenomad/package.nix { };
-        opencode = prev.callPackage ./pkgs/opencode/package.nix { };
-        repo-sync = prev.callPackage ./pkgs/repo-sync/package.nix { };
-      };
-
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ overlay ];
-      };
-
-      unstablePkgs = import nixpkgs-unstable {
-        inherit system;
-        overlays = [ overlay ];
+      deployConfig = import ./lib/deploy {
+        inherit self nixpkgs deploy-rs;
+        hosts = import ./lib/deploy/hosts.nix;
       };
     in
     {
-      packages.${system} = {
-        inherit (pkgs) codenomad opencode repo-sync;
-      };
+      devShells = nixpkgs.lib.genAttrs devShellSystems (system: {
+        default = mkDevShell system;
+      });
 
-      devShells.${system}.default = unstablePkgs.mkShell {
-        packages = with unstablePkgs; [
-          just
-          git
-          jq
-          yq
-          sops
-          age
-          nixos-anywhere
-          nix-output-monitor
-          nixfmt
-          statix
-        ];
-      };
+      packages = nixpkgs.lib.genAttrs devShellSystems (system: {
+        deploy-rs = deploy-rs.packages.${system}.default;
+      });
 
-      nixosConfigurations.dev-vps = nixpkgs.lib.nixosSystem {
-        inherit system;
+      formatter = nixpkgs.lib.genAttrs devShellSystems (
+        system: (import nixpkgs { inherit system; }).nixfmt
+      );
+
+      nixosConfigurations.oci-melb-1 = nixpkgs.lib.nixosSystem {
         modules = [
-          ./nixos/digitalocean.nix
-          { nixpkgs.overlays = [ overlay ]; }
           disko.nixosModules.disko
-          { disko.devices.disk.main.device = "/dev/vda"; }
           sops-nix.nixosModules.sops
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "hm-bak";
-            home-manager.users.dev = import ./home/dev.nix;
-          }
-          ./nixos/configuration.nix
+          ./hosts/oci-melb-1/default.nix
         ];
+        specialArgs = { inherit self inputs; };
       };
+
+      nixosConfigurations.do-admin-1 = nixpkgs.lib.nixosSystem {
+        modules = [
+          disko.nixosModules.disko
+          sops-nix.nixosModules.sops
+          ./hosts/do-admin-1/default.nix
+        ];
+        specialArgs = { inherit self inputs; };
+      };
+
+      deploy = deployConfig.deploy;
+      checks = deployConfig.checks;
     };
 }

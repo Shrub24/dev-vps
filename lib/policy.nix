@@ -1,0 +1,151 @@
+{ lib }:
+rec {
+  hostPolicy =
+    policy: hostName:
+    policy.hosts.${hostName} or (throw "Unknown host '${hostName}' in policy/web-services.nix");
+
+  resolvePrimaryDomain =
+    policy: hostName:
+    let
+      host = hostPolicy policy hostName;
+      defaults = policy.defaults or { };
+      hostDefaults = host.defaults or { };
+    in
+    hostDefaults.primaryDomain or defaults.primaryDomain
+      or (throw "Missing primaryDomain for host '${hostName}' in policy/web-services.nix");
+
+  mergeDefaults =
+    globalDefaults: hostDefaults: serviceCfg:
+    lib.recursiveUpdate (lib.recursiveUpdate globalDefaults hostDefaults) serviceCfg;
+
+  mkUpstream =
+    resolved: "${resolved.origin.scheme}://${resolved.origin.host}:${toString resolved.origin.port}";
+
+  mkPublicHost =
+    primaryDomain: resolved:
+    if resolved.subdomain != null then "${resolved.subdomain}.${primaryDomain}" else primaryDomain;
+
+  resolveHostServices =
+    policy: hostName:
+    let
+      host = hostPolicy policy hostName;
+      globalDefaults = policy.defaults or { };
+      hostDefaults = host.defaults or { };
+      services = host.services or { };
+      primaryDomain = resolvePrimaryDomain policy hostName;
+
+      mkPublicUrl =
+        resolved:
+        let
+          base = "https://${mkPublicHost primaryDomain resolved}";
+        in
+        if resolved.path == "/" then base else "${base}${resolved.path}";
+
+      mkHealthUrl = resolved: "${mkUpstream resolved}${resolved.health.path}";
+    in
+    lib.mapAttrs (
+      serviceName: serviceCfg:
+      let
+        resolved = mergeDefaults globalDefaults hostDefaults serviceCfg;
+      in
+      resolved
+      // {
+        service = serviceName;
+        inherit primaryDomain;
+        publicHost = mkPublicHost primaryDomain resolved;
+        upstream = mkUpstream resolved;
+        publicUrl = mkPublicUrl resolved;
+        healthUrl = mkHealthUrl resolved;
+      }
+    ) services;
+
+  resolveCloudflareHosts =
+    policy: hostName:
+    let
+      services = resolveHostServices policy hostName;
+      publicServices = lib.filterAttrs (
+        _: service:
+        (service.declarePublic or false)
+        && (service.exposureMode or "") != "tailscale-only"
+        && (service.subdomain or "") != ""
+      ) services;
+
+      serviceList = lib.attrValues publicServices;
+      publicHosts = lib.unique (map (service: service.publicHost) serviceList);
+
+      servicesForHost =
+        publicHost:
+        lib.filter (service: service.publicHost == publicHost) serviceList;
+
+      pickCanonicalService =
+        servicesForPublicHost:
+        let
+          rootRoutes = lib.filter (service: service.path == "/") servicesForPublicHost;
+          sorted = builtins.sort (a: b: a.service < b.service) servicesForPublicHost;
+          sortedRoot = builtins.sort (a: b: a.service < b.service) rootRoutes;
+        in
+        if sortedRoot != [ ] then builtins.head sortedRoot else builtins.head sorted;
+    in
+    builtins.listToAttrs (
+      map (
+        publicHost:
+        let
+          hostServices = servicesForHost publicHost;
+          canonicalService = pickCanonicalService hostServices;
+          accessServices = lib.filter (service: service.access.requireCloudflareAccess or false) hostServices;
+          rootAccessServices = lib.filter (service: service.path == "/") accessServices;
+          canonicalAccessService =
+            if rootAccessServices != [ ] then
+              pickCanonicalService rootAccessServices
+            else if accessServices != [ ] then
+              pickCanonicalService accessServices
+            else
+              null;
+        in
+        {
+          name = publicHost;
+          value = {
+            inherit publicHost;
+            hostname = canonicalService.subdomain;
+            primaryDomain = canonicalService.primaryDomain;
+            proxied = canonicalService.cloudflare.proxied or true;
+            declarePublic = true;
+            exposureMode = canonicalService.exposureMode;
+            routes = map (service: service.service) hostServices;
+          }
+          // lib.optionalAttrs (canonicalAccessService != null) {
+            access = canonicalAccessService.access // {
+              service = canonicalAccessService.service;
+              publicUrl = canonicalAccessService.publicUrl;
+              path = canonicalAccessService.path;
+            };
+          };
+        }
+      ) publicHosts
+    );
+
+  hostService =
+    policy: hostName: serviceName:
+    let
+      services = resolveHostServices policy hostName;
+    in
+    services.${serviceName}
+      or (throw "Unknown service '${serviceName}' for host '${hostName}' in policy/web-services.nix");
+
+  exportHostPolicy =
+    policy: hostName:
+    let
+      services = resolveHostServices policy hostName;
+    in
+    {
+      routes = services;
+      cloudflare = {
+        hosts = resolveCloudflareHosts policy hostName;
+      };
+    };
+
+  exportHostJson = policy: hostName: builtins.toJSON (exportHostPolicy policy hostName);
+
+  hostPorts =
+    policy: hostName: lib.mapAttrs (_: svc: svc.origin.port) (resolveHostServices policy hostName);
+}
