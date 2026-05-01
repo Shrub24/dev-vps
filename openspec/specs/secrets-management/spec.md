@@ -95,11 +95,6 @@ Provider API keys and similar sensitive gateway credentials SHALL be sourced fro
 - **THEN** they are stored under that host’s encrypted secret set and rendered through host-scoped templates or environment files
 - **AND** shared/common secret scope does not gain access implicitly
 
-#### Scenario: Additional gateway providers are enabled
-- **WHEN** Gemini, DeepSeek, or later provider credentials are added for the same deployment host
-- **THEN** each provider key is rendered through env-backed host-local secret references
-- **AND** committed gateway configuration still avoids embedding live provider key material
-
 ### Requirement: Gateway rendered configuration SHALL reference env-backed secrets rather than inline secret values
 Repo-owned Bifrost configuration SHALL reference environment-backed secret material rather than embedding live provider secrets directly into committed configuration content.
 
