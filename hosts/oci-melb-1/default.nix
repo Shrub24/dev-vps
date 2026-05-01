@@ -41,6 +41,20 @@ in
   applications.music.dataRoot = "/srv/data";
   applications.music.mediaRoot = "/srv/media";
 
+  boot.loader.grub.configurationLimit = 10;
+
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 7d";
+  };
+
+  services.journald.extraConfig = ''
+    SystemMaxUse=300M
+    SystemKeepFree=1G
+    MaxRetentionSec=7day
+  '';
+
   systemd.tmpfiles.rules = [
     "d ${config.applications.music.dataRoot} 0755 root root - -"
     "z ${config.applications.music.dataRoot} 0755 root root - -"
@@ -63,6 +77,30 @@ in
           find "${config.applications.music.dataRoot}" -xdev -type d -exec ${pkgs.acl}/bin/setfacl -m d:u:dev:rX {} +
         fi
       '';
+    };
+  };
+
+  systemd.services.podman-storage-prune = {
+    description = "Prune unused Podman storage artifacts";
+    path = [ pkgs.podman ];
+    serviceConfig = {
+      Type = "oneshot";
+      Nice = 19;
+      IOSchedulingClass = "idle";
+    };
+    script = ''
+      set -euo pipefail
+      podman system prune --all --force --volumes
+    '';
+  };
+
+  systemd.timers.podman-storage-prune = {
+    description = "Periodic Podman storage prune";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      RandomizedDelaySec = "1h";
+      Persistent = true;
     };
   };
 
