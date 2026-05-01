@@ -1,20 +1,12 @@
 {
   aiGateway = {
-    provider = "openai";
-
     aliases = {
       text = "shrublab-text";
       image = "shrublab-image";
       embedding = "shrublab-embedding";
       fallback = "shrublab-fallback";
     };
-
-    upstreamModels = {
-      text = "gpt-4o-mini";
-      image = "gpt-4o";
-      embedding = "text-embedding-3-small";
-      fallback = "gpt-4.1-mini";
-    };
+    configFile = ./bifrost-config.json;
   };
 
   s3 = {

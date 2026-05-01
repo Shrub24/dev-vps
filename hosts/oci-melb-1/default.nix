@@ -122,24 +122,7 @@ in
     enable = true;
     dataDir = "/srv/data/bifrost";
     environmentFile = config.sops.templates."bifrost.environment".path;
-    settings = {
-      version = 2;
-      encryption_key = "env.BIFROST_ENCRYPTION_KEY";
-      providers.openai.keys = [
-        {
-          name = "openai-primary";
-          value = "env.OPENAI_API_KEY";
-          weight = 1;
-          models = [ "*" ];
-          aliases = {
-            "${globals.aiGateway.aliases.text}" = globals.aiGateway.upstreamModels.text;
-            "${globals.aiGateway.aliases.image}" = globals.aiGateway.upstreamModels.image;
-            "${globals.aiGateway.aliases.embedding}" = globals.aiGateway.upstreamModels.embedding;
-            "${globals.aiGateway.aliases.fallback}" = globals.aiGateway.upstreamModels.fallback;
-          };
-        }
-      ];
-    };
+    configFile = globals.aiGateway.configFile;
   };
 
   services.karakeep-oci.enable = true;
@@ -284,7 +267,8 @@ in
     mode = "0400";
     content = ''
       BIFROST_ENCRYPTION_KEY=${config.sops.placeholder.bifrost_encryption_key}
-      OPENAI_API_KEY=${config.sops.placeholder.bifrost_openai_api_key}
+      GEMINI_API_KEY=${config.sops.placeholder.bifrost_gemini_api_key}
+      DEEPSEEK_API_KEY=${config.sops.placeholder.bifrost_deepseek_api_key}
     '';
   };
 
@@ -495,10 +479,19 @@ in
         mode = "0400";
       };
 
-      bifrost_openai_api_key = {
+      bifrost_gemini_api_key = {
         sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
-        key = "bifrost/openai_api_key";
-        path = "/run/secrets/bifrost.openai_api_key";
+        key = "bifrost/gemini_api_key";
+        path = "/run/secrets/bifrost.gemini_api_key";
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+
+      bifrost_deepseek_api_key = {
+        sopsFile = ../../hosts/oci-melb-1/secrets.yaml;
+        key = "bifrost/deepseek_api_key";
+        path = "/run/secrets/bifrost.deepseek_api_key";
         owner = "root";
         group = "root";
         mode = "0400";

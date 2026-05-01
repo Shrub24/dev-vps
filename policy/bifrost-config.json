@@ -1,0 +1,101 @@
+{
+  "$schema": "https://www.getbifrost.ai/schema",
+  "version": 2,
+  "encryption_key": "env.BIFROST_ENCRYPTION_KEY",
+  "client": {
+    "enable_logging": true
+  },
+  "providers": {
+    "gemini": {
+      "keys": [
+        {
+          "name": "gemini-primary",
+          "value": "env.GEMINI_API_KEY",
+          "weight": 1,
+          "models": ["*"]
+        }
+      ]
+    },
+    "deepseek": {
+      "custom_provider_config": {
+        "base_provider_type": "openai",
+        "allowed_requests": {
+          "list_models": true,
+          "chat_completion": true,
+          "chat_completion_stream": true
+        }
+      },
+      "network_config": {
+        "base_url": "https://api.deepseek.com"
+      },
+      "keys": [
+        {
+          "name": "deepseek-primary",
+          "value": "env.DEEPSEEK_API_KEY",
+          "weight": 1,
+          "models": ["*"]
+        }
+      ]
+    }
+  },
+  "governance": {
+    "routing_rules": [
+      {
+        "id": "alias-text",
+        "name": "alias-text",
+        "priority": 10,
+        "scope": "global",
+        "cel_expression": "model == 'shrublab-text'",
+        "targets": [
+          {
+            "provider": "deepseek",
+            "model": "deepseek-v4-pro",
+            "weight": 1.0
+          }
+        ]
+      },
+      {
+        "id": "alias-image",
+        "name": "alias-image",
+        "priority": 20,
+        "scope": "global",
+        "cel_expression": "model == 'shrublab-image'",
+        "targets": [
+          {
+            "provider": "gemini",
+            "model": "gemini-3.1-flash-lite-preview",
+            "weight": 1.0
+          }
+        ]
+      },
+      {
+        "id": "alias-embedding",
+        "name": "alias-embedding",
+        "priority": 30,
+        "scope": "global",
+        "cel_expression": "model == 'shrublab-embedding'",
+        "targets": [
+          {
+            "provider": "gemini",
+            "model": "gemini-embedding-2",
+            "weight": 1.0
+          }
+        ]
+      },
+      {
+        "id": "alias-fallback",
+        "name": "alias-fallback",
+        "priority": 40,
+        "scope": "global",
+        "cel_expression": "model == 'shrublab-fallback'",
+        "targets": [
+          {
+            "provider": "deepseek",
+            "model": "deepseek-v4-flash",
+            "weight": 1.0
+          }
+        ]
+      }
+    ]
+  }
+}
