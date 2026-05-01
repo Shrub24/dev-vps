@@ -51,6 +51,7 @@
         inherit self nixpkgs deploy-rs;
         hosts = import ./lib/deploy/hosts.nix;
       };
+
     in
     {
       devShells = nixpkgs.lib.genAttrs devShellSystems (system: {
