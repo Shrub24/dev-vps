@@ -87,3 +87,18 @@ The Termix OIDC environment template for `do-admin-1` SHALL source OIDC endpoint
 - **THEN** `OIDC_ISSUER_URL`, `OIDC_AUTHORIZATION_URL`, `OIDC_TOKEN_URL`, and `OIDC_USERINFO_URL` are resolved from Pocket ID module outputs
 - **AND** no local URL derivation from a raw `pocketIdBaseUrl` is used
 
+### Requirement: Karakeep runtime secrets SHALL remain host-scoped for oci-melb-1
+Karakeep required runtime secrets for `oci-melb-1` SHALL be sourced from host-scoped secret files/templates and SHALL NOT be introduced under shared secret scope.
+
+#### Scenario: Karakeep secrets are introduced
+- **WHEN** Karakeep auth, search, OIDC client, or enabled storage secret values are added for `oci-melb-1`
+- **THEN** they are stored under `hosts/oci-melb-1/secrets.yaml` and rendered via host-scoped templates
+- **AND** `.sops.yaml` path-scoped rules do not broaden decryption access beyond explicit host recipients
+
+### Requirement: Optional Karakeep integration secrets SHALL not be mandatory for convergence
+Karakeep optional integration secrets SHALL remain optional at render and deploy time unless the corresponding integration is explicitly enabled.
+
+#### Scenario: Optional Karakeep feature secrets are absent
+- **WHEN** host evaluation and deployment run without optional Karakeep AI, OAuth, SMTP, S3, or OCR secrets for integrations that are not enabled
+- **THEN** base Karakeep secret/template rendering still converges
+- **AND** only the explicitly configured optional integrations are enabled at runtime
