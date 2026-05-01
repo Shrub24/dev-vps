@@ -1,1 +1,0 @@
-source "$ZDOTDIR/main.zsh"
