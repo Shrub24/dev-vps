@@ -1,8 +1,12 @@
-{ lib, config, ... }:
-
+{
+  lib,
+  config,
+  ...
+}:
 let
   appCfg = config.applications.admin;
   cfg = config.services.admin.termix;
+  secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
 in
 {
   options.services.admin.termix = {
@@ -37,9 +41,61 @@ in
         description = "Optional env-file containing Termix OIDC variables (OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_AUTHORIZATION_URL, OIDC_TOKEN_URL, etc.).";
       };
     };
+
+    secretFiles.oidc = secretHelpers.mkSecretFileOption "termix-oidc-secrets";
   };
 
   config = lib.mkIf (appCfg.enable && cfg.enable) {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.oidc.enabled;
+        file = cfg.secretFiles.oidc;
+        feature = "services.admin.termix";
+        label = "secretFiles.oidc";
+      })
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.issuerUrl != null;
+        message = "services.admin.termix.oidc.issuerUrl must be set when services.admin.termix.oidc.enabled=true.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.environmentFile != null;
+        message = "services.admin.termix.oidc.environmentFile must be set when services.admin.termix.oidc.enabled=true.";
+      }
+    ];
+
+    # Termix OIDC template - owned by termix module when OIDC is enabled
+    sops.templates."termix-oidc.env" = lib.mkIf cfg.oidc.enabled {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        OIDC_CLIENT_ID=${config.sops.placeholder.termix_oidc_client_id}
+        OIDC_CLIENT_SECRET=${config.sops.placeholder.termix_oidc_client_secret}
+        OIDC_ISSUER_URL=${config.services.admin.pocket-id.oidc.issuerUrl}
+        OIDC_AUTHORIZATION_URL=${config.services.admin.pocket-id.oidc.authorizationUrl}
+        OIDC_TOKEN_URL=${config.services.admin.pocket-id.oidc.tokenUrl}
+        OIDC_USERINFO_URL=${config.services.admin.pocket-id.oidc.userinfoUrl}
+        OIDC_SCOPES=openid email profile
+      '';
+    };
+
+    sops.secrets = lib.mkIf cfg.oidc.enabled (
+      secretHelpers.mkSecretsFromMap cfg.secretFiles.oidc {
+        termix_oidc_client_id = {
+          key = "termix/client_id";
+          path = "/run/secrets/pocket-id.termix.client_id";
+          owner = "root";
+          group = "root";
+        };
+        termix_oidc_client_secret = {
+          key = "termix/client_secret";
+          path = "/run/secrets/pocket-id.termix.client_secret";
+          owner = "root";
+          group = "root";
+        };
+      }
+    );
+
     virtualisation.podman.enable = true;
 
     virtualisation.oci-containers.containers = {
@@ -103,16 +159,5 @@ in
         "podman-guacd.service"
       ];
     };
-
-    assertions = [
-      {
-        assertion = !cfg.oidc.enabled || cfg.oidc.issuerUrl != null;
-        message = "services.admin.termix.oidc.issuerUrl must be set when services.admin.termix.oidc.enabled=true.";
-      }
-      {
-        assertion = !cfg.oidc.enabled || cfg.oidc.environmentFile != null;
-        message = "services.admin.termix.oidc.environmentFile must be set when services.admin.termix.oidc.enabled=true.";
-      }
-    ];
   };
 }

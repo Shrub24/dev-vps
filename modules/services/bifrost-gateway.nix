@@ -11,6 +11,7 @@ let
   appDir = "${cfg.dataDir}/app";
   configPath = "${appDir}/config.json";
   parsedConfig = builtins.fromJSON (builtins.readFile cfg.configFile);
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
 in
 {
   options.services.bifrost-gateway = {
@@ -98,6 +99,8 @@ in
       description = "Host-visible directory reserved for non-canonical Bifrost vector data.";
     };
 
+    secretFiles.host = secretHelpers.mkSecretFileOption "bifrost-host-secrets";
+
     endpoint.hostBaseUrl = lib.mkOption {
       type = lib.types.str;
       readOnly = true;
@@ -119,7 +122,39 @@ in
         assertion = !(lib.attrByPath [ "config_store" "enabled" ] false parsedConfig);
         message = "services.bifrost-gateway.configFile must keep config_store.enabled=false in baseline file-driven mode.";
       }
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "services.bifrost-gateway";
+        label = "secretFiles.host";
+      })
     ];
+
+    sops.templates."bifrost.environment" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        BIFROST_ENCRYPTION_KEY=${config.sops.placeholder.bifrost_encryption_key}
+        GEMINI_API_KEY=${config.sops.placeholder.bifrost_gemini_api_key}
+        DEEPSEEK_API_KEY=${config.sops.placeholder.bifrost_deepseek_api_key}
+      '';
+    };
+
+    sops.secrets = secretHelpers.mkSecretsFromMap cfg.secretFiles.host {
+      bifrost_encryption_key = {
+        key = "bifrost/encryption_key";
+        path = "/run/secrets/bifrost.encryption_key";
+      };
+      bifrost_gemini_api_key = {
+        key = "bifrost/gemini_api_key";
+        path = "/run/secrets/bifrost.gemini_api_key";
+      };
+      bifrost_deepseek_api_key = {
+        key = "bifrost/deepseek_api_key";
+        path = "/run/secrets/bifrost.deepseek_api_key";
+      };
+    };
 
     virtualisation.podman.enable = true;
 
@@ -186,7 +221,8 @@ in
       ];
       restartTriggers = [
         cfg.configFile
-      ] ++ lib.optionals (cfg.environmentFile != null) [ cfg.environmentFile ];
+      ]
+      ++ lib.optionals (cfg.environmentFile != null) [ cfg.environmentFile ];
     };
   };
 }

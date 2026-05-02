@@ -5,6 +5,7 @@
 }:
 let
   cfg = config.services.tagr;
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
   envDir = builtins.dirOf cfg.environmentFile;
   libraryPath = "${cfg.mediaRoot}/library";
   quarantinePath = "${cfg.mediaRoot}/quarantine";
@@ -44,9 +45,49 @@ in
       default = 3000;
       description = "Tagr web UI port on the host.";
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "tagr-host-secrets";
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "services.tagr";
+        label = "secretFiles.host";
+      })
+    ];
+
+    sops.templates."tagr.env" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        AUTH_SECRET=${config.sops.placeholder.tagr_auth_secret}
+        AUTH_USER=${config.sops.placeholder.tagr_auth_user}
+        AUTH_PASSWORD=${config.sops.placeholder.tagr_auth_password}
+      '';
+    };
+
+    sops.secrets.tagr_auth_secret = {
+      sopsFile = cfg.secretFiles.host;
+      key = "tagr/auth_secret";
+      path = "/run/secrets/tagr.auth_secret";
+    };
+
+    sops.secrets.tagr_auth_user = {
+      sopsFile = cfg.secretFiles.host;
+      key = "tagr/auth_user";
+      path = "/run/secrets/tagr.auth_user";
+    };
+
+    sops.secrets.tagr_auth_password = {
+      sopsFile = cfg.secretFiles.host;
+      key = "tagr/auth_password";
+      path = "/run/secrets/tagr.auth_password";
+    };
+
     virtualisation.podman.enable = true;
 
     systemd.tmpfiles.rules = [

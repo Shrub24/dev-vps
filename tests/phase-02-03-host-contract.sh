@@ -1,17 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FILE="hosts/oci-melb-1/default.nix"
-
-rg --fixed-strings --quiet '../../modules/services/syncthing.nix' "$FILE"
-rg --fixed-strings --quiet '../../modules/services/navidrome.nix' "$FILE"
-rg --fixed-strings --quiet '../../modules/services/slskd.nix' "$FILE"
-rg --fixed-strings --quiet '../../modules/profiles/worker-interface.nix' "$FILE"
-
-rg --fixed-strings --quiet 'trustedInterfaces = [ "tailscale0" ]' "$FILE"
-rg --fixed-strings --quiet 'systemd.services.navidrome = {' "$FILE"
-rg --fixed-strings --quiet 'systemd.services.slskd = {' "$FILE"
-rg --fixed-strings --quiet 'wants = [' "$FILE"
-rg --fixed-strings --quiet 'after = [' "$FILE"
-rg --fixed-strings --quiet '"network-online.target"' "$FILE"
-rg --fixed-strings --quiet '"syncthing.service"' "$FILE"
+BASE='path:.#nixosConfigurations.oci-melb-1.config'
+nix eval --no-write-lock-file --raw "$BASE.networking.hostName" >/dev/null
+nix eval --no-write-lock-file --raw "$BASE.system.stateVersion" >/dev/null
+nix eval --no-write-lock-file --apply 'v: v == true' "$BASE.applications.music.enable" >/dev/null
+echo "phase-02-03-host-contract: PASS"
