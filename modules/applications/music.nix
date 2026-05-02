@@ -5,74 +5,8 @@
 }:
 let
   cfg = config.applications.music;
-  hasSoulSyncConfig = lib.hasAttrByPath [
-    "sops"
-    "templates"
-    "soulsync-config.json"
-    "path"
-  ] config;
-  hasSoulSyncEnv = lib.hasAttrByPath [
-    "sops"
-    "templates"
-    "soulsync.env"
-    "path"
-  ] config;
-
-  hasSlskdEnv = lib.hasAttrByPath [
-    "sops"
-    "templates"
-    "slskd.env"
-    "path"
-  ] config;
-
-  hasTagrEnv = lib.hasAttrByPath [
-    "sops"
-    "templates"
-    "tagr.env"
-    "path"
-  ] config;
-
-  optionalSoulSyncEnvTemplates = lib.filter (path: path != null) [
-    (
-      if
-        lib.hasAttrByPath [
-          "sops"
-          "templates"
-          "soulsync-spotify.env"
-          "path"
-        ] config
-      then
-        config.sops.templates."soulsync-spotify.env".path
-      else
-        null
-    )
-    (
-      if
-        lib.hasAttrByPath [
-          "sops"
-          "templates"
-          "soulsync-deezer.env"
-          "path"
-        ] config
-      then
-        config.sops.templates."soulsync-deezer.env".path
-      else
-        null
-    )
-    (
-      if
-        lib.hasAttrByPath [
-          "sops"
-          "templates"
-          "soulsync-youtube.env"
-          "path"
-        ] config
-      then
-        config.sops.templates."soulsync-youtube.env".path
-      else
-        null
-    )
-  ];
+  globals = import ../../policy/globals.nix;
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
 in
 {
   imports = [
@@ -85,15 +19,17 @@ in
   ];
 
   options.applications.music = {
+    enable = lib.mkEnableOption "music application composition";
+
     dataRoot = lib.mkOption {
       type = lib.types.str;
-      default = "/srv/data";
+      default = globals.applications.music.dataRoot;
       description = "Top-level data root for music application services.";
     };
 
     mediaRoot = lib.mkOption {
       type = lib.types.str;
-      default = "/srv/media";
+      default = globals.applications.music.mediaRoot;
       description = "Top-level media root for music application services.";
     };
 
@@ -167,9 +103,20 @@ in
       };
       description = "Syncthing folder map for this application composition.";
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "music-host-secrets";
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "applications.music";
+        label = "secretFiles.host";
+      })
+    ];
+
     users.groups.music-ingest.gid = 990;
     users.groups.media.gid = 987;
 
@@ -198,6 +145,7 @@ in
       inboxDir = cfg.inboxDir;
       libraryDir = cfg.libraryDir;
       quarantineDir = cfg.quarantineDir;
+      secretFiles.host = cfg.secretFiles.host;
     };
 
     systemd.paths.beets-inbox-watch.enable = false;
@@ -209,8 +157,7 @@ in
       downloadsPath = "${cfg.mediaRoot}/inbox/slskd";
       incompletePath = "${cfg.mediaRoot}/slskd-incomplete";
       domain = "oci-melb-1";
-      environmentFile =
-        if hasSlskdEnv then config.sops.templates."slskd.env".path else "/var/lib/slskd/environment";
+      secretFiles.host = cfg.secretFiles.host;
     };
 
     services.soulsync = {
@@ -222,10 +169,7 @@ in
       stagingPath = "${cfg.quarantineDir}/approved";
       unresolvedPath = "${cfg.quarantineDir}/untagged";
       timeZone = config.time.timeZone;
-      configTemplateFile =
-        if hasSoulSyncConfig then config.sops.templates."soulsync-config.json".path else null;
-      environmentFile = if hasSoulSyncEnv then config.sops.templates."soulsync.env".path else null;
-      optionalEnvironmentFiles = optionalSoulSyncEnvTemplates;
+      secretFiles.host = cfg.secretFiles.host;
       conservativeDefaults = {
         metadataFallbackSource = "discogs";
         disableBroadRepairJobs = true;
@@ -237,8 +181,7 @@ in
       enable = true;
       dataDir = "${cfg.dataRoot}/tagr";
       mediaRoot = cfg.mediaRoot;
-      environmentFile =
-        if hasTagrEnv then config.sops.templates."tagr.env".path else "/var/lib/tagr/environment";
+      secretFiles.host = cfg.secretFiles.host;
     };
 
     systemd.tmpfiles.rules = [

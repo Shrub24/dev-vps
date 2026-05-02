@@ -6,16 +6,10 @@
 let
   appCfg = config.applications.admin;
   cfg = config.services.admin.pocket-id;
+  secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
+  policyLib = import ../../../lib/policy.nix { inherit lib; };
 
-  mkOidcEndpoints = issuerUrl: {
-    issuerUrl = issuerUrl;
-    wellknownUrl = "${issuerUrl}/.well-known/openid-configuration";
-    authorizationUrl = "${issuerUrl}/authorize";
-    tokenUrl = "${issuerUrl}/api/oidc/token";
-    userinfoUrl = "${issuerUrl}/api/oidc/userinfo";
-  };
-
-  oidc = mkOidcEndpoints cfg.appUrl;
+  oidc = policyLib.mkOidcEndpoints cfg.appUrl;
 in
 {
   options.services.admin.pocket-id = {
@@ -67,9 +61,29 @@ in
         description = "Canonical Pocket ID OIDC userinfo URL.";
       };
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "pocket-id-host-secrets";
   };
 
   config = lib.mkIf (appCfg.enable && cfg.enable) {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "services.admin.pocket-id";
+        label = "secretFiles.host";
+      })
+    ];
+
+    sops.secrets = secretHelpers.mkSecretsFromMap cfg.secretFiles.host {
+      pocket_id_encryption_key = {
+        key = "pocket_id/encryption_key";
+        path = "/run/secrets/pocket-id.encryption_key";
+        owner = "pocket-id";
+        group = "pocket-id";
+      };
+    };
+
     services.admin.pocket-id.oidc = oidc;
 
     services.pocket-id = {

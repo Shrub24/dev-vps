@@ -52,11 +52,19 @@ Track A: Repository migration
 Track B: Secrets and identity model
 
 - enforce scoped secret topology via `.sops.yaml`
-- keep shared values in `secrets/common.yaml` and host-only values in `hosts/<host>/secrets.yaml`
-- use `secrets/common.template.yaml` as the unencrypted reference template for common secret scaffolding
-- maintain clear distinction between common and host-scoped data
-- keep host enrollment artifacts and policies explicit
+- use topology-aligned secret buckets:
+  - `secrets/applications/<name>.yaml` for multi-service application stacks
+  - `secrets/services/<name>.yaml` for standalone leaf services
+  - `secrets/hosts/<host>/system.yaml` for host-only bootstrap/system material
+  - `secrets/hosts/<host>/oidc.yaml` for cross-host OIDC handshake material
+- keep ciphertext encrypted directly to host/admin recipients via `age`
+- derive normal secret reader scope from host feature enables (`applications.<name>.enable`, `services.<domain>.<name>.enable`)
+- maintain explicit exception handling for cross-host readers (OIDC handshakes)
+- keep `secrets/templates/*.yaml` as unencrypted reference templates for each encrypted bucket
+- deep leaf modules own their own `sops.secrets`/`sops.templates` registrations; application modules pass through `secretFiles.*` bindings
+- keep `lib/secrets.nix` as a light reusable helper library for common secret-contract patterns
 - default host recipient bootstrap via live SSH host key to age derivation, with injected-key override available
+- keep host enrollment artifacts and policies explicit
 
 Track C: Host and storage baseline
 

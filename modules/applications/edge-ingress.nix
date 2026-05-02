@@ -5,6 +5,7 @@
 }:
 let
   cfg = config.applications."edge-ingress";
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
 in
 {
   imports = [ ../../modules/services/edge-proxy-ingress.nix ];
@@ -69,18 +70,33 @@ in
       default = { };
       description = "Ingress routes declared at host/application layer.";
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "edge-ingress-host-secrets";
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.role == "edge";
+        file = cfg.secretFiles.host;
+        feature = "applications.edge-ingress";
+        label = "secretFiles.host";
+      })
+    ];
+
     services."edge-proxy-ingress" = lib.mkMerge [
       {
         inherit (cfg)
           role
           primaryDomain
           acmeEmail
-          cloudflareCredentialsFile
           routes
           ;
+
+        # Use the template file as the cloudflare credentials file when role=edge
+        cloudflareCredentialsFile = lib.mkIf (
+          cfg.role == "edge"
+        ) config.sops.templates."caddy-cloudflare.env".path;
 
         authenticatedOriginPulls = cfg.authenticatedOriginPulls;
       }
@@ -88,5 +104,26 @@ in
         trustedProxyCidrs = cfg.trustedProxyCidrs;
       })
     ];
+
+    # Cloudflare/Caddy template - owned by edge-ingress when role=edge
+    sops.templates."caddy-cloudflare.env" = lib.mkIf (cfg.role == "edge") {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder.cloudflare_dns_api_token}
+      '';
+    };
+
+    sops.secrets = lib.mkIf (cfg.role == "edge") (
+      secretHelpers.mkSecretsFromMap cfg.secretFiles.host {
+        cloudflare_dns_api_token = {
+          key = "cloudflare/dns_api_token";
+          path = "/run/secrets/cloudflare.dns_api_token";
+          owner = "root";
+          group = "root";
+        };
+      }
+    );
   };
 }
