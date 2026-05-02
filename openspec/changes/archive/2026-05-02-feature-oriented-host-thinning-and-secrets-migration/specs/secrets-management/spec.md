@@ -1,9 +1,5 @@
-# Spec: Secrets Management
+## MODIFIED Requirements
 
-## Purpose
-
-Define blast-radius-scoped secret management contracts using SOPS and age recipients across fleet and host scopes.
-## Requirements
 ### Requirement: Secret scopes are explicitly separated
 Secrets SHALL be split into application-scoped, standalone-service-scoped, and host-exception-scoped material with explicit path policies.
 
@@ -23,20 +19,6 @@ SOPS recipient rules SHALL be path-scoped and auditable to prevent implicit cros
 - **THEN** that reader expansion is represented as an explicit exception scope or exception rule
 - **AND** it does not silently broaden unrelated secret paths
 
-### Requirement: Two-step bootstrap secret flow is supported
-Base host install SHALL not require host secrets, with host-secret enablement occurring as a second step.
-
-#### Scenario: Initial host bring-up is performed
-- **WHEN** host is installed before secret bootstrap
-- **THEN** base system converges and secret-dependent wiring can be enabled afterward
-
-### Requirement: Host recipient derivation is operationalized
-Host recipient derivation from SSH host keys SHALL be available through operator workflows.
-
-#### Scenario: Operator derives host age recipient
-- **WHEN** recipient derivation command is executed
-- **THEN** generated recipient can be used to update secret policy/workflow safely
-
 ### Requirement: SoulSync service credentials SHALL be host-scoped
 SoulSync integration credentials for the music stack SHALL be stored under the music application secret scope and SHALL NOT expand decryption access outside the hosts that explicitly enable that application.
 
@@ -53,14 +35,6 @@ SoulSync optional-provider credentials SHALL remain optional at render/deploy ti
 - **THEN** secret/template rendering still converges
 - **AND** only configured providers are enabled at runtime
 
-### Requirement: OpenTofu backend/runtime secrets SHALL be path-scoped and encrypted
-OpenTofu Cloudflare backend and runtime credentials SHALL be stored in SOPS-encrypted files with path-scoped recipient rules and rendered to ignored runtime artifacts only when needed for local operations.
-
-#### Scenario: OpenTofu backend credentials are provisioned
-- **WHEN** operator prepares Cloudflare OpenTofu runtime inputs
-- **THEN** secret source remains encrypted under OpenTofu-specific secret paths
-- **AND** generated plaintext backend/tfvars artifacts are not committed to repository history
-
 ### Requirement: Vaultwarden mail and push credentials SHALL remain host-scoped
 Vaultwarden administrative, SMTP, and push credentials for the admin stack SHALL live under the admin application secret scope by default and SHALL NOT be promoted to unrelated shared scopes.
 
@@ -68,14 +42,6 @@ Vaultwarden administrative, SMTP, and push credentials for the admin stack SHALL
 - **WHEN** secret definitions and templates are reviewed for the admin stack
 - **THEN** Vaultwarden admin token, SMTP credentials, and push credentials are sourced from the admin application secret set
 - **AND** unrelated application/service scopes do not gain decryption access by default
-
-### Requirement: OpenTofu mail-provider runtime secrets SHALL remain separate from public DNS inputs
-OpenTofu or service runtime credentials used for mail-provider integration SHALL remain encrypted under secret-scoped inputs, while non-secret DNS verification data remains outside encrypted secret storage.
-
-#### Scenario: Mail-provider configuration is reviewed
-- **WHEN** the repo is inspected for Resend-related inputs
-- **THEN** SMTP/API secret material is stored only in encrypted secret paths or host-scoped secret templates
-- **AND** DNS verification records are represented in non-secret configuration files
 
 ### Requirement: Tagr credentials SHALL be host-scoped for oci-melb-1
 Tagr credentials and session secret SHALL be sourced from the music application secret scope and SHALL NOT be introduced under unrelated shared or host-monolith secret scope.
@@ -85,14 +51,6 @@ Tagr credentials and session secret SHALL be sourced from the music application 
 - **THEN** they are stored under the music application secret scope and rendered through feature-owned templates/contracts
 - **AND** `.sops.yaml` path-scoped rules do not broaden decryption access beyond hosts that explicitly enable the music application
 
-### Requirement: Termix OIDC env template SHALL consume provider-owned endpoint outputs
-The Termix OIDC environment template for `do-admin-1` SHALL source OIDC endpoint values from `config.services.admin.pocket-id.oidc.*` rather than independently constructing endpoint URIs.
-
-#### Scenario: Termix OIDC env is rendered from SSOT
-- **WHEN** `do-admin-1` termix-oidc.env template is evaluated
-- **THEN** `OIDC_ISSUER_URL`, `OIDC_AUTHORIZATION_URL`, `OIDC_TOKEN_URL`, and `OIDC_USERINFO_URL` are resolved from Pocket ID module outputs
-- **AND** no local URL derivation from a raw `pocketIdBaseUrl` is used
-
 ### Requirement: AI gateway provider credentials SHALL remain host-scoped unless explicitly shared
 Provider API keys and similar sensitive gateway credentials SHALL be sourced from standalone service-scoped secret files by default and SHALL NOT be promoted to broader shared scopes unless a later change explicitly requires it.
 
@@ -100,14 +58,6 @@ Provider API keys and similar sensitive gateway credentials SHALL be sourced fro
 - **WHEN** provider credentials are added for a Bifrost deployment host
 - **THEN** they are stored under that gateway service’s encrypted secret scope and rendered through service-owned templates or environment files
 - **AND** unrelated application/shared scopes do not gain access implicitly
-
-### Requirement: Gateway rendered configuration SHALL reference env-backed secrets rather than inline secret values
-Repo-owned Bifrost configuration SHALL reference environment-backed secret material rather than embedding live provider secrets directly into committed configuration content.
-
-#### Scenario: Gateway config is rendered
-- **WHEN** canonical Bifrost settings are generated from repo configuration
-- **THEN** secret-bearing fields resolve through environment references or equivalent secret indirection
-- **AND** committed configuration artifacts do not contain live provider key material
 
 ### Requirement: Karakeep runtime secrets SHALL remain host-scoped for oci-melb-1
 Karakeep required runtime secrets SHALL be sourced from standalone service-scoped secret files/templates and SHALL NOT be introduced under unrelated application or host-monolith secret scope.
@@ -124,6 +74,8 @@ Karakeep optional integration secrets SHALL remain optional at render and deploy
 - **WHEN** host evaluation and deployment run without optional Karakeep AI, OAuth, SMTP, S3, or OCR secrets for integrations that are not enabled
 - **THEN** base Karakeep secret/template rendering still converges
 - **AND** only the explicitly configured optional integrations are enabled at runtime
+
+## ADDED Requirements
 
 ### Requirement: Karakeep rendered secret environment SHALL be wired into runtime
 When Karakeep secret/template ownership is leaf-managed, runtime containers SHALL consume the rendered `sops` environment file path rather than an unmanaged default file path.
@@ -155,4 +107,3 @@ Host exception secret scopes SHALL be reserved for host/bootstrap/system-only ma
 - **WHEN** a host enables `services.beszel-agent-auth`
 - **THEN** the host binds the token source through the same helper-based secret-file contract style used by other leaf services
 - **AND** the leaf module remains responsible for rendering the Beszel agent environment file and registering the underlying secret entries
-
