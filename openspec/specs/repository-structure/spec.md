@@ -5,12 +5,12 @@
 Define repository layout contracts that preserve modular host composition, clear ownership boundaries, and durable documentation authority.
 ## Requirements
 ### Requirement: Host and module boundaries are explicit
-Repository structure SHALL separate host composition from reusable module domains and SHALL preserve explicit layering between policy data (`policy/`), policy transformation helpers (`lib/`), service-owned modules (`modules/services/`), application composition (`modules/applications/`), and host assembly (`hosts/`).
+Repository structure SHALL separate host composition from reusable module domains and SHALL preserve explicit layering between policy data (`policy/`), policy transformation helpers (`lib/`), service-owned modules (`modules/services/`), application composition (`modules/applications/`), host assembly (`hosts/`), and topology-aligned secret scopes (`secrets/`).
 
 #### Scenario: Operator navigates repository
 - **WHEN** codebase layout is reviewed
-- **THEN** host identity and reusable module domains are clearly separated by directory boundaries
-- **AND** admin service implementation, application composition, and host-local assembly are not collapsed into one file
+- **THEN** host identity, application composition, leaf service implementation, and secret scopes are clearly separated by directory and ownership boundaries
+- **AND** admin/media/service implementation and host-local assembly are not collapsed into one file or one monolithic secret bucket
 
 ### Requirement: Provider-specific logic remains isolated
 Provider assumptions SHALL be isolated to provider/host layers and not embedded in reusable service modules, including after admin module decomposition.
@@ -40,14 +40,6 @@ Canonical repository documentation SHALL describe the active package baseline po
 - **WHEN** primary package baseline policy is changed in active code
 - **THEN** canonical docs (`docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`) are updated in the same change window to reflect the new default policy
 
-### Requirement: Admin host composition SHALL support focused host files
-Admin host composition for `do-admin-1` SHALL support focused host files for secrets, edge route/policy projection, and networking glue while keeping `hosts/do-admin-1/default.nix` as the primary assembly entrypoint.
-
-#### Scenario: do-admin-1 host files are organized
-- **WHEN** host composition is reviewed
-- **THEN** `hosts/do-admin-1/default.nix` assembles focused modules such as `secrets.nix`, `edge.nix`, and `networking.nix`
-- **AND** functional behavior remains equivalent to pre-split host composition
-
 ### Requirement: SSOT metadata SHALL avoid cross-module literal duplication
 Repository structure and module boundaries SHALL keep canonical domain, route subdomain/path, and service endpoint port metadata in authoritative policy/config locations, with consuming modules reading projections instead of redefining equivalent literals.
 
@@ -55,4 +47,20 @@ Repository structure and module boundaries SHALL keep canonical domain, route su
 - **WHEN** domain/subdomain/path/port values are inspected across edge, service, and monitoring modules
 - **THEN** each value class has one authoritative source-of-truth location
 - **AND** downstream modules consume resolved projections rather than duplicating raw literals
+
+### Requirement: Host composition SHALL support thin focused host files
+Host composition SHALL support thin, focused host files for identity, facts, networking, and narrow host-only exceptions while keeping reusable feature composition in applications and services.
+
+#### Scenario: Host files are organized
+- **WHEN** host composition is reviewed for any active host
+- **THEN** `hosts/<host>/default.nix` remains the primary assembly entrypoint
+- **AND** any split host files remain narrowly focused rather than owning reusable application/service internals
+
+### Requirement: Secret storage structure SHALL reflect feature ownership
+Repository secret layout SHALL distinguish application-scoped, standalone-service-scoped, and host-exception-scoped secret material so the path structure itself communicates ownership and blast radius.
+
+#### Scenario: Secret tree is inspected
+- **WHEN** operators review the `secrets/` tree and related host exception paths
+- **THEN** application-scoped secrets, standalone-service secrets, and host exception secrets are visibly separated by path
+- **AND** monolithic host secret files are not the primary canonical bucket model
 

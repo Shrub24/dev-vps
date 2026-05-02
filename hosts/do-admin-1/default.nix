@@ -16,7 +16,6 @@
     ../../modules/providers/digitalocean/default.nix
     ../../modules/storage/disko-single-disk.nix
     ../../modules/core/users.nix
-    ./secrets.nix
     ./quantum.nix
     ./cockpit-auth.nix
     ./edge.nix
@@ -25,38 +24,38 @@
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
 
   networking.hostName = "do-admin-1";
+  sops.defaultSopsFile = ../../secrets/common.yaml;
+  sops.secrets = {
+    tailscale_auth_key = {
+      sopsFile = ../../secrets/hosts/do-admin-1/system.yaml;
+      key = "tailscale/auth_key";
+      path = "/run/secrets/tailscale.auth_key";
+      mode = "0400";
+    };
+    cockpit_service_user_password_hash = {
+      sopsFile = ../../secrets/hosts/do-admin-1/system.yaml;
+      key = "cockpit/service_user/password_hash";
+      path = "/run/secrets/cockpit.service_user.password_hash";
+      mode = "0400";
+    };
+  };
+  services.tailscale.authKeyFile = "/run/secrets/tailscale.auth_key";
   disko.devices.disk.main.device = "/dev/vda";
   disko-root-extra = "100%";
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
-  services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz"; # ← SET YOUR RESEND VERIFIED ADDRESS
+  applications.admin.secretFiles.host = ../../secrets/applications/admin.yaml;
+  applications.admin.secretFiles.oidc = ../../secrets/hosts/do-admin-1/oidc.yaml;
+  applications.edge-ingress.enable = true;
+  applications.edge-ingress.role = "edge";
+  applications.edge-ingress.primaryDomain = "shrublab.xyz";
+  applications.edge-ingress.acmeEmail = lib.mkDefault "admin@send.shrublab.xyz";
+  applications.edge-ingress.secretFiles.host = ../../secrets/applications/edge-ingress.yaml;
   services.beszel-agent-auth = {
     enable = true;
-    tokenSopsFile = ../../hosts/do-admin-1/secrets.yaml;
+    secretFiles.host = ../../secrets/hosts/do-admin-1/system.yaml;
   };
-
-  systemd.tmpfiles.rules = [
-    "d ${config.applications.admin.dataRoot} 0755 root root - -"
-    "z ${config.applications.admin.dataRoot} 0755 root root - -"
-    "a+ ${config.applications.admin.dataRoot} - - - - user:dev:r-X"
-    "a+ ${config.applications.admin.dataRoot} - - - - default:user:dev:r-X"
-  ];
-
-  systemd.services.admin-dev-data-access-reconcile = {
-    description = "Reconcile dev read/traverse access on admin data root";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "systemd-tmpfiles-setup.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = pkgs.writeShellScript "admin-dev-data-access-reconcile" ''
-        set -euo pipefail
-        if [ -d "${config.applications.admin.dataRoot}" ]; then
-          ${pkgs.acl}/bin/setfacl -m u:dev:rX "${config.applications.admin.dataRoot}"
-          find "${config.applications.admin.dataRoot}" -xdev -type d ! -path "${config.applications.admin.dataRoot}/quantum/mnt" ! -path "${config.applications.admin.dataRoot}/quantum/mnt/*" -exec ${pkgs.acl}/bin/setfacl -m d:u:dev:rX {} +
-        fi
-      '';
-    };
-  };
+  services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz";
 
   system.stateVersion = "25.11";
 }

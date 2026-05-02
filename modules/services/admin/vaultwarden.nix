@@ -9,6 +9,7 @@ let
   vaultRoute = appCfg.policyServices."vaultwarden-admin";
   vaultHost = vaultRoute.origin.host;
   vaultPort = vaultRoute.origin.port;
+  secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
 in
 {
   options.services.admin.vaultwarden = {
@@ -23,15 +24,69 @@ in
       default = null;
       description = "From address for Vaultwarden emails. Set per-host (e.g. you@gmail.com).";
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "vaultwarden-host-secrets";
   };
 
   config = lib.mkIf (appCfg.enable && cfg.enable) {
     assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "services.admin.vaultwarden";
+        label = "secretFiles.host";
+      })
       {
         assertion = cfg.smtpFrom != null;
         message = "services.admin.vaultwarden.smtpFrom must be set (the email Vaultwarden sends from).";
       }
     ];
+
+    sops.templates."vaultwarden.env" = {
+      owner = "vaultwarden";
+      group = "vaultwarden";
+      mode = "0400";
+      content = ''
+        ADMIN_TOKEN='${config.sops.placeholder.vaultwarden_admin_token}'
+        SMTP_USERNAME=${config.sops.placeholder.vaultwarden_smtp_username}
+        SMTP_PASSWORD=${config.sops.placeholder.vaultwarden_smtp_password}
+        PUSH_INSTALLATION_ID=${config.sops.placeholder.vaultwarden_push_installation_id}
+        PUSH_INSTALLATION_KEY=${config.sops.placeholder.vaultwarden_push_installation_key}
+      '';
+    };
+
+    sops.secrets = secretHelpers.mkSecretsFromMap cfg.secretFiles.host {
+      vaultwarden_admin_token = {
+        key = "vaultwarden/admin_token";
+        path = "/run/secrets/vaultwarden.admin_token";
+        owner = "vaultwarden";
+        group = "vaultwarden";
+      };
+      vaultwarden_smtp_username = {
+        key = "vaultwarden/smtp_username";
+        path = "/run/secrets/vaultwarden.smtp_username";
+        owner = "vaultwarden";
+        group = "vaultwarden";
+      };
+      vaultwarden_smtp_password = {
+        key = "vaultwarden/smtp_password";
+        path = "/run/secrets/vaultwarden.smtp_password";
+        owner = "vaultwarden";
+        group = "vaultwarden";
+      };
+      vaultwarden_push_installation_id = {
+        key = "vaultwarden/push_installation_id";
+        path = "/run/secrets/vaultwarden.push_installation_id";
+        owner = "vaultwarden";
+        group = "vaultwarden";
+      };
+      vaultwarden_push_installation_key = {
+        key = "vaultwarden/push_installation_key";
+        path = "/run/secrets/vaultwarden.push_installation_key";
+        owner = "vaultwarden";
+        group = "vaultwarden";
+      };
+    };
 
     services.vaultwarden = {
       enable = true;

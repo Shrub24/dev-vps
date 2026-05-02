@@ -45,7 +45,7 @@ Rationale:
 
 ## D-004: Secrets model uses blast-radius scoping
 
-Status: Accepted
+Status: Superseded by D-019
 
 Decision:
 
@@ -494,6 +494,45 @@ Supersedes/updates:
 - supersedes D-022 default beets auto-promotion ownership
 - supersedes D-023 as the default ingest automation model (beets path/timer model retained only for fallback tooling)
 - supersedes D-024 Navidrome media-root visibility assumption (`/srv/media` broad root) with explicit `library + quarantine` scope
+
+## D-030: Feature-oriented host topology with topology-aligned secret scopes
+
+Status: Accepted
+
+Decision:
+
+- adopt a feature-oriented architecture where:
+  - application modules (`modules/applications/<name>/default.nix`) are canonical composition roots for multi-service stacks
+  - leaf service modules (`modules/services/**/*.nix`) own their own enablement, secret contracts, and runtime wiring
+  - host modules (`hosts/<host>/default.nix`) are thin assembly layers declaring identity, facts, feature enables, and narrow overrides
+- single services that do not participate in multi-service composition remain standalone leaf services (applications are not wrappers only for taxonomy)
+- every application entrypoint exposes a canonical `applications.<name>.enable` option; standalone services expose `services.<domain>.<name>.enable`
+- replace the old `common + host-monolith` secret model with a topology-aligned bucket model:
+  - `secrets/applications/<name>.yaml` for application-scoped secrets
+  - `secrets/services/<name>.yaml` for standalone service-scoped secrets
+  - `secrets/hosts/<host>/system.yaml` for host-only bootstrap/system secrets
+  - `secrets/hosts/<host>/oidc.yaml` for cross-host OIDC identity-handshake secrets
+- leaf service modules own their own `secretFiles.*` / `secretKeys.*` contract options, `sops.secrets` registrations, and `sops.templates` assembly
+- application modules pass through `secretFiles.*` values to sub-services but do not own sub-service secret internals
+- hosts only set feature-enable flags and explicit secret-file-path bindings (e.g. `applications.music.secretFiles.host`)
+- normal secret scope derives from normalized host feature enablement rather than a separately maintained consumer inventory; only explicit exception readers (e.g. cross-host OIDC) are declared separately
+- keep plain explicit `flake.nix` architecture (no `flake-parts` or Dendritic Nix adoption in this change)
+- perform a clean cutover without backward-compatibility aliases or migration shims
+- use `lib/secrets.nix` as a light reusable helper library for common secret-contract option declarations
+
+Rationale:
+
+- hosts previously owned too much service wiring, secret registrations, and template assembly, making host files heavyweight and feature ownership ambiguous
+- monolithic host-scoped secret buckets made feature-scope reasoning harder and kept secret ownership host-centric even when runtime ownership was feature-centric
+- explicit feature enablement provides a single source of truth for topology and simplifies reasoning about which readers should decrypt which secrets
+- keeping application composition boundaries meaningful (multi-service stacks only) avoids taxonomical indirection for singleton services
+- a clean cutover avoids prolonged confusion from dual model co-existence
+
+Supersedes/updates:
+
+- supersedes D-004's `secrets/common.yaml` + `hosts/<host>/secrets.yaml` model with the topology-aligned four-bucket model
+- supersedes D-010's bootstrap default assumption that secrets are only common + host-monolith
+- updates the canonical host composition pattern to thin assembly layers
 
 ## Open Questions (Intentional)
 

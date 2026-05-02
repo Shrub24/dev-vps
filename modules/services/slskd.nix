@@ -5,6 +5,7 @@
 }:
 let
   cfg = config.services.slskd;
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
   downloadsParent = builtins.dirOf cfg.downloadsPath;
   incompleteParent = builtins.dirOf cfg.incompletePath;
 in
@@ -21,7 +22,58 @@ in
     description = "Directory for incomplete slskd downloads.";
   };
 
-  config = {
+  options.services.slskd.secretFiles.host = secretHelpers.mkSecretFileOption "slskd-host-secrets";
+
+  config = lib.mkIf (cfg.secretFiles.host != null) {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.secretFiles.host != null;
+        file = cfg.secretFiles.host;
+        feature = "services.slskd";
+        label = "secretFiles.host";
+      })
+    ];
+
+    sops.templates."slskd.env" = lib.mkIf (cfg.secretFiles.host != null) {
+      owner = "slskd";
+      group = "slskd";
+      mode = "0400";
+      content = ''
+        SLSKD_SLSK_USERNAME=${config.sops.placeholder.slskd_slsk_username}
+        SLSKD_SLSK_PASSWORD=${config.sops.placeholder.slskd_slsk_password}
+        ${lib.optionalString (
+          config.sops ? placeholder.soulsync_slskd_api_key
+        ) "SLSKD_API_KEY=${config.sops.placeholder.soulsync_slskd_api_key}"}
+        SLSKD_NO_AUTH=false
+        SLSKD_USERNAME=api-only
+        SLSKD_PASSWORD=${config.sops.placeholder.slskd_web_password}
+      '';
+    };
+
+    sops.secrets.slskd_slsk_username = {
+      sopsFile = cfg.secretFiles.host;
+      key = "slskd/slsk_username";
+      path = "/run/secrets/slskd.slsk_username";
+      owner = "slskd";
+      group = "slskd";
+    };
+
+    sops.secrets.slskd_slsk_password = {
+      sopsFile = cfg.secretFiles.host;
+      key = "slskd/slsk_password";
+      path = "/run/secrets/slskd.slsk_password";
+      owner = "slskd";
+      group = "slskd";
+    };
+
+    sops.secrets.slskd_web_password = {
+      sopsFile = cfg.secretFiles.host;
+      key = "slskd/web_password";
+      path = "/run/secrets/slskd.web_password";
+      owner = "slskd";
+      group = "slskd";
+    };
+
     services.slskd = {
       enable = true;
       openFirewall = false;
@@ -34,6 +86,7 @@ in
           "/srv/media/library"
         ];
       };
+      environmentFile = config.sops.templates."slskd.env".path;
     };
 
     systemd.tmpfiles.rules = [

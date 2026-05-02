@@ -21,6 +21,14 @@ rec {
   mkUpstream =
     resolved: "${resolved.origin.scheme}://${resolved.origin.host}:${toString resolved.origin.port}";
 
+  mkOidcEndpoints = issuerUrl: {
+    issuerUrl = issuerUrl;
+    wellknownUrl = "${issuerUrl}/.well-known/openid-configuration";
+    authorizationUrl = "${issuerUrl}/authorize";
+    tokenUrl = "${issuerUrl}/api/oidc/token";
+    userinfoUrl = "${issuerUrl}/api/oidc/userinfo";
+  };
+
   mkPublicHost =
     primaryDomain: resolved:
     if resolved.subdomain != null then "${resolved.subdomain}.${primaryDomain}" else primaryDomain;
@@ -73,9 +81,7 @@ rec {
       serviceList = lib.attrValues publicServices;
       publicHosts = lib.unique (map (service: service.publicHost) serviceList);
 
-      servicesForHost =
-        publicHost:
-        lib.filter (service: service.publicHost == publicHost) serviceList;
+      servicesForHost = publicHost: lib.filter (service: service.publicHost == publicHost) serviceList;
 
       pickCanonicalService =
         servicesForPublicHost:
