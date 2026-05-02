@@ -7,6 +7,7 @@
 }:
 let
   cfg = config.services.beets-inbox;
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
 
   mediaInboxDir = if cfg.inboxDir != null then cfg.inboxDir else "${cfg.mediaRoot}/inbox";
   mediaLibraryDir = if cfg.libraryDir != null then cfg.libraryDir else "${cfg.mediaRoot}/library";
@@ -157,7 +158,49 @@ in
     description = "Optional full path for quarantine root (always creates fixed untagged/approved subdirs).";
   };
 
-  config = {
+  options.services.beets-inbox.secretFiles.host =
+    secretHelpers.mkSecretFileOption "beets-host-secrets";
+
+  config = lib.mkIf (cfg.secretFiles.host != null) {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.secretFiles.host != null;
+        file = cfg.secretFiles.host;
+        feature = "services.beets-inbox";
+        label = "secretFiles.host";
+      })
+    ];
+
+    sops.templates."beets-config.yaml" = {
+      owner = "beets";
+      group = "beets";
+      mode = "0440";
+      content =
+        builtins.replaceStrings
+          [ "REPLACE_WITH_DISCOGS_USER_TOKEN" ]
+          [ config.sops.placeholder.beets_discogs_token ]
+          (builtins.readFile ../../scripts/beets-config.yaml);
+    };
+
+    sops.templates."beets-approved-config.yaml" = {
+      owner = "beets";
+      group = "beets";
+      mode = "0440";
+      content =
+        builtins.replaceStrings
+          [ "REPLACE_WITH_DISCOGS_USER_TOKEN" ]
+          [ config.sops.placeholder.beets_discogs_token ]
+          (builtins.readFile ../../scripts/beets-approved-config.yaml);
+    };
+
+    sops.secrets.beets_discogs_token = {
+      sopsFile = cfg.secretFiles.host;
+      key = "beets/discogs_token";
+      path = "/run/secrets/beets.discogs_token";
+      owner = "beets";
+      group = "beets";
+    };
+
     users.groups.beets = { };
     users.users.beets = {
       isSystemUser = true;

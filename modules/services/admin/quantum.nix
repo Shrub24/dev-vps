@@ -10,6 +10,7 @@ let
   quantumRoute = appCfg.policyServices."quantum-admin";
   listenAddress = quantumRoute.origin.host;
   listenPort = quantumRoute.origin.port;
+  secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
 
   mountRoot = "${appCfg.dataRoot}/quantum/mnt";
   mountPathFor = host: "${mountRoot}/${host.name}";
@@ -87,6 +88,10 @@ let
       };
     }) cfg.sftp.hosts
   );
+
+  hasOidcSecrets = cfg.oidc.enabled;
+  needsAuthTemplate =
+    cfg.passwordAuthEnabled && cfg.environmentFile == null && cfg.adminPassword == null;
 in
 {
   options.services.admin.quantum = {
@@ -258,9 +263,94 @@ in
       default = [ ];
       description = "Additional local filesystem sources exposed to Quantum.";
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "quantum-host-secrets";
+    secretFiles.oidc = secretHelpers.mkSecretFileOption "quantum-oidc-secrets";
   };
 
   config = lib.mkIf (appCfg.enable && cfg.enable) {
+    assertions = [
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "services.admin.quantum";
+        label = "secretFiles.host";
+      })
+      {
+        assertion = !cfg.oidc.enabled || cfg.secretFiles.oidc != null;
+        message = "services.admin.quantum.oidc is enabled but secretFiles.oidc is not set.";
+      }
+      {
+        assertion = !cfg.passwordAuthEnabled || (cfg.adminPassword != null || cfg.environmentFile != null);
+        message = "When services.admin.quantum.passwordAuthEnabled=true, set services.admin.quantum.adminPassword or services.admin.quantum.environmentFile.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.issuerUrl != null;
+        message = "services.admin.quantum.oidc.issuerUrl must be set when services.admin.quantum.oidc.enabled=true.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || (cfg.oidc.clientId != null || cfg.oidc.environmentFile != null);
+        message = "When Quantum OIDC is enabled, set services.admin.quantum.oidc.clientId or services.admin.quantum.oidc.environmentFile.";
+      }
+      {
+        assertion =
+          cfg.sftp.hosts == [ ] || (cfg.sftp.identityFile != null && cfg.sftp.knownHostsFile != null);
+        message = "When services.admin.quantum.sftp.hosts is non-empty, set services.admin.quantum.sftp.identityFile and knownHostsFile.";
+      }
+    ];
+
+    # Auth env file - always owned by quantum module when needed
+    sops.templates."quantum-auth.env" = lib.mkIf needsAuthTemplate {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        FILEBROWSER_ADMIN_PASSWORD=${config.sops.placeholder.quantum_admin_password}
+      '';
+    };
+
+    # OIDC env file - owned by quantum module when OIDC is enabled
+    sops.templates."quantum-oidc.env" = lib.mkIf hasOidcSecrets {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        FILEBROWSER_OIDC_CLIENT_ID=${config.sops.placeholder.quantum_oidc_client_id}
+        FILEBROWSER_OIDC_CLIENT_SECRET=${config.sops.placeholder.quantum_oidc_client_secret}
+      '';
+    };
+
+    # Password auth secrets from host secrets file
+    # OIDC secrets from oidc secrets file when OIDC is enabled
+    sops.secrets = lib.mkMerge [
+      (lib.mkIf needsAuthTemplate (
+        secretHelpers.mkSecretsFromMap cfg.secretFiles.host {
+          quantum_admin_password = {
+            key = "quantum/admin_password";
+            path = "/run/secrets/quantum.admin_password";
+            owner = "root";
+            group = "root";
+          };
+        }
+      ))
+      (lib.mkIf hasOidcSecrets (
+        secretHelpers.mkSecretsFromMap cfg.secretFiles.oidc {
+          quantum_oidc_client_id = {
+            key = "quantum/client_id";
+            path = "/run/secrets/pocket-id.quantum.client_id";
+            owner = "root";
+            group = "root";
+          };
+          quantum_oidc_client_secret = {
+            key = "quantum/client_secret";
+            path = "/run/secrets/pocket-id.quantum.client_secret";
+            owner = "root";
+            group = "root";
+          };
+        }
+      ))
+    ];
+
     virtualisation.podman.enable = true;
 
     environment.systemPackages = [ pkgs.sshfs ];
@@ -345,24 +435,5 @@ in
       ];
     };
 
-    assertions = [
-      {
-        assertion = !cfg.passwordAuthEnabled || (cfg.adminPassword != null || cfg.environmentFile != null);
-        message = "When services.admin.quantum.passwordAuthEnabled=true, set services.admin.quantum.adminPassword or services.admin.quantum.environmentFile.";
-      }
-      {
-        assertion = !cfg.oidc.enabled || cfg.oidc.issuerUrl != null;
-        message = "services.admin.quantum.oidc.issuerUrl must be set when services.admin.quantum.oidc.enabled=true.";
-      }
-      {
-        assertion = !cfg.oidc.enabled || (cfg.oidc.clientId != null || cfg.oidc.environmentFile != null);
-        message = "When Quantum OIDC is enabled, set services.admin.quantum.oidc.clientId or services.admin.quantum.oidc.environmentFile.";
-      }
-      {
-        assertion =
-          cfg.sftp.hosts == [ ] || (cfg.sftp.identityFile != null && cfg.sftp.knownHostsFile != null);
-        message = "When services.admin.quantum.sftp.hosts is non-empty, set services.admin.quantum.sftp.identityFile and knownHostsFile.";
-      }
-    ];
   };
 }

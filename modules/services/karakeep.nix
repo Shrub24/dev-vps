@@ -3,12 +3,15 @@
   config,
   pkgs,
   ...
-}: let
-  cfg = config.services.karakeep-oci;
+}:
+let
+  cfg = config.services.karakeep-pod;
   envDir = builtins.dirOf cfg.environmentFile;
   globals = import ../../policy/globals.nix;
-in {
-  options.services.karakeep-oci = {
+  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
+in
+{
+  options.services.karakeep-pod = {
     enable = lib.mkEnableOption "Karakeep bookmark and read-later service";
 
     webImage = lib.mkOption {
@@ -31,7 +34,7 @@ in {
 
     dataDir = lib.mkOption {
       type = lib.types.str;
-      default = "/srv/data/karakeep";
+      default = globals.services.karakeep-pod.dataDir;
       description = "Persistent data directory for Karakeep app and search state.";
     };
 
@@ -49,7 +52,7 @@ in {
 
     environmentFile = lib.mkOption {
       type = lib.types.str;
-      default = "/var/lib/karakeep/environment";
+      default = config.sops.templates."karakeep.environment".path;
       description = "Required environment file containing Karakeep auth and search secrets.";
     };
 
@@ -64,6 +67,9 @@ in {
       default = "karakeep-net";
       description = "Dedicated Podman network shared by Karakeep containers for stable DNS/service discovery.";
     };
+
+    secretFiles.host = secretHelpers.mkSecretFileOption "karakeep-host-secrets";
+    secretFiles.oidc = secretHelpers.mkSecretFileOption "karakeep-oidc-secrets";
 
     oidc = {
       enable = lib.mkEnableOption "OIDC login for Karakeep";
@@ -122,9 +128,75 @@ in {
     assertions = [
       {
         assertion = !cfg.oidc.enable || cfg.oidc.wellknownUrl != "";
-        message = "services.karakeep-oci.oidc.wellknownUrl must be set when OIDC is enabled.";
+        message = "services.karakeep-pod.oidc.wellknownUrl must be set when OIDC is enabled.";
       }
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.enable;
+        file = cfg.secretFiles.host;
+        feature = "services.karakeep-pod";
+        label = "secretFiles.host";
+      })
+      (secretHelpers.mkRequiredSecretAssertion {
+        enable = cfg.oidc.enable;
+        file = cfg.secretFiles.oidc;
+        feature = "services.karakeep-pod.oidc";
+        label = "secretFiles.oidc";
+      })
     ];
+
+    sops.templates."karakeep.environment" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      content = ''
+        NEXTAUTH_SECRET=${config.sops.placeholder.karakeep_nextauth_secret}
+        MEILI_MASTER_KEY=${config.sops.placeholder.karakeep_meilisearch_master_key}
+        OAUTH_CLIENT_ID=${config.sops.placeholder.karakeep_oidc_client_id}
+        OAUTH_CLIENT_SECRET=${config.sops.placeholder.karakeep_oidc_client_secret}
+        OPENAI_BASE_URL=${config.services.bifrost-gateway.endpoint.containerBaseUrl}
+        OPENAI_API_KEY=bifrost-local
+        INFERENCE_TEXT_MODEL=${globals.aiGateway.aliases.text}
+        INFERENCE_IMAGE_MODEL=${globals.aiGateway.aliases.image}
+        EMBEDDING_TEXT_MODEL=${globals.aiGateway.aliases.embedding}
+        ASSET_STORE_S3_ENDPOINT=${globals.s3.endpoint}
+        ASSET_STORE_S3_REGION=${globals.s3.region}
+        ASSET_STORE_S3_BUCKET=${globals.s3.bucket}
+        ASSET_STORE_S3_ACCESS_KEY_ID=${config.sops.placeholder.karakeep_asset_store_s3_access_key_id}
+        ASSET_STORE_S3_SECRET_ACCESS_KEY=${config.sops.placeholder.karakeep_asset_store_s3_secret_access_key}
+      '';
+    };
+
+    sops.secrets =
+      secretHelpers.mkSecretsFromMap cfg.secretFiles.host {
+        karakeep_nextauth_secret = {
+          key = "karakeep/nextauth_secret";
+          path = "/run/secrets/karakeep.nextauth_secret";
+        };
+        karakeep_meilisearch_master_key = {
+          key = "karakeep/meilisearch_master_key";
+          path = "/run/secrets/karakeep.meilisearch_master_key";
+        };
+        karakeep_asset_store_s3_access_key_id = {
+          key = "karakeep/asset_store_s3_access_key_id";
+          path = "/run/secrets/karakeep.asset_store_s3_access_key_id";
+        };
+        karakeep_asset_store_s3_secret_access_key = {
+          key = "karakeep/asset_store_s3_secret_access_key";
+          path = "/run/secrets/karakeep.asset_store_s3_secret_access_key";
+        };
+      }
+      // (lib.optionalAttrs cfg.oidc.enable (
+        secretHelpers.mkSecretsFromMap cfg.secretFiles.oidc {
+          karakeep_oidc_client_id = {
+            key = "karakeep/client_id";
+            path = "/run/secrets/karakeep.oidc_client_id";
+          };
+          karakeep_oidc_client_secret = {
+            key = "karakeep/client_secret";
+            path = "/run/secrets/karakeep.oidc_client_secret";
+          };
+        }
+      ));
 
     virtualisation.podman.enable = true;
     virtualisation.podman.autoPrune.enable = lib.mkDefault true;
@@ -153,7 +225,6 @@ in {
       "f ${cfg.environmentFile} 0640 root root - -"
     ];
 
-    # Meilisearch container (starts first, no dependencies)
     virtualisation.oci-containers.containers.karakeep-meilisearch = {
       autoStart = true;
       image = cfg.meilisearchImage;
@@ -171,7 +242,6 @@ in {
       ];
     };
 
-    # Chrome browser container for link preview generation
     virtualisation.oci-containers.containers.karakeep-chrome = {
       autoStart = true;
       image = cfg.chromeImage;
@@ -185,7 +255,6 @@ in {
       ];
     };
 
-    # Karakeep web container
     virtualisation.oci-containers.containers.karakeep-web = {
       autoStart = true;
       image = cfg.webImage;
@@ -195,39 +264,27 @@ in {
       ports = [
         "${cfg.listenAddress}:${toString cfg.port}:3000"
       ];
-      environment =
-        {
-          MEILI_ADDR = "http://karakeep-meilisearch:7700";
-          BROWSER_WEB_URL = "http://karakeep-chrome:9222";
-          DATA_DIR = "/data";
-          MEILI_NO_ANALYTICS = "true";
-          NEXTAUTH_URL = cfg.publicUrl;
-        }
-        // {
-          DISABLE_PASSWORD_AUTH =
-            if cfg.oidc.disablePasswordAuth
-            then "true"
-            else "false";
-        }
-        // lib.optionalAttrs cfg.oidc.enable {
-          OAUTH_WELLKNOWN_URL = cfg.oidc.wellknownUrl;
-          OAUTH_SCOPE = cfg.oidc.scope;
-          OAUTH_PROVIDER_NAME = cfg.oidc.providerName;
-          OAUTH_AUTO_REDIRECT =
-            if cfg.oidc.autoRedirect
-            then "true"
-            else "false";
-          OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING =
-            if cfg.oidc.allowDangerousEmailAccountLinking
-            then "true"
-            else "false";
-        }
-        // lib.optionalAttrs cfg.storage.s3.enable {
-          ASSET_STORE_S3_FORCE_PATH_STYLE =
-            if cfg.storage.s3.forcePathStyle
-            then "true"
-            else "false";
-        };
+      environment = {
+        MEILI_ADDR = "http://karakeep-meilisearch:7700";
+        BROWSER_WEB_URL = "http://karakeep-chrome:9222";
+        DATA_DIR = "/data";
+        MEILI_NO_ANALYTICS = "true";
+        NEXTAUTH_URL = cfg.publicUrl;
+      }
+      // {
+        DISABLE_PASSWORD_AUTH = if cfg.oidc.disablePasswordAuth then "true" else "false";
+      }
+      // lib.optionalAttrs cfg.oidc.enable {
+        OAUTH_WELLKNOWN_URL = cfg.oidc.wellknownUrl;
+        OAUTH_SCOPE = cfg.oidc.scope;
+        OAUTH_PROVIDER_NAME = cfg.oidc.providerName;
+        OAUTH_AUTO_REDIRECT = if cfg.oidc.autoRedirect then "true" else "false";
+        OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING =
+          if cfg.oidc.allowDangerousEmailAccountLinking then "true" else "false";
+      }
+      // lib.optionalAttrs cfg.storage.s3.enable {
+        ASSET_STORE_S3_FORCE_PATH_STYLE = if cfg.storage.s3.forcePathStyle then "true" else "false";
+      };
       environmentFiles = [
         cfg.environmentFile
       ];
@@ -236,7 +293,6 @@ in {
       ];
     };
 
-    # Systemd ordering: web requires meilisearch and chrome to be running
     systemd.services."podman-karakeep-web" = {
       wants = [
         "network-online.target"
@@ -259,21 +315,31 @@ in {
       ];
     };
 
-    # Systemd ordering for meilisearch
     systemd.services."podman-karakeep-meilisearch" = {
-      wants = ["network-online.target" "podman-network-${cfg.networkName}.service"];
-      after = ["network-online.target" "podman-network-${cfg.networkName}.service"];
-      requires = ["podman-network-${cfg.networkName}.service"];
+      wants = [
+        "network-online.target"
+        "podman-network-${cfg.networkName}.service"
+      ];
+      after = [
+        "network-online.target"
+        "podman-network-${cfg.networkName}.service"
+      ];
+      requires = [ "podman-network-${cfg.networkName}.service" ];
       unitConfig.RequiresMountsFor = [
         cfg.dataDir
       ];
     };
 
-    # Systemd ordering for chrome
     systemd.services."podman-karakeep-chrome" = {
-      wants = ["network-online.target" "podman-network-${cfg.networkName}.service"];
-      after = ["network-online.target" "podman-network-${cfg.networkName}.service"];
-      requires = ["podman-network-${cfg.networkName}.service"];
+      wants = [
+        "network-online.target"
+        "podman-network-${cfg.networkName}.service"
+      ];
+      after = [
+        "network-online.target"
+        "podman-network-${cfg.networkName}.service"
+      ];
+      requires = [ "podman-network-${cfg.networkName}.service" ];
     };
   };
 }

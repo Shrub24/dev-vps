@@ -140,6 +140,17 @@ build host="oci-melb-1":
   @nix build --no-link --no-write-lock-file "path:.#nixosConfigurations.{{host}}.config.system.build.toplevel"
 
 # ---------------------------------------------------------------------------
+# Secrets
+# ---------------------------------------------------------------------------
+
+# Re-encrypt all SOPS files with current .sops.yaml key rules
+sops-updatekeys:
+  @find secrets -name '*.yaml' -not -path '*/opentofu/*' | sort | while read -r f; do \
+    echo "Updating $$f..."; \
+    sops updatekeys "$$f"; \
+  done
+
+# ---------------------------------------------------------------------------
 # OpenTofu / Cloudflare
 # ---------------------------------------------------------------------------
 

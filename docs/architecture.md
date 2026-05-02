@@ -54,17 +54,19 @@ Fleet direction:
 - prefer native NixOS modules and systemd services first
 - add orchestration only when concrete workload pressure appears
 
-2. Modular composition
+2. Modular, feature-oriented composition
 
-- host identity and composition belong in host modules
-- reusable behavior belongs in service modules
+- host identity, facts, and narrow host-only overrides belong in host modules
+- reusable behavior and secret ownership belong in service modules
+- multi-service stacks and shared cross-service concerns belong in application modules
 - provider specifics should be isolated from workload modules
 
 3. Security blast radius minimization
 
-- secrets split by scope
-- host-scoped secrets by default
-- broad shared secrets only when clearly justified
+- secrets split by feature scope (applications, standalone services, host exceptions)
+- host-scoped encryption recipients maintained by `.sops.yaml`
+- normal secret scope derived from feature enablement
+- explicit exception scopes only for cross-host readers (e.g. OIDC handshakes)
 
 4. Operational simplicity in early stages
 
@@ -80,49 +82,80 @@ Fleet direction:
 
 The exact file tree can evolve, but the intended shape is:
 
-- `hosts/oci-melb-1/default.nix` and `hosts/do-admin-1/default.nix` as active host entrypoints
-- `hosts/<host>/default.nix` for host composition
-- `hosts/<host>/secrets.yaml` for host-scoped encrypted values
+- `hosts/oci-melb-1/default.nix` and `hosts/do-admin-1/default.nix` as thin host assembly entrypoints
+- `hosts/<host>/default.nix` for host identity, facts, feature enables, and narrow overrides
+- `hosts/<host>/hardware-configuration.nix` for auto-detected hardware facts
+- `hosts/<host>/<component>.nix` for host-specific component overlays
+- `modules/applications/<name>/default.nix` for feature composition roots (multi-service stacks)
+- `modules/services/<domain>/<name>.nix` for reusable service modules with enable flags and secret contracts
+- `modules/services/<name>.nix` for standalone leaf service modules
+- `modules/core/base.nix` for shared baseline NixOS policy
+- `modules/core/users.nix` for shared user declarations
+- `modules/profiles/base-server.nix` for host profile composition
+- `modules/profiles/worker-interface.nix` for operator-facing shell and tooling defaults
 - `modules/providers/oci/default.nix` for OCI-specific host-safe defaults
 - `modules/providers/digitalocean/default.nix` for DigitalOcean host-safe defaults
-- `modules/storage/disko-root.nix` for active declarative root disk layout
+- `modules/storage/disko-root.nix` for declarative root disk layout
 - `modules/storage/disko-single-disk.nix` for single-disk host layout
-- `modules/core/base.nix` for shared baseline policy
-- `modules/profiles/base-server.nix` for host profile composition
-- `modules/applications/music.nix` for first-pass Syncthing/Navidrome/slskd composition
-- `modules/applications/admin/default.nix` for first-pass private admin composition
-- `modules/services/tailscale.nix` for reusable service wiring
-- `modules/services/termix.nix` for low-level Termix + guacd container wiring
-- `modules/services/*.nix` for reusable service modules with enable flags
-- `modules/profiles/*.nix` for shared profile-level composition
+- `policy/globals.nix` for canonical non-secret fleet defaults
+- `policy/service-defaults.nix` for feature enablement and path defaults
+- `policy/web-services.nix` for SSOT endpoint and routing policy
+- `lib/secrets.nix` for reusable secret-contract helpers
+- `lib/secret-scope.nix` for derived reader-scope validation
+- `lib/deploy/` for deploy-rs host wiring
+- `secrets/applications/<name>.yaml` for application-scoped encrypted values
+- `secrets/services/<name>.yaml` for standalone service-scoped encrypted values
+- `secrets/hosts/<host>/system.yaml` for host-only bootstrap/system secrets
+- `secrets/hosts/<host>/oidc.yaml` for cross-host OIDC handshake secrets
 - `secrets/common.yaml` for tightly-scoped fleet-shared secrets
-- `.sops.yaml` as central recipient policy
+- `.sops.yaml` as central recipient policy with explicit path-scoped rules
 
 ## Secrets Architecture
 
-Secrets follow a scoped blast-radius model.
+Secrets follow a feature-aligned, topology-derived blast-radius model.
 
-Global scope:
+### Scope model
 
-- file: `secrets/common.yaml`
+Application scope:
+
+- file: `secrets/applications/<name>.yaml` (e.g. `secrets/applications/music.yaml`, `secrets/applications/admin.yaml`)
+- contains values consumed by a specific application stack
+- normal reader set derived from hosts where the application is enabled
+
+Standalone service scope:
+
+- file: `secrets/services/<name>.yaml` (e.g. `secrets/services/karakeep-pod.yaml`, `secrets/services/bifrost-gateway.yaml`)
+- contains values consumed by a single leaf service not part of a composed application stack
+
+Host exception scope:
+
+- `secrets/hosts/<host>/system.yaml` — host-only bootstrap/system secrets (e.g. Tailscale auth key, SSH identities)
+- `secrets/hosts/<host>/oidc.yaml` — cross-host OIDC handshake secrets where both the app host and identity provider host need to decrypt
+
+Fleet-shared scope:
+
+- `secrets/common.yaml` — values intentionally shared across hosts (e.g. Beszel agent key)
 - unencrypted reference: `secrets/common.template.yaml`
-- contains only values intentionally shared across hosts
 
-Host scope:
+### Ownership model
 
-- file: `hosts/<host>/secrets.yaml`
-- contains values only that host (and admin identity) should decrypt
+- **Leaf service modules** own their own `secretFiles.*` / `secretKeys.*` contract options, `sops.secrets` registrations, `sops.templates` assembly, and runtime service wiring
+- **Application modules** own shared composition defaults and pass through `secretFiles.*` values to sub-services; they do not own sub-service secret internals
+- **Host modules** own only host identity, feature enables, and explicit secret-file-path bindings (e.g. `applications.music.secretFiles.host = ./secrets/applications/music.yaml`)
+- **Policy layer** (`.sops.yaml`) defines decryption recipients per file pattern using explicit path-scoped rules; normal scope derives from feature enablement; explicit exception readers declared for OIDC handshake material
 
-Policy scope:
+### Contract helpers
 
-- file: `.sops.yaml`
-- defines decryption recipients per file pattern using explicit rules
+- `lib/secrets.nix` provides reusable helpers: `mkSecretFileOption`, `mkSecretKeyOption`, `mkRequiredSecretAssertion`, `mkSimpleSecret`, `mkSecretsFromMap`
+- `lib/secret-scope.nix` provides derived-reader validation
+- `lib/check-secret-scope.sh` validates configured recipients against expected topology
 
-Operational implications:
+### Operational implications
 
 - adding a host should not implicitly expose all existing secrets
 - moving a service between hosts is an explicit security and operations decision
 - per-host enrollment tokens are preferred over shared reusable tokens
+- secret file moves and `.sops.yaml` updates must be coordinated to preserve blast-radius boundaries
 
 ## Host Identity and Bootstrap Posture
 

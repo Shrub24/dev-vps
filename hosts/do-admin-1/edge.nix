@@ -34,7 +34,8 @@ in
     role = "edge";
     primaryDomain = policyLib.resolvePrimaryDomain webServicesPolicy "do-admin-1";
     acmeEmail = "infra@${policyLib.resolvePrimaryDomain webServicesPolicy "do-admin-1"}";
-    cloudflareCredentialsFile = config.sops.templates."caddy-cloudflare.env".path;
+    # secretFiles.host is set in default.nix
+    # cloudflareCredentialsFile is set by the edge-ingress module from the template
     authenticatedOriginPulls = {
       enable = true;
       caCertFile = toString ../../certs/authenticated_origin_pull_ca.pem;

@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Validate that .sops.yaml path rules match the canonical
-# secret-to-host mapping defined in lib/secret-scope.nix.
-#
-# Usage: ./lib/check-secret-scope.sh
-
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP=$(mktemp -d)
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
 
-# Parse .sops.yaml for age key anchors vs host name
-# We read the anchor-name mapping from .sops.yaml anchors
 SED_ANCHORS="${TMP}/anchors.txt"
 grep -oP '&\w+\s+\S+' "$REPO_ROOT/.sops.yaml" | while read -r line; do
   anchor=$(echo "$line" | awk '{print $1}' | sed 's/^&//')
@@ -20,7 +13,6 @@ grep -oP '&\w+\s+\S+' "$REPO_ROOT/.sops.yaml" | while read -r line; do
   echo "$anchor $age_key"
 done > "$SED_ANCHORS"
 
-# Map anchor name → host label
 declare -A ANCHOR_TO_HOST
 while read -r anchor age_key; do
   case "$anchor" in
@@ -51,7 +43,6 @@ do
   echo "[scope] secrets/$scope"
   echo "  expected readers: $expected"
 
-  # Find .sops.yaml rule for this scope
   rule_block=$(grep -A 10 "secrets/$scope" "$REPO_ROOT/.sops.yaml" | grep "\*" || true)
   if [ -z "$rule_block" ]; then
     echo "  ❌  MISSING: no rule found for secrets/$scope"
@@ -60,7 +51,6 @@ do
     continue
   fi
 
-  # Check each expected host's age anchor appears in the rule
   IFS=',' read -ra HOSTS <<< "$expected"
   for host in "${HOSTS[@]}"; do
     anchor=""
@@ -76,7 +66,6 @@ do
     fi
   done
 
-  # Check: no unexpected host anchors
   grep -A 10 "secrets/$scope" "$REPO_ROOT/.sops.yaml" | grep -oP '\*\w+_age' | while read -r found_anchor; do
     found_host="${ANCHOR_TO_HOST[$found_anchor]:-}"
     if [ -n "$found_host" ]; then
