@@ -29,6 +29,7 @@
         "routeKey": "quantum-admin",
         "callbackPath": "/api/auth/oidc/callback",
         "preferShortUsername": true,
+        "allowInsecureClientDisablePkce": true,
         "scopeMaps": {
           "shrublab-admins": ["openid", "profile", "email"]
         }
