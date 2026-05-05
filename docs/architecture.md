@@ -25,7 +25,6 @@ Out of scope for now:
 - Kubernetes stack (`k3s`, `keda`) and cluster scheduling decisions
 - high-availability edge topology and advanced edge traffic policy
 - cloud worker architecture details
-- production-grade backup automation design
 
 ## Environment Model
 
@@ -206,6 +205,46 @@ Future evolution:
 - when moving toward `rclone`/VFS and processing workflows, an ingest pipeline can be introduced
 - hook-driven processing is expected later, not required for initial baseline
 
+## Backup Architecture
+
+Current baseline:
+
+- mutable service state is backed up with NixOS-native `services.restic.backups`
+- backup scope is state-first: `/srv/data` subtrees and generated recovery artifacts are in scope; `/srv/media` is intentionally excluded in the first wave
+- each host writes to its own dedicated Cloudflare R2 bucket using host-scoped credentials and a host-unique restic password
+- non-secret transport defaults (`endpoint`, `region`, path-style behavior) stay canonical in `policy/globals.nix`
+
+Consistency model:
+
+- `export` services generate an app-native recovery artifact before the shared restic job runs, while raw state is also captured initially
+- `quiesce` services may later stop or stabilize around the backup window if required
+- `live` services are captured without explicit coordination in the current baseline
+
+Current export-first services:
+
+- Kanidm via upstream automatic backup artifacts plus raw state coverage
+- Vaultwarden via SQLite `.backup` export plus raw state coverage
+- Tagr via SQLite `.backup` export plus raw state coverage
+
+Current live-state services:
+
+- Syncthing, Navidrome, Beets state, SoulSync state, Termix, Beszel hub, Karakeep, and Bifrost app state
+- optional Cockpit loopback TLS material when enabled
+
+Operator workflow:
+
+- initialize a host repository: `just backup-init <host>`
+- run an on-demand backup: `just backup-run <host>`
+- run repository integrity checks: `just backup-check <host>`
+- run retention pruning: `just backup-prune <host>`
+- inspect status/logs: `just backup-status <host>` and `just backup-logs <host>`
+
+Restore posture:
+
+- backup success alone is not sufficient; restore validation is part of the operator contract
+- export-first services should prefer their generated recovery artifact first, with raw state retained for exact-state recovery and forensic fallback
+- restore prep should verify bucket credentials, restic password access, available snapshots, and target service stop/isolation requirements before modifying runtime state
+
 ## Network and Access Model
 
 Current model:
@@ -273,6 +312,7 @@ Operator commands:
 - deploy without rollback: `just deploy oci-melb-1 --rollback false`
 - dry-activate: `just activate oci-melb-1`
 - checks: `just check`
+- backups: `just backup-init <host>`, `just backup-run <host>`, `just backup-check <host>`, `just backup-prune <host>`
 
 Note: `just deploy` takes positional host arguments (`just deploy oci-melb-1`), not `host=...`.
 
