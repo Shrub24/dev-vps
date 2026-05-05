@@ -16,6 +16,7 @@ in
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
     ../../modules/shared/web-policy.nix
+    ../../modules/shared/kanidm-host-auth.nix
     ../../modules/shared/identity-oidc.nix
     ../../modules/applications/music.nix
     ../../modules/applications/edge-ingress.nix
@@ -94,6 +95,12 @@ in
     providerUrl = config.repo.web.hosts.do-admin-1.services."kanidm-admin".publicUrl;
   };
 
+  services.identity.hostAuth = {
+    enable = true;
+    sshIntegration = true;
+    pamAllowedLoginGroups = [ "shrublab-admins" ];
+  };
+
   services.bifrost-gateway = {
     enable = true;
     dataDir = "/srv/data/bifrost";
@@ -109,7 +116,6 @@ in
       wellknownUrl = config.services.identity.oidc.clients.karakeep.wellknownUrl;
       providerName = "Kanidm";
       autoRedirect = true;
-      allowDangerousEmailAccountLinking = true;
       disablePasswordAuth = true;
     };
     storage.s3.enable = true;
