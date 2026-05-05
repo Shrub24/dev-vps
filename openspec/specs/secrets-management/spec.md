@@ -86,12 +86,12 @@ Tagr credentials and session secret SHALL be sourced from the music application 
 - **AND** `.sops.yaml` path-scoped rules do not broaden decryption access beyond hosts that explicitly enable the music application
 
 ### Requirement: Termix OIDC env template SHALL consume provider-owned endpoint outputs
-The Termix OIDC environment template for `do-admin-1` SHALL source OIDC endpoint values from `config.services.admin.pocket-id.oidc.*` rather than independently constructing endpoint URIs.
+The Termix OIDC environment template for `do-admin-1` SHALL source OIDC endpoint values from canonical identity-provider `oidc.*` outputs rather than independently constructing endpoint URIs.
 
 #### Scenario: Termix OIDC env is rendered from SSOT
 - **WHEN** `do-admin-1` termix-oidc.env template is evaluated
-- **THEN** `OIDC_ISSUER_URL`, `OIDC_AUTHORIZATION_URL`, `OIDC_TOKEN_URL`, and `OIDC_USERINFO_URL` are resolved from Pocket ID module outputs
-- **AND** no local URL derivation from a raw `pocketIdBaseUrl` is used
+- **THEN** `OIDC_ISSUER_URL`, `OIDC_AUTHORIZATION_URL`, `OIDC_TOKEN_URL`, and `OIDC_USERINFO_URL` are resolved from canonical identity-provider module outputs
+- **AND** no local URL derivation from a raw provider base URL is used
 
 ### Requirement: AI gateway provider credentials SHALL remain host-scoped unless explicitly shared
 Provider API keys and similar sensitive gateway credentials SHALL be sourced from standalone service-scoped secret files by default and SHALL NOT be promoted to broader shared scopes unless a later change explicitly requires it.
@@ -141,18 +141,30 @@ Host exception secret scopes SHALL be reserved for host/bootstrap/system-only ma
 - **THEN** it contains host/bootstrap/system-only material
 - **AND** reusable application/service internals are absent from that scope
 
-#### Scenario: Cross-host OIDC material is reviewed
-- **WHEN** `secrets/hosts/<host>/oidc.yaml` or equivalent explicit exception scope is inspected
+#### Scenario: Cross-host identity handshake material is reviewed
+- **WHEN** an explicit host-exception identity scope such as `secrets/hosts/<host>/oidc.yaml` is inspected
 - **THEN** its reader set matches the declared host-identity handshake need
 - **AND** it does not implicitly grant access to unrelated application/service secret material
 
-#### Scenario: OIDC client credentials are consumed after host thinning
-- **WHEN** a composed admin or standalone service consumes OIDC client credentials after the secret-topology migration
-- **THEN** those client credentials continue to come from the narrow `secrets/hosts/<host>/oidc.yaml` exception scope through the leaf module's explicit secret contract
+#### Scenario: OIDC client credentials are consumed after Kanidm migration
+- **WHEN** a composed admin or standalone service consumes OIDC client credentials for Kanidm provisioning or runtime auth
+- **THEN** those client credentials continue to come from explicit scoped secret files through the leaf module's secret contract or helper-rendered runtime file path
 - **AND** application composition only passes the required contract inputs or resolved env-file paths without taking ownership of the underlying secret registration
 
-#### Scenario: Host-scoped Beszel agent token is reviewed after host thinning
-- **WHEN** a host enables `services.beszel-agent-auth`
-- **THEN** the host binds the token source through the same helper-based secret-file contract style used by other leaf services
-- **AND** the leaf module remains responsible for rendering the Beszel agent environment file and registering the underlying secret entries
+### Requirement: Identity provider bootstrap secrets SHALL remain identity-scoped
+Kanidm bootstrap and identity-management admin secrets SHALL be stored under identity-scoped encrypted secret paths and SHALL NOT be mixed into unrelated application/service scopes.
+
+#### Scenario: Kanidm bootstrap credentials are introduced
+- **WHEN** bootstrap or identity-management admin secrets are added for the Kanidm service
+- **THEN** they are stored under explicit identity-scoped encrypted paths
+- **AND** unrelated application/service secret scopes do not gain access implicitly
+
+### Requirement: Sensitive person metadata SHALL use encrypted whole-file identity scope
+Sensitive Kanidm person/account metadata SHALL be stored in an identity-scoped encrypted whole-file secret rather than spread across committed policy or many per-field runtime secret registrations.
+
+#### Scenario: Declarative person metadata is introduced
+- **WHEN** real user account metadata such as usernames, display names, legal names, email addresses, or memberships is added for Kanidm provisioning
+- **THEN** that data is sourced from an explicit encrypted identity file
+- **AND** non-sensitive topology remains separate from the encrypted person metadata source
+- **AND** application/service secret scopes do not gain access to the person metadata by default
 

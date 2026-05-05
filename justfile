@@ -143,12 +143,31 @@ build host="oci-melb-1":
 # Secrets
 # ---------------------------------------------------------------------------
 
-# Re-encrypt all SOPS files with current .sops.yaml key rules
-sops-updatekeys:
-  @find secrets -name '*.yaml' -not -path '*/opentofu/*' | sort | while read -r f; do \
-    echo "Updating $$f..."; \
-    sops updatekeys "$$f"; \
+# Re-encrypt all tracked SOPS files with current .sops.yaml key rules
+sops-updatekeys-all:
+  @find secrets \( -path 'secrets/.templates' -o -path 'secrets/.templates/*' \) -prune -o \( -name '*.yaml' -o -name '*.yml' \) -print | sort | while read -r f; do \
+    echo "Updating $f..."; \
+    sops updatekeys -y "$f"; \
   done
+
+# Re-encrypt changed tracked SOPS files with current .sops.yaml key rules
+sops-updatekeys-changed:
+  @FILES="$( (git diff --name-only --diff-filter=ACMR HEAD -- 'secrets/**/*.yaml' 'secrets/**/*.yml' 'secrets/*.yaml' 'secrets/*.yml'; \
+      git ls-files --others --exclude-standard -- 'secrets/**/*.yaml' 'secrets/**/*.yml' 'secrets/*.yaml' 'secrets/*.yml') \
+      | grep '^secrets/' \
+      | grep -v '^secrets/.templates/' \
+      | sort -u )"; \
+  if [[ -z "$FILES" ]]; then \
+    echo "No changed SOPS files found."; \
+    exit 0; \
+  fi; \
+  while read -r f; do \
+    [[ -n "$f" ]] || continue; \
+    echo "Updating $f..."; \
+    sops updatekeys -y "$f"; \
+  done <<< "$FILES"
+
+sops-updatekeys: sops-updatekeys-changed
 
 # ---------------------------------------------------------------------------
 # OpenTofu / Cloudflare

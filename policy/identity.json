@@ -1,0 +1,61 @@
+{
+  "systems": {
+    "oauth2": {
+      "beszel": {
+        "enable": true,
+        "displayName": "Beszel",
+        "secretKeyPrefix": "beszel",
+        "routeKey": "beszel-admin",
+        "callbackPath": "/api/oauth2-redirect",
+        "scopeMaps": {
+          "shrublab-admins": ["openid", "profile", "email"]
+        }
+      },
+      "termix": {
+        "enable": true,
+        "displayName": "Termix",
+        "secretKeyPrefix": "termix",
+        "routeKey": "termix-admin",
+        "callbackPath": "/users/oidc/callback",
+        "allowInsecureClientDisablePkce": true,
+        "scopeMaps": {
+          "shrublab-admins": ["openid", "profile", "email"]
+        }
+      },
+      "quantum": {
+        "enable": true,
+        "displayName": "Quantum",
+        "secretKeyPrefix": "quantum",
+        "routeKey": "quantum-admin",
+        "callbackPath": "/api/auth/oidc/callback",
+        "preferShortUsername": true,
+        "allowInsecureClientDisablePkce": true,
+        "scopeMaps": {
+          "shrublab-admins": ["openid", "profile", "email"]
+        }
+      },
+      "karakeep": {
+        "enable": true,
+        "displayName": "Karakeep",
+        "secretKeyPrefix": "karakeep",
+        "routeKey": "karakeep",
+        "callbackPath": "/api/auth/callback/custom",
+        "enableLegacyCrypto": true,
+        "scopeMaps": {
+          "shrublab-admins": ["openid", "profile", "email"],
+          "shrublab-users": ["openid", "profile", "email"]
+        }
+      },
+      "cloudflare-access": {
+        "enable": true,
+        "displayName": "Cloudflare Access",
+        "secretKeyPrefix": "cloudflare-access",
+        "originUrl": "https://shrublab.cloudflareaccess.com/cdn-cgi/access/callback",
+        "scopeMaps": {
+          "shrublab-admins": ["openid", "profile", "email"],
+          "shrublab-users": ["openid", "profile", "email"]
+        }
+      }
+    }
+  }
+}

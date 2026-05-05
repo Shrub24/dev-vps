@@ -7,11 +7,7 @@
 }:
 let
   hasHostSecrets = builtins.pathExists ../../secrets/hosts/oci-melb-1/system.yaml;
-  policyLib = import ../../lib/policy.nix { inherit lib; };
-  webServicesPolicy = import ../../policy/web-services.nix;
   globals = import ../../policy/globals.nix;
-  doAdminServices = policyLib.resolveHostServices webServicesPolicy "do-admin-1";
-  pocketIdOidc = policyLib.mkOidcEndpoints doAdminServices."pocket-id-admin".publicUrl;
 in
 {
   imports = [
@@ -19,6 +15,9 @@ in
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
+    ../../modules/shared/web-policy.nix
+    ../../modules/shared/kanidm-host-auth.nix
+    ../../modules/shared/identity-oidc.nix
     ../../modules/applications/music.nix
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/oci/default.nix
@@ -92,6 +91,16 @@ in
     role = "origin";
   };
 
+  services.identity.oidc = {
+    providerUrl = config.repo.web.hosts.do-admin-1.services."kanidm-admin".publicUrl;
+  };
+
+  services.identity.hostAuth = {
+    enable = true;
+    sshIntegration = true;
+    pamAllowedLoginGroups = [ "shrublab-admins" ];
+  };
+
   services.bifrost-gateway = {
     enable = true;
     dataDir = "/srv/data/bifrost";
@@ -102,9 +111,10 @@ in
   services.karakeep-pod = {
     enable = true;
     oidc = {
-      enable = true;
-      wellknownUrl = pocketIdOidc.wellknownUrl;
-      providerName = "Pocket ID";
+      enable = config.repo.web.hosts.do-admin-1.services.karakeep.access.oidc.enabled;
+      clientId = config.services.identity.oidc.clients.karakeep.clientId;
+      wellknownUrl = config.services.identity.oidc.clients.karakeep.wellknownUrl;
+      providerName = "Kanidm";
       autoRedirect = true;
       disablePasswordAuth = true;
     };
