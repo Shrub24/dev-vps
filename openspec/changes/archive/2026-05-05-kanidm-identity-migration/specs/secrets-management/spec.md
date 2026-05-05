@@ -26,6 +26,8 @@ Host exception secret scopes SHALL be reserved for host/bootstrap/system-only ma
 - **THEN** those client credentials continue to come from explicit scoped secret files through the leaf module's secret contract or helper-rendered runtime file path
 - **AND** application composition only passes the required contract inputs or resolved env-file paths without taking ownership of the underlying secret registration
 
+## ADDED Requirements
+
 ### Requirement: Identity provider bootstrap secrets SHALL remain identity-scoped
 Kanidm bootstrap and identity-management admin secrets SHALL be stored under identity-scoped encrypted secret paths and SHALL NOT be mixed into unrelated application/service scopes.
 

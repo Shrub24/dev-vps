@@ -19,7 +19,7 @@
 - [x] 3.1 Introduce reusable host-side Kanidm client/unixd wiring that consumes the canonical Kanidm server URI and can be enabled explicitly per host.
 - [x] 3.2 Enable `services.kanidm.client` and `services.kanidm.unix` on in-scope hosts with explicit PAM allowed-login-group policy and no implicit broad login enablement.
 - [x] 3.3 Enable `services.kanidm.unix.sshIntegration` only on the approved hosts and preserve break-glass/admin recovery expectations in host config and docs/spec alignment.
-- [ ] 3.4 Run focused validation for host auth integration (targeted eval/builds for each affected host and any relevant option/config inspection for unixd, PAM, and SSH settings).
+- [x] 3.4 Run focused validation for host auth integration (targeted eval/builds for each affected host and any relevant option/config inspection for unixd, PAM, and SSH settings).
 
 ## 4. Spec and repo cleanup
 

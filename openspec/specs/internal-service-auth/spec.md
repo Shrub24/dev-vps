@@ -24,12 +24,12 @@ For each internal integration, the system SHALL select auth in this order unless
 - **THEN** caller wiring may use username/password as explicit fallback
 
 ### Requirement: Service-to-service secrets SHALL remain host-scoped by default
-Credentials used for caller-owned internal integrations SHALL be defined in host-scoped secret files by default and SHALL NOT be promoted to shared common scope without explicit justification.
+Credentials used for caller-owned internal integrations SHALL be defined in explicit service-, application-, or host-exception-scoped secret files according to integration ownership and SHALL NOT be promoted to unrelated shared scope without explicit justification.
 
 #### Scenario: Homepage integration credentials are declared
-- **WHEN** new Homepage integration credentials are added
-- **THEN** they are sourced from `hosts/<host>/secrets.yaml` and templated for runtime use
-- **AND** they are not introduced in `secrets/common.yaml` by default
+- **WHEN** new Homepage or related integration credentials are added
+- **THEN** they are sourced from an explicit feature-owned secret scope and templated for runtime use
+- **AND** they are not introduced in unrelated shared/common secret scope by default
 
 ### Requirement: Beszel agent auth SHALL use shared KEY and host-scoped TOKEN
 Beszel agent SSH auth SHALL source `KEY` from shared common secret scope and source `TOKEN` from host-scoped secret scope, while remaining injected via runtime environment template.

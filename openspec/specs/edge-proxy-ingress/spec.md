@@ -95,7 +95,7 @@ The control-plane model SHALL represent music/Navidrome routes as a distinct gre
 ### Requirement: Admin routes SHALL remain Access-gated by default with explicit exceptions
 Public admin-facing routes SHALL continue to require Cloudflare Access gating by default, with route-level exceptions allowed only when explicitly declared and justified.
 
-Exception declarations consumed by this change SHALL come from canonical shared policy (`policy/web-services.nix`) and Cloudflare control-plane ownership (`cloudflare-opentofu-control-plane`) rather than ad-hoc unmanaged route policy.
+Exception declarations consumed by this change SHALL come from canonical shared policy (`policy/web-services.nix`) and Cloudflare control-plane ownership rather than ad-hoc unmanaged route policy.
 
 #### Scenario: Standard admin route is rendered
 - **WHEN** a public admin route is rendered without exception flags
@@ -107,18 +107,18 @@ Exception declarations consumed by this change SHALL come from canonical shared 
 - **THEN** the exception is visible in route declarations and contract checks
 - **AND** exception intent is documented in change artifacts
 
-#### Scenario: Pocket ID route is declared as upstream-IdP exception
-- **WHEN** Pocket ID route is rendered for shared IdP hosting
-- **THEN** it is explicitly declared as a direct orange-cloud exception and is not Access-gated
+#### Scenario: Identity-provider route is declared as upstream-IdP exception
+- **WHEN** the Kanidm route is rendered for shared IdP hosting
+- **THEN** it is explicitly declared as the required non-Access-gated upstream IdP exception
 - **AND** this exception is documented as required to avoid Access→IdP loop behavior
 
 ### Requirement: Cloudflare Access SHALL use Pocket ID as upstream IdP
-Cloudflare Access configuration for admin browser routes SHALL use Pocket ID generic OIDC as upstream identity provider in this change scope.
+Cloudflare Access configuration for admin browser routes SHALL use Kanidm generic OIDC as upstream identity provider in this change scope.
 
 #### Scenario: Access IdP switch is evaluated
-- **WHEN** Cloudflare Access resources/inputs are evaluated
-- **THEN** upstream IdP endpoints and client credentials resolve to Pocket ID values
-- **AND** legacy Google OAuth upstream assumptions are removed from this change scope
+- **WHEN** Cloudflare Access resources or inputs are evaluated
+- **THEN** upstream IdP endpoints and client credentials resolve to Kanidm values
+- **AND** legacy Pocket ID upstream assumptions are removed from this change scope
 
 ### Requirement: Music route SHALL reflect orange-cloud exposure posture with caching disabled
 The music/Navidrome ingress posture SHALL be modeled as orange-cloud while ensuring CDN/caching is disabled via control-plane policy.
@@ -216,3 +216,4 @@ The Karakeep route SHALL NOT require Cloudflare Access gating, and SHALL require
 - **WHEN** edge route attributes are generated from canonical web-services policy
 - **THEN** `cloudflareAccessRequired` is disabled for `karakeep`
 - **AND** authenticated origin pulls are required for the Karakeep host/route set
+
