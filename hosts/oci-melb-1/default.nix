@@ -8,8 +8,6 @@
 let
   hasHostSecrets = builtins.pathExists ../../secrets/hosts/oci-melb-1/system.yaml;
   globals = import ../../policy/globals.nix;
-  policyLib = import ../../lib/policy.nix { inherit lib; };
-  webServicesPolicy = import ../../policy/web-services.nix;
 in
 {
   imports = [
@@ -17,6 +15,7 @@ in
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
+    ../../modules/shared/web-policy.nix
     ../../modules/shared/identity-oidc.nix
     ../../modules/applications/music.nix
     ../../modules/applications/edge-ingress.nix
@@ -92,7 +91,7 @@ in
   };
 
   services.identity.oidc = {
-    providerUrl = (policyLib.hostService webServicesPolicy "do-admin-1" "kanidm-admin").publicUrl;
+    providerUrl = config.repo.web.hosts.do-admin-1.services."kanidm-admin".publicUrl;
   };
 
   services.bifrost-gateway = {
@@ -105,7 +104,7 @@ in
   services.karakeep-pod = {
     enable = true;
     oidc = {
-      enable = (policyLib.hostService webServicesPolicy "do-admin-1" "karakeep").access.oidc.enabled;
+      enable = config.repo.web.hosts.do-admin-1.services.karakeep.access.oidc.enabled;
       clientId = config.services.identity.oidc.clients.karakeep.clientId;
       wellknownUrl = config.services.identity.oidc.clients.karakeep.wellknownUrl;
       providerName = "Kanidm";
