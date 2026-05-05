@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: Identity provider module SHALL own and emit OIDC endpoint URIs
+### Requirement: Pocket ID module SHALL own and emit OIDC endpoint URIs
 The canonical identity provider service module SHALL derive canonical OIDC endpoint URIs from its own configured issuer/origin and SHALL emit them as read-only outputs so consumers do not independently reconstruct OIDC URIs.
 
 #### Scenario: Kanidm OIDC outputs are resolved

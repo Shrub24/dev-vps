@@ -4,32 +4,29 @@
 TBD - created by archiving change provider-owned-oidc-uris. Update Purpose after archive.
 ## Requirements
 ### Requirement: Pocket ID module SHALL own and emit OIDC endpoint URIs
-The Pocket ID service module SHALL derive canonical OIDC endpoint URIs from its own `appUrl` and SHALL emit them as read-only outputs so consumers do not independently reconstruct OIDC URIs.
+The canonical identity provider service module SHALL derive canonical OIDC endpoint URIs from its own configured issuer/origin and SHALL emit them as read-only outputs so consumers do not independently reconstruct OIDC URIs.
 
-#### Scenario: Pocket ID OIDC outputs are resolved
-- **WHEN** Pocket ID service wiring is enabled and `appUrl` is configured
-- **THEN** `services.admin.pocket-id.oidc.issuerUrl` equals the configured `appUrl`
-- **AND** `services.admin.pocket-id.oidc.wellknownUrl` resolves to `{appUrl}/.well-known/openid-configuration`
-- **AND** `services.admin.pocket-id.oidc.authorizationUrl` resolves to `{appUrl}/authorize`
-- **AND** `services.admin.pocket-id.oidc.tokenUrl` resolves to `{appUrl}/api/oidc/token`
-- **AND** `services.admin.pocket-id.oidc.userinfoUrl` resolves to `{appUrl}/api/oidc/userinfo`
+#### Scenario: Kanidm OIDC outputs are resolved
+- **WHEN** Kanidm service wiring is enabled and its public origin is configured
+- **THEN** the canonical provider-owned `oidc.issuerUrl`, `oidc.wellknownUrl`, `oidc.authorizationUrl`, `oidc.tokenUrl`, and `oidc.userinfoUrl` outputs resolve from that configured origin
+- **AND** consumers do not need to reconstruct those endpoint values independently
 
 ### Requirement: OIDC consumers SHALL reference provider-owned outputs
-Service modules and host configurations that require OIDC endpoint URIs SHALL reference Pocket ID module outputs rather than independently constructing URIs from a base URL.
+Service modules and host configurations that require OIDC endpoint URIs SHALL reference canonical identity-provider module outputs rather than independently constructing URIs from a base URL.
 
 #### Scenario: Admin application services consume SSOT OIDC issuer
 - **WHEN** Termix and Quantum OIDC wiring is evaluated
-- **THEN** `issuerUrl` values are sourced from `config.services.admin.pocket-id.oidc.issuerUrl`
-- **AND** no independent `pocketIdBaseUrl` string interpolation is used to derive the issuer URL
+- **THEN** issuer values are sourced from the provider-owned `oidc.issuerUrl` output
+- **AND** no independent base URL string interpolation is used to derive the issuer URL
 
 #### Scenario: Host-level OIDC env templates consume SSOT endpoints
 - **WHEN** `do-admin-1` termix-oidc.env template is rendered
-- **THEN** OIDC endpoint values are sourced from `config.services.admin.pocket-id.oidc.*`
+- **THEN** OIDC endpoint values are sourced from canonical provider-owned `oidc.*` outputs
 - **AND** no host-local URL construction is used for endpoint values
 
-#### Scenario: Karakeep OIDC wellknown URL uses policy-derived endpoint
+#### Scenario: Karakeep OIDC wellknown URL uses provider-owned endpoint
 - **WHEN** Karakeep OIDC configuration is evaluated on `oci-melb-1`
-- **THEN** the wellknown URL is derived from the Pocket ID public URL via `mkOidcEndpoints`
+- **THEN** the wellknown URL is derived from the canonical provider-owned OIDC outputs for the active identity provider
 - **AND** no hardcoded host-local OIDC endpoint string is used
 
 ### Requirement: mkOidcEndpoints SHALL provide consistent OIDC URI derivation

@@ -9,7 +9,7 @@ When a service is treated as admin-owned in this repository, its canonical reusa
 - **AND** the module directly configures the underlying native `services.kanidm` runtime and provisioning behavior
 - **AND** a generic passthrough namespace is not required as the canonical implementation path
 
-### Requirement: Admin application SHALL source OIDC issuer from provider module
+### Requirement: Admin application SHALL source OIDC issuer from Pocket ID module
 `applications.admin` composition SHALL source OIDC issuer URLs for Termix and Quantum from the canonical identity provider module outputs rather than deriving them from a local provider base URL variable.
 
 #### Scenario: Termix OIDC issuer is sourced from provider module

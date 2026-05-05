@@ -41,12 +41,12 @@ Provider-appropriate break-glass recovery SHALL be documented and operationally 
 - **THEN** documented recovery procedures can be used to regain control
 
 ### Requirement: Admin application SHALL enable native admin operations services
-`applications.admin` composition SHALL wire Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Quantum, Homepage Dashboard, Beszel hub, Pocket ID, and Termix through service-level admin modules under `modules/services/admin/`, while keeping tightly coupled portable access and identity composition in the reusable `modules/applications/admin/` module rather than host-local assembly or redundant split glue files.
+`applications.admin` composition SHALL wire Cockpit, Webhook, Ntfy, Gatus, Vaultwarden, Quantum, Homepage Dashboard, Beszel hub, Kanidm, and Termix through service-level admin modules under `modules/services/admin/`, while keeping tightly coupled portable access and identity composition in the reusable `modules/applications/admin/` module rather than host-local assembly or redundant split glue files.
 
 #### Scenario: Admin profile enables expanded baseline service set
 - **WHEN** a host imports and enables the admin application profile
 - **THEN** the host configuration includes `services.cockpit.enable`, `services.webhook.enable`, `services.ntfy-sh.enable`, `services.gatus.enable`, `services.vaultwarden.enable`, `services.homepage-dashboard.enable`, and `services.beszel.hub.enable`
-- **AND** Pocket ID service wiring is enabled through `services.admin.pocket-id`
+- **AND** Kanidm service wiring is enabled through `services.admin.kanidm`
 - **AND** Quantum service wiring is enabled through `services.admin.quantum`
 - **AND** Termix service wiring is enabled through `services.admin.termix`
 - **AND** service-owned wiring resides in admin service modules rather than generic-service wrapper indirection
@@ -75,28 +75,28 @@ This stage SHALL provide centralized operational visibility using Cockpit and Be
 - **AND** no requirement is introduced that hosts must run journald remote/upload replication in this stage
 
 ### Requirement: Admin app auth SHALL support Pocket ID OIDC for phase-1 supported services
-The admin baseline SHALL support app-native OIDC using Pocket ID as shared issuer for the phase-1 app set (`gatus`, `beszel`, `termix`) while keeping explicit exceptions for services that are not in scope for this auth wave.
+The admin baseline SHALL support app-native OIDC using Kanidm as shared issuer for the phase-1 app set (`gatus`, `beszel`, `termix`, `quantum`) while keeping explicit exceptions for services that are not in scope for this auth wave and deferring unixd/PAM/SSH host login rollout until after OIDC parity.
 
 #### Scenario: Phase-1 supported apps are OIDC-enabled
 - **WHEN** the admin baseline is rendered for `do-admin-1`
-- **THEN** `gatus`, `beszel`, and `termix` include app-level OIDC wiring using Pocket ID issuer endpoints and host-scoped credentials
+- **THEN** `gatus`, `beszel`, `termix`, and `quantum` include app-level OIDC wiring using Kanidm issuer endpoints and scoped credentials
 
-#### Scenario: Cloudflare Access upstream IdP is Pocket ID
+#### Scenario: Cloudflare Access upstream IdP is Kanidm
 - **WHEN** Cloudflare Access configuration is evaluated for admin browser routes
-- **THEN** Access uses Pocket ID generic OIDC as upstream IdP rather than Google OAuth
+- **THEN** Access uses Kanidm generic OIDC as upstream IdP rather than Google OAuth or Pocket ID
 
 #### Scenario: Explicit exceptions remain outside phase-1 app OIDC rollout
 - **WHEN** exception services are evaluated in this change scope
-- **THEN** `vaultwarden`, `navidrome`, `syncthing`, `webhook`, `ntfy`, `cockpit`, `homepage`, and file-management UI services are not required to implement app-native OIDC in this phase
+- **THEN** `vaultwarden`, `navidrome`, `syncthing`, `webhook`, `ntfy`, `cockpit`, and `homepage` are not required to implement app-native OIDC in this phase
 - **AND** exception rationale remains documented in change artifacts
 
 ### Requirement: Admin secrets SHALL remain host-scoped for OIDC client credentials
-Pocket ID OIDC app credentials used by admin services SHALL be defined as host-scoped secrets for `do-admin-1` and not promoted to shared common secret scope.
+Kanidm OIDC app credentials used by admin services SHALL be defined in explicit scoped secret files and SHALL NOT be promoted to unrelated shared secret scope by default.
 
 #### Scenario: OIDC credentials are added for admin apps
 - **WHEN** OIDC client credentials are declared for phase-1 apps
-- **THEN** they are sourced from host-scoped secret files/templates for `do-admin-1`
-- **AND** they are not introduced under shared/common secret scope by default
+- **THEN** they are sourced from explicit scoped secret files/templates for the consuming services
+- **AND** they are not introduced under unrelated shared/common secret scope by default
 
 ### Requirement: Cockpit runtime SHALL include the ws-user dependency workaround
 Cockpit service wiring SHALL include the upstream `cockpit-ws-user.service` dependency workaround required to avoid the known shutdown-ordering regression.
@@ -205,11 +205,11 @@ Quantum on `do-admin-1` SHALL expose a local source for that host and remote sou
 - **AND** approved remote sources remain explicitly declared rather than discovered implicitly
 
 ### Requirement: Quantum auth SHALL support Pocket ID OIDC with controlled fallback
-Quantum SHALL support Pocket ID OIDC and MAY retain local password fallback only where the host configuration still chooses to keep that fallback enabled.
+Quantum SHALL support Kanidm OIDC and MAY retain local password fallback only where the host configuration still chooses to keep that fallback enabled.
 
 #### Scenario: Quantum auth posture is evaluated
 - **WHEN** Quantum auth configuration is rendered
-- **THEN** Pocket ID OIDC wiring is present
+- **THEN** Kanidm OIDC wiring is present
 - **AND** any local password fallback remains an explicit host-owned choice rather than an implicit default for all environments
 
 ### Requirement: Cockpit SHALL use per-host sessions instead of login-page chaining

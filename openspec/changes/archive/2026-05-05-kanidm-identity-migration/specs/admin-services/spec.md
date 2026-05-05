@@ -12,7 +12,7 @@
 - **AND** service-owned wiring resides in admin service modules rather than generic-service wrapper indirection
 - **AND** portable access and identity composition remains owned by `applications.admin`
 
-### Requirement: Admin app auth SHALL support Kanidm OIDC for phase-1 supported services
+### Requirement: Admin app auth SHALL support Pocket ID OIDC for phase-1 supported services
 The admin baseline SHALL support app-native OIDC using Kanidm as shared issuer for the phase-1 app set (`gatus`, `beszel`, `termix`, `quantum`) while keeping explicit exceptions for services that are not in scope for this auth wave and deferring unixd/PAM/SSH host login rollout until after OIDC parity.
 
 #### Scenario: Phase-1 supported apps are OIDC-enabled
@@ -28,7 +28,7 @@ The admin baseline SHALL support app-native OIDC using Kanidm as shared issuer f
 - **THEN** `vaultwarden`, `navidrome`, `syncthing`, `webhook`, `ntfy`, `cockpit`, and `homepage` are not required to implement app-native OIDC in this phase
 - **AND** exception rationale remains documented in change artifacts
 
-### Requirement: Admin secrets SHALL remain scoped for OIDC client credentials
+### Requirement: Admin secrets SHALL remain host-scoped for OIDC client credentials
 Kanidm OIDC app credentials used by admin services SHALL be defined in explicit scoped secret files and SHALL NOT be promoted to unrelated shared secret scope by default.
 
 #### Scenario: OIDC credentials are added for admin apps
@@ -36,7 +36,7 @@ Kanidm OIDC app credentials used by admin services SHALL be defined in explicit 
 - **THEN** they are sourced from explicit scoped secret files/templates for the consuming services
 - **AND** they are not introduced under unrelated shared/common secret scope by default
 
-### Requirement: Quantum auth SHALL support Kanidm OIDC with controlled fallback
+### Requirement: Quantum auth SHALL support Pocket ID OIDC with controlled fallback
 Quantum SHALL support Kanidm OIDC and MAY retain local password fallback only where the host configuration still chooses to keep that fallback enabled.
 
 #### Scenario: Quantum auth posture is evaluated

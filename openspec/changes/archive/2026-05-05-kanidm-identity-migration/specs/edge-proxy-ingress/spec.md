@@ -20,7 +20,7 @@ Exception declarations consumed by this change SHALL come from canonical shared 
 - **THEN** it is explicitly declared as the required non-Access-gated upstream IdP exception
 - **AND** this exception is documented as required to avoid Access→IdP loop behavior
 
-### Requirement: Cloudflare Access SHALL use Kanidm as upstream IdP
+### Requirement: Cloudflare Access SHALL use Pocket ID as upstream IdP
 Cloudflare Access configuration for admin browser routes SHALL use Kanidm generic OIDC as upstream identity provider in this change scope.
 
 #### Scenario: Access IdP switch is evaluated
