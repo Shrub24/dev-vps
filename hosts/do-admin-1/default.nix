@@ -11,6 +11,7 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
+    ../../modules/shared/web-policy.nix
     ../../modules/applications/admin/default.nix
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/digitalocean/default.nix

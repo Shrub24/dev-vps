@@ -4,9 +4,7 @@
   ...
 }:
 let
-  webServicesPolicy = import ../../policy/web-services.nix;
-  policyLib = import ../../lib/policy.nix { inherit lib; };
-  resolvedRoutes = policyLib.resolveHostServices webServicesPolicy "do-admin-1";
+  resolvedRoutes = config.repo.web.currentHost.services;
   edgeRoutes = lib.mapAttrs (_: svc: {
     inherit (svc)
       subdomain
@@ -27,13 +25,11 @@ let
   }) resolvedRoutes;
 in
 {
-  applications.admin.policyServices = resolvedRoutes;
-
   applications."edge-ingress" = {
     enable = true;
     role = "edge";
-    primaryDomain = policyLib.resolvePrimaryDomain webServicesPolicy "do-admin-1";
-    acmeEmail = "infra@${policyLib.resolvePrimaryDomain webServicesPolicy "do-admin-1"}";
+    primaryDomain = config.repo.web.currentHost.primaryDomain;
+    acmeEmail = "infra@${config.repo.web.currentHost.primaryDomain}";
     # secretFiles.host is set in default.nix
     # cloudflareCredentialsFile is set by the edge-ingress module from the template
     authenticatedOriginPulls = {

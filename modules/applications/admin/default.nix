@@ -47,7 +47,7 @@ in
 
     policyServices = lib.mkOption {
       type = lib.types.attrs;
-      default = { };
+      default = lib.attrByPath [ "repo" "web" "currentHost" "services" ] { } config;
       description = "Resolved host services from policy/web-services.nix for SSOT endpoint consumption.";
     };
 
