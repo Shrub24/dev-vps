@@ -20,4 +20,10 @@
 
 - [x] 4.1 Add operator-facing documentation or command entrypoints for repository initialization, on-demand backup execution, prune/check flows, and restore preparation.
 - [x] 4.2 Add restore-validation guidance or executable sanity checks for critical services so backup success is not the only acceptance signal.
-- [ ] 4.3 Run repo validation (`nix fmt`, relevant builds/checks, and `openspec validate --strict`) and capture any service-specific backup caveats before implementation completion.
+- [x] 4.3 Run repo validation (`nix fmt`, relevant builds/checks, and `openspec validate --strict`) and capture any service-specific backup caveats before implementation completion.
+
+Validation caveats captured:
+- `openspec validate --strict restic-backups` passes.
+- `nix build .#nixosConfigurations.do-admin-1.config.system.build.toplevel --no-link` passes.
+- `nix build .#nixosConfigurations.oci-melb-1.config.system.build.toplevel --no-link` is environment-limited on this workstation (`x86_64-linux` cannot locally build required `aarch64-linux` derivations when `allowSubstitutes = false`).
+- `nix fmt` via flake formatter path currently fails in this repo environment with `unexpected end of input`; modified backup-related `.nix` files were formatted directly with `nixfmt -s` as a scoped fallback.

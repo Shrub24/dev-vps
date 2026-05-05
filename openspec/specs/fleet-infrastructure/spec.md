@@ -84,11 +84,10 @@ Fleet host outputs SHALL consume the primary repository package baseline from `n
 - **WHEN** `nixosConfigurations.oci-melb-1` and `nixosConfigurations.do-admin-1` are built from the flake
 - **THEN** both host outputs resolve packages from the primary unstable baseline input
 
-### Requirement: Cloudflare control-plane OpenTofu state SHALL support concurrent operators
-Cloudflare OpenTofu state for this repository SHALL use a shared remote backend so multiple concurrent worktrees/operators do not diverge state ownership.
+### Requirement: Recoverable hosts SHALL include host-scoped state backup architecture
+Fleet hosts that carry mutable service state SHALL support host-scoped declarative backup wiring as part of the recoverable baseline.
 
-#### Scenario: Multiple worktrees run OpenTofu operations
-- **WHEN** two operator worktrees run init/plan/apply for `opentofu/cloudflare`
-- **THEN** both resolve the same remote state object
-- **AND** backend locking prevents concurrent state mutation races
+#### Scenario: Recoverability baseline is evaluated for active hosts
+- **WHEN** `nixosConfigurations.do-admin-1` and `nixosConfigurations.oci-melb-1` are reviewed for operational baseline coverage
+- **THEN** each host can opt into canonical host-scoped state backup wiring without introducing cross-host repository sharing by default
 
