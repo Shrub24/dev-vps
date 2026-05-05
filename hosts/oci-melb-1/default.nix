@@ -163,6 +163,12 @@ in
     secretFiles.host = ../../secrets/hosts/oci-melb-1/system.yaml;
   };
 
+  services.state-backups = {
+    enable = true;
+    secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    bucket = "shrublab-backup-oci-melb-1";
+  };
+
   programs.nix-ld = {
     enable = true;
     libraries = with pkgs; [

@@ -78,6 +78,11 @@
     enable = true;
     secretFiles.host = ../../secrets/hosts/do-admin-1/system.yaml;
   };
+  services.state-backups = {
+    enable = true;
+    secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
+    bucket = "shrublab-backup-do-admin-1";
+  };
   services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz";
 
   system.stateVersion = "25.11";

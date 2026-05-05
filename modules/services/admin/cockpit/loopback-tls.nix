@@ -24,6 +24,12 @@ let
 in
 {
   config = lib.mkIf (cfg.enable && loopbackTls.enable) {
+    services.state-backups.services.cockpit-loopback-tls = {
+      enable = true;
+      mode = "live";
+      paths = [ stateDir ];
+    };
+
     systemd.tmpfiles.rules = [
       "d ${stateDir} 0700 root root - -"
       "d /etc/cockpit 0755 root root - -"
