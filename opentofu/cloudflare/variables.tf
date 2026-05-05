@@ -80,7 +80,7 @@ variable "aop_enabled" {
 }
 
 # -----------------------------------------------------------------------------
-# Zero Trust Identity Provider (Pocket ID generic OIDC)
+# Zero Trust Identity Provider (Kanidm generic OIDC)
 # -----------------------------------------------------------------------------
 
 variable "idp_type" {
@@ -92,7 +92,7 @@ variable "idp_type" {
 variable "idp_name" {
   description = "Zero Trust IdP name shown on the login page"
   type        = string
-  default     = "Pocket ID"
+  default     = "Kanidm"
 }
 
 variable "idp_client_id" {
@@ -133,10 +133,9 @@ variable "idp_client_secret" {
 }
 
 variable "idp_auth_url" {
-  description = "Pocket ID authorization endpoint URL"
+  description = "OIDC authorization endpoint URL for the Cloudflare Access upstream IdP"
   type        = string
-  default     = null
-  nullable    = true
+  default     = "https://kanidm.shrublab.xyz/oauth2/openid/cloudflare-access/authorize"
 
   # validation {
   #   condition = (
@@ -151,10 +150,9 @@ variable "idp_auth_url" {
 }
 
 variable "idp_token_url" {
-  description = "Pocket ID token endpoint URL"
+  description = "OIDC token endpoint URL for the Cloudflare Access upstream IdP"
   type        = string
-  default     = null
-  nullable    = true
+  default     = "https://kanidm.shrublab.xyz/oauth2/token"
 
   # validation {
   #   condition = (
@@ -169,10 +167,9 @@ variable "idp_token_url" {
 }
 
 variable "idp_certs_url" {
-  description = "Pocket ID JWKS/certs endpoint URL"
+  description = "OIDC JWKS endpoint URL for the Cloudflare Access upstream IdP"
   type        = string
-  default     = null
-  nullable    = true
+  default     = "https://kanidm.shrublab.xyz/oauth2/openid/cloudflare-access/public_key.jwk"
 
   # validation {
   #   condition = (

@@ -11,6 +11,8 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
     ../../modules/profiles/worker-interface.nix
+    ../../modules/shared/web-policy.nix
+    ../../modules/shared/kanidm-host-auth.nix
     ../../modules/applications/admin/default.nix
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/digitalocean/default.nix
@@ -45,12 +47,33 @@
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
   applications.admin.secretFiles.host = ../../secrets/applications/admin.yaml;
-  applications.admin.secretFiles.oidc = ../../secrets/hosts/do-admin-1/oidc.yaml;
+  applications.admin.secretFiles.identity =
+    if builtins.pathExists ../../secrets/identity/kanidm.yaml then
+      ../../secrets/identity/kanidm.yaml
+    else
+      null;
+  applications.admin.secretFiles.identityProvisioning =
+    if builtins.pathExists ../../secrets/identity/provisioning.json then
+      ../../secrets/identity/provisioning.json
+    else
+      null;
+  applications.admin.secretFiles.oidcClients = {
+    termix = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    beszel = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    quantum = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    karakeep = ../../secrets/hosts/oci-melb-1/oidc.yaml;
+    cloudflare-access = ../../secrets/opentofu/oidc.yaml;
+  };
   applications.edge-ingress.enable = true;
   applications.edge-ingress.role = "edge";
   applications.edge-ingress.primaryDomain = "shrublab.xyz";
   applications.edge-ingress.acmeEmail = lib.mkDefault "admin@send.shrublab.xyz";
   applications.edge-ingress.secretFiles.host = ../../secrets/applications/edge-ingress.yaml;
+  services.identity.hostAuth = {
+    enable = true;
+    sshIntegration = true;
+    pamAllowedLoginGroups = [ "shrublab-admins" ];
+  };
   services.beszel-agent-auth = {
     enable = true;
     secretFiles.host = ../../secrets/hosts/do-admin-1/system.yaml;

@@ -315,7 +315,7 @@ in
       group = "root";
       mode = "0400";
       content = ''
-        FILEBROWSER_OIDC_CLIENT_ID=${config.sops.placeholder.quantum_oidc_client_id}
+        FILEBROWSER_OIDC_CLIENT_ID=${cfg.oidc.clientId}
         FILEBROWSER_OIDC_CLIENT_SECRET=${config.sops.placeholder.quantum_oidc_client_secret}
       '';
     };
@@ -335,15 +335,9 @@ in
       ))
       (lib.mkIf hasOidcSecrets (
         secretHelpers.mkSecretsFromMap cfg.secretFiles.oidc {
-          quantum_oidc_client_id = {
-            key = "quantum/client_id";
-            path = "/run/secrets/pocket-id.quantum.client_id";
-            owner = "root";
-            group = "root";
-          };
           quantum_oidc_client_secret = {
             key = "quantum/client_secret";
-            path = "/run/secrets/pocket-id.quantum.client_secret";
+            path = "/run/secrets/quantum.oidc_client_secret";
             owner = "root";
             group = "root";
           };

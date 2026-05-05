@@ -74,6 +74,12 @@ in
     oidc = {
       enable = lib.mkEnableOption "OIDC login for Karakeep";
 
+      clientId = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Canonical OIDC client ID for Karakeep.";
+      };
+
       wellknownUrl = lib.mkOption {
         type = lib.types.str;
         default = "";
@@ -82,7 +88,7 @@ in
 
       providerName = lib.mkOption {
         type = lib.types.str;
-        default = "Pocket ID";
+        default = "Kanidm";
         description = "Display name for OIDC provider (OAUTH_PROVIDER_NAME).";
       };
 
@@ -115,6 +121,12 @@ in
       s3 = {
         enable = lib.mkEnableOption "S3-compatible object storage backend for Karakeep assets";
 
+        bucket = lib.mkOption {
+          type = lib.types.str;
+          default = globals.services.karakeep-pod.s3.bucket;
+          description = "Bucket name for Karakeep asset storage.";
+        };
+
         forcePathStyle = lib.mkOption {
           type = lib.types.bool;
           default = globals.s3.forcePathStyle;
@@ -126,6 +138,10 @@ in
 
   config = lib.mkIf cfg.enable {
     assertions = [
+      {
+        assertion = !cfg.oidc.enable || cfg.oidc.clientId != null;
+        message = "services.karakeep-pod.oidc.clientId must be set when OIDC is enabled.";
+      }
       {
         assertion = !cfg.oidc.enable || cfg.oidc.wellknownUrl != "";
         message = "services.karakeep-pod.oidc.wellknownUrl must be set when OIDC is enabled.";
@@ -151,7 +167,7 @@ in
       content = ''
         NEXTAUTH_SECRET=${config.sops.placeholder.karakeep_nextauth_secret}
         MEILI_MASTER_KEY=${config.sops.placeholder.karakeep_meilisearch_master_key}
-        OAUTH_CLIENT_ID=${config.sops.placeholder.karakeep_oidc_client_id}
+        OAUTH_CLIENT_ID=${cfg.oidc.clientId}
         OAUTH_CLIENT_SECRET=${config.sops.placeholder.karakeep_oidc_client_secret}
         OPENAI_BASE_URL=${config.services.bifrost-gateway.endpoint.containerBaseUrl}
         OPENAI_API_KEY=bifrost-local
@@ -160,7 +176,7 @@ in
         EMBEDDING_TEXT_MODEL=${globals.aiGateway.aliases.embedding}
         ASSET_STORE_S3_ENDPOINT=${globals.s3.endpoint}
         ASSET_STORE_S3_REGION=${globals.s3.region}
-        ASSET_STORE_S3_BUCKET=${globals.s3.bucket}
+        ASSET_STORE_S3_BUCKET=${cfg.storage.s3.bucket}
         ASSET_STORE_S3_ACCESS_KEY_ID=${config.sops.placeholder.karakeep_asset_store_s3_access_key_id}
         ASSET_STORE_S3_SECRET_ACCESS_KEY=${config.sops.placeholder.karakeep_asset_store_s3_secret_access_key}
       '';
@@ -187,10 +203,6 @@ in
       }
       // (lib.optionalAttrs cfg.oidc.enable (
         secretHelpers.mkSecretsFromMap cfg.secretFiles.oidc {
-          karakeep_oidc_client_id = {
-            key = "karakeep/client_id";
-            path = "/run/secrets/karakeep.oidc_client_id";
-          };
           karakeep_oidc_client_secret = {
             key = "karakeep/client_secret";
             path = "/run/secrets/karakeep.oidc_client_secret";

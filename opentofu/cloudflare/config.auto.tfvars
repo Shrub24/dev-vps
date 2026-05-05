@@ -1,5 +1,11 @@
 # Non-sensitive OpenTofu config only.
-# Do NOT put tokens, emails, account/zone IDs, client IDs, endpoints, or IPs here.
+# Keep only secrets and infra-sensitive identifiers in encrypted SOPS sources.
+
+# Cloudflare Access upstream IdP (Kanidm generic OIDC)
+idp_name      = "Kanidm"
+idp_auth_url  = "https://id.shrublab.xyz/ui/oauth2"
+idp_token_url = "https://id.shrublab.xyz/oauth2/token"
+idp_certs_url = "https://id.shrublab.xyz/oauth2/openid/cloudflare-access/public_key.jwk"
 
 aop_enabled = true
 
