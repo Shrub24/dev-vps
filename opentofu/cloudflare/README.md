@@ -78,52 +78,59 @@ This keeps one source of truth while separating runtime wiring from control-plan
 
 - `config.auto.tfvars` is committed and must contain non-sensitive config only.
 - `secrets.auto.tfvars` is generated from SOPS and ignored.
-- Do not place identifying values (emails, account/zone IDs, client IDs, IPs, endpoints, hostnames) in `config.auto.tfvars`.
+- Keep only Cloudflare/IdP secret values in `secrets/opentofu/cloudflare.yaml`; place non-secret IdP URLs/name in `config.auto.tfvars`.
+- Keep backend configuration in local `opentofu/cloudflare/backend.hcl`, using `backend.hcl.example` as the reference shape.
 
 ### SOPS + generated runtime files
 
-1. Create encrypted source secrets:
+1. Create/update committed non-secret config:
+   - `opentofu/cloudflare/config.auto.tfvars`
+2. Create encrypted source secrets:
    - `secrets/opentofu/cloudflare.yaml` (sops-encrypted)
-2. Render local ignored runtime files:
-   - `just tofu-runtime`
-   - generates `opentofu/cloudflare/secrets.auto.tfvars` and `opentofu/cloudflare/backend.hcl`
-3. Initialize remote backend:
+3. Render local ignored runtime files:
+    - `just tofu-runtime`
+    - generates `opentofu/cloudflare/secrets.auto.tfvars`
+4. Initialize remote backend:
    - `just tofu-init-remote`
-4. Migrate local state once:
+5. Migrate local state once:
    - `just tofu-init-remote-migrate`
 
 ### Secrets file layout and move steps
 
 Keep secrets in this order:
 
-1. Source-of-truth (encrypted):
-   - `secrets/opentofu/cloudflare.yaml`
-2. Local runtime files (ignored):
-   - `opentofu/cloudflare/secrets.auto.tfvars`
-   - `opentofu/cloudflare/backend.hcl`
+1. Non-secret committed config:
+   - `opentofu/cloudflare/config.auto.tfvars`
+2. Source-of-truth (encrypted):
+    - `secrets/opentofu/cloudflare.yaml`
+3. Local runtime files (ignored):
+    - `opentofu/cloudflare/secrets.auto.tfvars`
+    - `opentofu/cloudflare/backend.hcl`
 
 Populate/move values:
 
 1. Start from template:
-   - `cp opentofu/cloudflare/secrets.auto.tfvars.example /tmp/secrets.auto.tfvars.migrate`
-2. Move values from your current local `opentofu/cloudflare/secrets.auto.tfvars` and `opentofu/cloudflare/backend.hcl` into `secrets/opentofu/cloudflare.yaml` under:
-   - `cloudflare.*` for provider/resource variables
-   - `backend.*` for R2 backend settings
-3. Encrypt/update source:
-   - `sops -e -i secrets/opentofu/cloudflare.yaml`
-4. Regenerate runtime files from encrypted source:
-   - `just tofu-runtime`
-5. Remove any ad-hoc temporary secret files outside ignored paths.
+   - `cp secrets/.templates/opentofu/cloudflare.yaml secrets/opentofu/cloudflare.yaml`
+2. Put non-secret IdP URLs/name values in `opentofu/cloudflare/config.auto.tfvars`.
+3. Put Cloudflare/IdP secret values in `secrets/opentofu/cloudflare.yaml` under `cloudflare.*`.
+4. Create `opentofu/cloudflare/backend.hcl` locally from `backend.hcl.example`.
+5. Encrypt/update source:
+    - `sops -e -i secrets/opentofu/cloudflare.yaml`
+6. Regenerate runtime files from encrypted source:
+    - `just tofu-runtime`
+7. Remove any ad-hoc temporary secret files outside ignored paths.
 
 ## Remote backend (Cloudflare R2)
 
-1. Ensure encrypted source file exists (`secrets/opentofu/cloudflare.yaml`) with backend fields.
-2. Render runtime backend file:
+1. Ensure committed non-secret config exists (`opentofu/cloudflare/config.auto.tfvars`) with IdP endpoint fields.
+2. Ensure encrypted source file exists (`secrets/opentofu/cloudflare.yaml`) with Cloudflare/IdP secret values.
+3. Ensure local backend file exists (`opentofu/cloudflare/backend.hcl`) from `backend.hcl.example`.
+4. Render runtime tfvars:
    - `just tofu-runtime`
-3. Initialize remote backend (no migration):
-   - `just tofu-init-remote`
-4. Migrate existing local state to remote (one-time):
-   - `just tofu-init-remote-migrate`
+5. Initialize remote backend (no migration):
+    - `just tofu-init-remote`
+6. Migrate existing local state to remote (one-time):
+    - `just tofu-init-remote-migrate`
 
 `backend.hcl` is ignored and must never be committed.
 

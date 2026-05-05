@@ -84,13 +84,14 @@
           access.requireCloudflareAccess = false;
         };
 
-        pocket-id-admin = {
+        kanidm-admin = {
           subdomain = "id";
           origin = {
-            scheme = "http";
+            scheme = "https";
             host = "127.0.0.1";
-            port = 1411;
+            port = 8443;
           };
+          upstreamTlsServerName = "id.shrublab.xyz";
           category = "admin";
           access.requireCloudflareAccess = false;
           cloudflare = {
@@ -176,6 +177,7 @@
             port = 8088;
           };
           category = "admin";
+          access.oidc.enabled = true;
         };
 
         ntfy-admin = {
@@ -239,6 +241,7 @@
           exposureMode = "tailscale-upstream";
           declarePublic = true;
           category = "app";
+          access.oidc.enabled = true;
           access.requireCloudflareAccess = false;
           cloudflare = {
             proxied = true;

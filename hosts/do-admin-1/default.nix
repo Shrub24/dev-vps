@@ -45,7 +45,23 @@
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
   applications.admin.secretFiles.host = ../../secrets/applications/admin.yaml;
-  applications.admin.secretFiles.oidc = ../../secrets/hosts/do-admin-1/oidc.yaml;
+  applications.admin.secretFiles.identity =
+    if builtins.pathExists ../../secrets/identity/kanidm.yaml then
+      ../../secrets/identity/kanidm.yaml
+    else
+      null;
+  applications.admin.secretFiles.identityProvisioning =
+    if builtins.pathExists ../../secrets/identity/provisioning.json then
+      ../../secrets/identity/provisioning.json
+    else
+      null;
+  applications.admin.secretFiles.oidcClients = {
+    termix = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    beszel = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    quantum = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    karakeep = ../../secrets/hosts/oci-melb-1/oidc.yaml;
+    cloudflare-access = ../../secrets/opentofu/oidc.yaml;
+  };
   applications.edge-ingress.enable = true;
   applications.edge-ingress.role = "edge";
   applications.edge-ingress.primaryDomain = "shrublab.xyz";
