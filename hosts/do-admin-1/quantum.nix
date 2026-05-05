@@ -5,7 +5,6 @@
     # When OIDC is enabled, the quantum module will set environmentFile to quantum-oidc.env
     # passwordAuthEnabled=false means the quantum-auth.env template won't be needed
     passwordAuthEnabled = false;
-    oidc.enabled = true;
     managedSourceEnabled = false;
 
     localSources = [

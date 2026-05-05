@@ -29,10 +29,34 @@ in
         description = "Whether Termix should enable native OIDC auth wiring.";
       };
 
+      clientId = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Canonical OIDC client ID for Termix.";
+      };
+
       issuerUrl = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
-        description = "Pocket ID issuer URL for Termix auth posture documentation/runtime metadata.";
+        description = "OIDC issuer URL for Termix auth posture documentation/runtime metadata.";
+      };
+
+      authorizationUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "OIDC authorization URL for Termix runtime wiring.";
+      };
+
+      tokenUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "OIDC token URL for Termix runtime wiring.";
+      };
+
+      userinfoUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "OIDC userinfo URL for Termix runtime wiring.";
       };
 
       environmentFile = lib.mkOption {
@@ -54,12 +78,28 @@ in
         label = "secretFiles.oidc";
       })
       {
+        assertion = !cfg.oidc.enabled || cfg.oidc.clientId != null;
+        message = "services.admin.termix.oidc.clientId must be set when services.admin.termix.oidc.enabled=true.";
+      }
+      {
         assertion = !cfg.oidc.enabled || cfg.oidc.issuerUrl != null;
         message = "services.admin.termix.oidc.issuerUrl must be set when services.admin.termix.oidc.enabled=true.";
       }
       {
         assertion = !cfg.oidc.enabled || cfg.oidc.environmentFile != null;
         message = "services.admin.termix.oidc.environmentFile must be set when services.admin.termix.oidc.enabled=true.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.authorizationUrl != null;
+        message = "services.admin.termix.oidc.authorizationUrl must be set when services.admin.termix.oidc.enabled=true.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.tokenUrl != null;
+        message = "services.admin.termix.oidc.tokenUrl must be set when services.admin.termix.oidc.enabled=true.";
+      }
+      {
+        assertion = !cfg.oidc.enabled || cfg.oidc.userinfoUrl != null;
+        message = "services.admin.termix.oidc.userinfoUrl must be set when services.admin.termix.oidc.enabled=true.";
       }
     ];
 
@@ -69,27 +109,21 @@ in
       group = "root";
       mode = "0400";
       content = ''
-        OIDC_CLIENT_ID=${config.sops.placeholder.termix_oidc_client_id}
+        OIDC_CLIENT_ID=${cfg.oidc.clientId}
         OIDC_CLIENT_SECRET=${config.sops.placeholder.termix_oidc_client_secret}
-        OIDC_ISSUER_URL=${config.services.admin.pocket-id.oidc.issuerUrl}
-        OIDC_AUTHORIZATION_URL=${config.services.admin.pocket-id.oidc.authorizationUrl}
-        OIDC_TOKEN_URL=${config.services.admin.pocket-id.oidc.tokenUrl}
-        OIDC_USERINFO_URL=${config.services.admin.pocket-id.oidc.userinfoUrl}
+        OIDC_ISSUER_URL=${cfg.oidc.issuerUrl}
+        OIDC_AUTHORIZATION_URL=${cfg.oidc.authorizationUrl}
+        OIDC_TOKEN_URL=${cfg.oidc.tokenUrl}
+        OIDC_USERINFO_URL=${cfg.oidc.userinfoUrl}
         OIDC_SCOPES=openid email profile
       '';
     };
 
     sops.secrets = lib.mkIf cfg.oidc.enabled (
       secretHelpers.mkSecretsFromMap cfg.secretFiles.oidc {
-        termix_oidc_client_id = {
-          key = "termix/client_id";
-          path = "/run/secrets/pocket-id.termix.client_id";
-          owner = "root";
-          group = "root";
-        };
         termix_oidc_client_secret = {
           key = "termix/client_secret";
-          path = "/run/secrets/pocket-id.termix.client_secret";
+          path = "/run/secrets/termix.oidc_client_secret";
           owner = "root";
           group = "root";
         };
@@ -122,7 +156,7 @@ in
           cfg.oidc.environmentFile
         ];
         labels = lib.optionalAttrs cfg.oidc.enabled {
-          "io.shrublab.auth.oidc" = "pocket-id";
+          "io.shrublab.auth.oidc" = "kanidm";
           "io.shrublab.auth.oidc.issuer" = toString cfg.oidc.issuerUrl;
         };
         ports = [

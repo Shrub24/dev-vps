@@ -10,9 +10,8 @@
   };
 
   s3 = {
-    endpoint = "https://bef816e6776e8f13f5c03d2af70b036e.r2.cloudflarestorage.com/karakeep";
+    endpoint = "https://bef816e6776e8f13f5c03d2af70b036e.r2.cloudflarestorage.com";
     region = "auto";
-    bucket = "karakeep";
     forcePathStyle = true;
   };
 
@@ -38,6 +37,7 @@
     karakeep-pod = {
       dataDir = "/srv/data/karakeep";
       port = 3010;
+      s3.bucket = "karakeep";
     };
     bifrost-gateway = {
       dataDir = "/srv/data/bifrost";

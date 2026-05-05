@@ -8,18 +8,24 @@ let
   cfg = config.applications.admin;
   globals = import ../../../policy/globals.nix;
   secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
+  identityPolicy = builtins.fromJSON (builtins.readFile ../../../policy/identity.json);
+  oauth2Policy = identityPolicy.systems.oauth2;
 
-  termixEnabled = config.services.admin.termix.enable;
-  termixRoute = cfg.policyServices."termix-admin";
-  termixOidcEnabled = termixEnabled && termixRoute.access.oidc.enabled;
-  quantumOidcEnabled =
-    config.services.admin.quantum.enable && config.services.admin.quantum.oidc.enabled;
-  pocketIdOidc = config.services.admin.pocket-id.oidc;
+  termixRoute = cfg.policyServices.${oauth2Policy.termix.routeKey};
+  quantumRoute = cfg.policyServices.${oauth2Policy.quantum.routeKey};
+
+  oidcRuntimeEnabled = clientPolicy:
+    if clientPolicy ? routeKey then
+      cfg.policyServices.${clientPolicy.routeKey}.access.oidc.enabled
+    else
+      true;
+
 in
 {
   imports = [
+    ../../shared/identity-oidc.nix
     ../../services/admin/termix.nix
-    ../../services/admin/pocket-id.nix
+    ../../services/admin/kanidm.nix
     ../../services/admin/cockpit.nix
     ../../services/admin/webhook.nix
     ../../services/admin/ntfy.nix
@@ -46,36 +52,36 @@ in
     };
 
     secretFiles.host = secretHelpers.mkSecretFileOption "admin-host-secrets";
-    secretFiles.oidc = secretHelpers.mkSecretFileOption "admin-oidc-secrets";
+    secretFiles.identity = secretHelpers.mkSecretFileOption "admin-identity-secrets";
+    secretFiles.identityProvisioning = secretHelpers.mkSecretFileOption "admin-identity-provisioning";
+    secretFiles.oidcClients = lib.mkOption {
+      type = lib.types.attrsOf lib.types.path;
+      default = { };
+      description = "Per-client OIDC secret source files keyed by Kanidm oauth2 client id.";
+    };
   };
 
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       # Base config with assertions and default service enables
       {
+        services.identity.oidc = {
+          providerUrl = cfg.policyServices."kanidm-admin".publicUrl;
+        };
+
         assertions = [
-          (secretHelpers.mkRequiredSecretAssertion {
-            enable = cfg.enable;
-            file = cfg.secretFiles.host;
-            feature = "applications.admin";
-            label = "secretFiles.host";
-          })
-          (secretHelpers.mkRequiredSecretAssertion {
-            enable = termixOidcEnabled;
-            file = cfg.secretFiles.oidc;
-            feature = "applications.admin";
-            label = "secretFiles.oidc";
-          })
-          (secretHelpers.mkRequiredSecretAssertion {
-            enable = quantumOidcEnabled;
-            file = cfg.secretFiles.oidc;
-            feature = "applications.admin";
-            label = "secretFiles.oidc";
-          })
-        ];
+          ]
+          ++ [
+            (secretHelpers.mkRequiredSecretAssertion {
+              enable = cfg.enable;
+              file = cfg.secretFiles.host;
+              feature = "applications.admin";
+              label = "secretFiles.host";
+            })
+          ];
 
         services.admin.termix.enable = lib.mkDefault true;
-        services.admin."pocket-id".enable = lib.mkDefault true;
+        services.admin.kanidm.enable = lib.mkDefault true;
         services.admin.cockpit.enable = lib.mkDefault true;
         services.admin.webhook.enable = lib.mkDefault true;
         services.admin.ntfy.enable = lib.mkDefault true;
@@ -91,9 +97,9 @@ in
         services.admin.vaultwarden.secretFiles.host = cfg.secretFiles.host;
         services.admin.homepage.secretFiles.host = cfg.secretFiles.host;
         services.admin.quantum.secretFiles.host = cfg.secretFiles.host;
-        services.admin.quantum.secretFiles.oidc = cfg.secretFiles.oidc;
-        services.admin.termix.secretFiles.oidc = cfg.secretFiles.oidc;
-        services.admin.pocket-id.secretFiles.host = cfg.secretFiles.host;
+        services.admin.kanidm.secretFiles.identity = cfg.secretFiles.identity;
+        services.admin.kanidm.secretFiles.provisioning = cfg.secretFiles.identityProvisioning;
+        services.admin.kanidm.secretFiles.oauth2Clients = cfg.secretFiles.oidcClients;
       }
 
       # All host-level secrets - from host-scoped secret file
@@ -140,22 +146,29 @@ in
         };
       }
 
-      # Pocket-ID service configuration
-      (lib.mkIf config.services.admin.pocket-id.enable {
-        services.admin.pocket-id = {
-          dataDir = "${cfg.dataRoot}/pocket-id";
-          appUrl = cfg.policyServices."pocket-id-admin".publicUrl;
+      (lib.mkIf config.services.admin.kanidm.enable {
+        services.admin.kanidm = {
+          dataDir = "${cfg.dataRoot}/kanidm";
+          appUrl = cfg.policyServices."kanidm-admin".publicUrl;
+          tlsChainFile = "/var/lib/acme/${cfg.policyServices."kanidm-admin".primaryDomain}/fullchain.pem";
+          tlsKeyFile = "/var/lib/acme/${cfg.policyServices."kanidm-admin".primaryDomain}/key.pem";
+          tlsReaderGroups = [ "caddy" ];
         };
       })
 
       # Termix OIDC and Tailscale serve
-      (lib.mkIf termixEnabled {
+      (lib.mkIf config.services.admin.termix.enable {
         services.admin.termix = {
           dataDir = "${cfg.dataRoot}/termix";
+          secretFiles.oidc = cfg.secretFiles.oidcClients.termix;
           oidc = {
-            enabled = termixOidcEnabled;
-            issuerUrl = pocketIdOidc.issuerUrl;
-            environmentFile = if termixOidcEnabled then config.sops.templates."termix-oidc.env".path else null;
+            enabled = oidcRuntimeEnabled oauth2Policy.termix;
+            clientId = config.services.identity.oidc.clients.termix.clientId;
+            issuerUrl = config.services.identity.oidc.clients.termix.issuerUrl;
+            authorizationUrl = config.services.identity.oidc.clients.termix.authorizationUrl;
+            tokenUrl = config.services.identity.oidc.clients.termix.tokenUrl;
+            userinfoUrl = config.services.identity.oidc.clients.termix.userinfoUrl;
+            environmentFile = if oidcRuntimeEnabled oauth2Policy.termix then config.sops.templates."termix-oidc.env".path else null;
           };
         };
 
@@ -197,10 +210,15 @@ in
 
       # Quantum OIDC configuration
       (lib.mkIf config.services.admin.quantum.enable {
-        services.admin.quantum.oidc = {
-          issuerUrl = pocketIdOidc.issuerUrl;
-          environmentFile =
-            if quantumOidcEnabled then config.sops.templates."quantum-oidc.env".path else null;
+        services.admin.quantum = {
+          secretFiles.oidc = cfg.secretFiles.oidcClients.quantum;
+          oidc = {
+            enabled = oidcRuntimeEnabled oauth2Policy.quantum;
+            issuerUrl = config.services.identity.oidc.clients.quantum.issuerUrl;
+            clientId = config.services.identity.oidc.clients.quantum.clientId;
+            environmentFile =
+              if oidcRuntimeEnabled oauth2Policy.quantum then config.sops.templates."quantum-oidc.env".path else null;
+          };
         };
       })
     ]
