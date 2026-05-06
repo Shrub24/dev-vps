@@ -1,1 +1,17 @@
-{"libraries":{"restic":{"files":[{"filename":"restic-s3-r2-notes.md","topic":"s3-custom-endpoint-r2","tech_stack":"NixOS/Linux","fetched":"2026-05-05T00:00:00Z","source":"Context7 + official restic docs"}]}}}
+{
+  "version": 1,
+  "last_updated": "2026-05-06T00:00:00Z",
+  "libraries": {
+    "chillweb": {
+      "files": [
+        {
+          "filename": "syncthing-widgets.md",
+          "topic": "syncthing-widgets",
+          "tech_stack": "Homepage",
+          "fetched": "2026-05-06T00:00:00Z",
+          "source": "Official docs page"
+        }
+      ]
+    }
+  }
+}
