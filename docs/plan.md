@@ -70,9 +70,11 @@ Track C: Host and storage baseline
 
 - establish reliable host bootstrap path
 - stage remote network-owner transitions so access survives the change window
-- apply one-mount persistent storage model
-- map service directories on that mount predictably
+- maintain a console-only break-glass user baseline with host-scoped recovery password material and a routine reboot exercise on active remote hosts
+- apply predictable persistent storage contracts with explicit mounts for service state, media, and host-critical store paths where required
+- map service directories on those mounts predictably
 - keep provider-specific storage contracts isolated so new hosts do not couple to `oci-melb-1` bootstrap config
+- preserve a documented rescue workflow for storage/mount breakage, including offline rebuild of bootable generations
 
 Track D: Service baseline
 

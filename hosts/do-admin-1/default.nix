@@ -74,6 +74,14 @@
     sshIntegration = true;
     pamAllowedLoginGroups = [ "shrublab-admins" ];
   };
+  services.hostRecovery = {
+    enable = true;
+    secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
+    rescueUser = {
+      name = "rescue";
+    };
+    reboot.onCalendar = "weekly";
+  };
   services.beszel-agent-auth = {
     enable = true;
     secretFiles.host = ../../secrets/hosts/do-admin-1/system.yaml;
