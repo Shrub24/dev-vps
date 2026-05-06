@@ -191,13 +191,17 @@
           health.path = "/v1/health";
         };
 
-        syncthing-admin = {
+        syncthing-oci-melb-1 = {
           subdomain = "syncthing";
+          path = "/oci-melb-1";
+          forceTrailingSlash = true;
+          stripPrefix = true;
           origin = {
             scheme = "http";
             host = "oci-melb-1.tail0fe19b.ts.net";
             port = 8384;
           };
+          upstreamHostHeader = "{upstream_hostport}";
           exposureMode = "tailscale-upstream";
           category = "admin";
         };

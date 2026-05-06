@@ -17,6 +17,7 @@ let
       upstream
       ;
     forceTrailingSlash = svc.forceTrailingSlash or false;
+    upstreamHostHeader = svc.upstreamHostHeader or "{host}";
     upstreamTlsInsecure = svc.upstreamTlsInsecure or false;
     upstreamTlsCaCertFile = svc.upstreamTlsCaCertFile or null;
     upstreamTlsServerName = svc.upstreamTlsServerName or null;
