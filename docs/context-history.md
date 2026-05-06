@@ -49,6 +49,13 @@ Operational lesson captured during `do-admin-1` networking recovery:
 - migrating that host to declarative `systemd-networkd` required matching the observed static `ens3`/`ens4` addresses instead of assuming DHCP
 - the failed attempt was caused by doing a live SSH `switch` during network-owner handoff; the cutover succeeded when installed with `deploy-rs --boot` and applied on reboot
 
+Follow-on recovery lesson captured during host-recovery implementation:
+
+- the real missing break-glass path was a console-capable password-authenticated local user, not another normal SSH identity and not an immediate initrd SSH rollout
+- the chosen baseline is a console-only `rescue` user plus a weekly reboot exercise, with initrd SSH deferred until host-specific early-boot networking assumptions are worth validating separately
+- recovery secret wiring was intentionally moved into the shared recovery module so hosts stay thin and feature-owned secret contracts remain the norm
+- local validation is asymmetric: `do-admin-1` can be built on the x86_64 admin machine, while `oci-melb-1` may still require host-side or remote validation when non-substitutable `aarch64-linux` derivations prevent a full local build
+
 ## Security And Secrets Direction
 
 The conversation converged on blast-radius secrets management:
@@ -67,9 +74,17 @@ Bootstrap nuance that was discussed in depth:
 Current operational posture chosen in planning:
 
 - one persistent data mount
+- one dedicated `/nix` filesystem on the recovered `oci-melb-1` single-disk layout
 - Syncthing bidirectional mode with safety/versioning controls
 - Navidrome reads directly from sync-managed media path
 - no duplicate staging dataset initially to avoid unnecessary storage usage
+
+Recovery lesson now captured in active context:
+
+- a live migration that removed the old `/nix` before the new mount was boot-valid broke the host hard enough to require OCI rescue-instance recovery
+- the validated break-glass repair path was: attach boot volume to rescue VM, mount root + `/nix` + ESP, chroot with working `/dev` `/proc` `/sys` `/run` + DNS, build with sandbox disabled where needed, then run `switch-to-configuration boot`
+- the resulting declarative baseline for `oci-melb-1` is a single OCI boot volume carrying labeled filesystems for `/`, `/srv/data`, `/nix`, and `/srv/media`
+- shared media root directories are now intended to have one canonical tmpfiles owner in the application composition layer, with lower-level services only layering ACL or marker behavior
 
 Future-facing but deferred:
 

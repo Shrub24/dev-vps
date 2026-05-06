@@ -1,15 +1,4 @@
-# host-unix-auth Specification
-
-## Purpose
-TBD - created by archiving change kanidm-identity-migration. Update Purpose after archive.
-## Requirements
-### Requirement: Fleet hosts SHALL support Kanidm client and unixd integration
-Fleet hosts SHALL support Kanidm client and unixd integration through native nixpkgs client/unix modules after OIDC parity is established.
-
-#### Scenario: Host enables Kanidm unix integration
-- **WHEN** a host opts into the host-auth phase of this migration
-- **THEN** native `services.kanidm.client` and `services.kanidm.unix` wiring is enabled on that host
-- **AND** the host consumes the canonical Kanidm server URI rather than a duplicated local literal
+## MODIFIED Requirements
 
 ### Requirement: SSH and PAM policy SHALL remain explicit and host-safe
 Kanidm-backed SSH and PAM login behavior SHALL be enabled only through explicit host policy, including declarative allowlists for permitted login groups, and hosts MAY declare a separate host-scoped console break-glass rescue account outside the normal identity-backed login flow.
@@ -23,4 +12,3 @@ Kanidm-backed SSH and PAM login behavior SHALL be enabled only through explicit 
 - **WHEN** a host declares break-glass rescue-user access
 - **THEN** that account is configured explicitly as a host-scoped exception rather than an implicit fleet-wide normal login path
 - **AND** its console login and sudo posture remains declarative and auditable
-
