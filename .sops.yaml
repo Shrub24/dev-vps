@@ -67,7 +67,7 @@ creation_rules:
           - *owner_age
           - *do_admin_1_age
 
-  # Host exception scopes: system (host/bootstrap-only)
+  # Host exception scopes: system (host/bootstrap-only, including recovery password hashes)
   - path_regex: ^secrets/hosts/oci-melb-1/system\.ya?ml$
     key_groups:
       - age:
