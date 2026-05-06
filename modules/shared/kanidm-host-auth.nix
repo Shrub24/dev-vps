@@ -25,7 +25,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.kanidm.package = lib.mkDefault pkgs.kanidm_1_9;
+    services.kanidm.package = lib.mkDefault pkgs.kanidm_1_10;
 
     assertions = [
       {

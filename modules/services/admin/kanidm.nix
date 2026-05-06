@@ -249,7 +249,7 @@ in
     };
 
     services.kanidm = {
-      package = pkgs.kanidmWithSecretProvisioning_1_9;
+      package = pkgs.kanidmWithSecretProvisioning_1_10;
 
       client = {
         enable = true;
@@ -289,7 +289,7 @@ in
       );
     };
 
-    environment.systemPackages = [ pkgs.kanidm_1_9 ];
+    environment.systemPackages = [ pkgs.kanidm_1_10 ];
 
     services.state-backups.services.kanidm = {
       enable = true;
