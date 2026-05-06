@@ -44,6 +44,11 @@ Network-access design SHALL include documented recovery paths for control-plane 
 - **WHEN** primary private access path fails
 - **THEN** break-glass procedures provide alternate operator access
 
+#### Scenario: A remote host adopts declarative network ownership
+- **WHEN** a host is migrated from provider-managed networking to declarative host-owned networking
+- **THEN** the declared stack is self-contained about addresses, routes, and interface ownership
+- **AND** operators do not rely on a live SSH session surviving the ownership handoff
+
 ### Requirement: Public-edge policy SHALL be explicit by default-plus-exception model
 Cloudflare public-edge access posture SHALL be modeled as a global default with explicit host/route exceptions.
 
@@ -63,4 +68,3 @@ Cloudflare resource declarations SHALL be owned in control-plane artifacts, whil
 #### Scenario: Runtime change depends on Cloudflare policy
 - **WHEN** runtime/Nix change needs edge policy values
 - **THEN** values are consumed from canonical policy and generated outputs rather than duplicated unmanaged config
-

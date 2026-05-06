@@ -43,6 +43,12 @@ Tooling stance that emerged:
 - structure repository now so later tooling adoption is low-friction
 - keep host bootstrap/secret workflows host-key driven with clear default and advanced variants
 
+Operational lesson captured during `do-admin-1` networking recovery:
+
+- the host had been running on provider/cloud-init-managed static network state rather than `dhcpcd` or `systemd-networkd`
+- migrating that host to declarative `systemd-networkd` required matching the observed static `ens3`/`ens4` addresses instead of assuming DHCP
+- the failed attempt was caused by doing a live SSH `switch` during network-owner handoff; the cutover succeeded when installed with `deploy-rs --boot` and applied on reboot
+
 ## Security And Secrets Direction
 
 The conversation converged on blast-radius secrets management:

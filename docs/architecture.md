@@ -296,6 +296,7 @@ Bootstrap and rollout order:
 - host installation and baseline with `nixos-anywhere`
 - regular host updates via `deploy-rs` (`just deploy <host>`)
 - dry-activation and validation via `just activate <host>` and `just check`
+- remote network-owner cutovers are installed with `deploy-rs --boot` and applied on reboot rather than live-switched over SSH
 
 Fleet tooling posture:
 
@@ -309,11 +310,18 @@ Operator commands:
 
 - deploy: `just deploy oci-melb-1` (or `just deploy do-admin-1`)
 - deploy without rollback: `just deploy oci-melb-1 --rollback false`
+- network-owner cutover: `nix run .#deploy-rs -- --skip-checks --boot .#do-admin-1`, then reboot from console
 - dry-activate: `just activate oci-melb-1`
 - checks: `just check`
 - backups: `just backup-init <host>`, `just backup-run <host>`, `just backup-check <host>`, `just backup-prune <host>`
 
 Note: `just deploy` takes positional host arguments (`just deploy oci-melb-1`), not `host=...`.
+
+Remote networking note:
+
+- `do-admin-1` now uses declarative `systemd-networkd` with static `ens3`/`ens4` addressing, while `cloud-init` remains metadata-only
+- switching network ownership on a remote host can drop the active SSH session mid-activation even when the target generation is correct
+- treat network-owner transitions as reboot-time changes with provider console available for verification and rollback
 
 ## Phase-1 Edge Ingress Operations
 

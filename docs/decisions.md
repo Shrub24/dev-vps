@@ -534,6 +534,22 @@ Supersedes/updates:
 - supersedes D-010's bootstrap default assumption that secrets are only common + host-monolith
 - updates the canonical host composition pattern to thin assembly layers
 
+## D-031: Remote network-owner cutovers are boot-time deploys
+
+Status: Accepted
+
+Decision:
+
+- treat remote networking ownership changes as boot-time cutovers rather than live `switch` activations over SSH
+- keep ordinary host convergence on `deploy-rs`, but use `deploy-rs --boot` plus an operator-triggered reboot when a change stops old network units and hands control to a different stack
+- `do-admin-1` uses declarative `systemd-networkd` with explicit static addresses on `ens3` and `ens4`, with `cloud-init` retained for metadata only and `dhcpcd` disabled
+
+Rationale:
+
+- a live SSH deployment can lose transport while activation stops the old network owner, even if the target generation itself is valid
+- applying the cutover at boot keeps the current session stable until the new generation takes control during early boot, where console rollback remains available
+- `do-admin-1`'s current provider-assigned addresses are stable enough for explicit declaration and matched the observed healthy runtime state better than the attempted DHCP handoff
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

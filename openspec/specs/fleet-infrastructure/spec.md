@@ -61,6 +61,11 @@ Routine operations SHALL be supported by executable checks and documented break-
 - **WHEN** an operator applies or verifies changes
 - **THEN** contract checks and recovery guidance are available before and after deployment
 
+#### Scenario: Remote network ownership is migrated
+- **WHEN** a host changes networking owners or tears down the active network stack during activation
+- **THEN** the new generation can be installed as the next boot target without requiring a live in-band SSH cutover
+- **AND** the migration remains recoverable through provider-console reboot and generation rollback
+
 ### Requirement: Cloudflare DNS records SHALL be policy-driven
 Cloudflare DNS and Zero Trust application resources for published web services SHALL be declared in OpenTofu and generated from canonical policy exports, with hostname-scoped resources deduped by public hostname rather than emitted once per internal route key.
 
@@ -90,4 +95,3 @@ Fleet hosts that carry mutable service state SHALL support host-scoped declarati
 #### Scenario: Recoverability baseline is evaluated for active hosts
 - **WHEN** `nixosConfigurations.do-admin-1` and `nixosConfigurations.oci-melb-1` are reviewed for operational baseline coverage
 - **THEN** each host can opt into canonical host-scoped state backup wiring without introducing cross-host repository sharing by default
-

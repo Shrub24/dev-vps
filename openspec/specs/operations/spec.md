@@ -18,6 +18,11 @@ Day-2 deployment SHALL be performed through repository-defined operator entrypoi
 - **WHEN** an operator runs deploy/activate workflows
 - **THEN** deployment targets declared host outputs and follows repository command contracts
 
+#### Scenario: A deployment changes network ownership on a remote host
+- **WHEN** activation would stop the currently active network stack or otherwise cut the in-band SSH transport
+- **THEN** operators use a boot-time deploy workflow that updates the next generation without live-switching the running network stack
+- **AND** the host reboot is performed with break-glass console access available
+
 ### Requirement: Operational status commands are available
 The operator surface SHALL provide commands for host status, service logs, and ingress health checks that distinguish public edge reachability from private-origin upstream behavior.
 
@@ -60,4 +65,3 @@ The operator contract SHALL require validation beyond successful backup completi
 #### Scenario: Backup validation is performed for a critical service
 - **WHEN** operators validate backup health for identity or SQLite-backed services
 - **THEN** validation includes restore-oriented verification steps rather than only timer/job success status
-

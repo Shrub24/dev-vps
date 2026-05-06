@@ -69,6 +69,7 @@ Track B: Secrets and identity model
 Track C: Host and storage baseline
 
 - establish reliable host bootstrap path
+- stage remote network-owner transitions so access survives the change window
 - apply one-mount persistent storage model
 - map service directories on that mount predictably
 - keep provider-specific storage contracts isolated so new hosts do not couple to `oci-melb-1` bootstrap config
