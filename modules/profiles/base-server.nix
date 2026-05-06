@@ -3,6 +3,7 @@
   imports = [
     ../core/base.nix
     ./shell-profile.nix
+    ../shared/host-recovery.nix
     ../services/tailscale.nix
     ../services/beszel-agent-auth.nix
     ../services/state-backups.nix
