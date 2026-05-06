@@ -140,6 +140,35 @@ build host="oci-melb-1":
   @nix build --no-link --no-write-lock-file "path:.#nixosConfigurations.{{host}}.config.system.build.toplevel"
 
 # ---------------------------------------------------------------------------
+# Backups
+# ---------------------------------------------------------------------------
+
+[arg("user", long)]
+backup-init host user="dev":
+  @ssh {{user}}@{{host}} "sudo systemctl start restic-backups-state.service"
+
+[arg("user", long)]
+backup-run host user="dev":
+  @ssh {{user}}@{{host}} "sudo systemctl start restic-backups-state.service"
+
+[arg("user", long)]
+backup-check host user="dev":
+  @ssh {{user}}@{{host}} "sudo systemctl start restic-backups-state.service"
+
+[arg("user", long)]
+backup-prune host user="dev":
+  @ssh {{user}}@{{host}} "sudo systemctl start restic-backups-state.service"
+
+[arg("user", long)]
+backup-status host user="dev":
+  @ssh {{user}}@{{host}} "sudo systemctl --no-pager --full status restic-backups-state.service restic-backups-state.timer"
+
+[arg("user", long)]
+[arg("lines", long)]
+backup-logs host user="dev" lines="200":
+  @ssh {{user}}@{{host}} "sudo journalctl -u restic-backups-state.service -u restic-backups-state.timer -n {{lines}} --no-pager"
+
+# ---------------------------------------------------------------------------
 # Secrets
 # ---------------------------------------------------------------------------
 

@@ -305,6 +305,12 @@ in
       ];
     };
 
+    services.state-backups.services.karakeep = {
+      enable = true;
+      mode = "live";
+      paths = [ cfg.dataDir ];
+    };
+
     systemd.services."podman-karakeep-web" = {
       wants = [
         "network-online.target"

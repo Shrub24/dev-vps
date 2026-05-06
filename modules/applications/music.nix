@@ -1,12 +1,56 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }:
 let
   cfg = config.applications.music;
   globals = import ../../policy/globals.nix;
   secretHelpers = import ../../lib/secrets.nix { inherit lib; };
+
+  mediaPermissionReconcile = pkgs.writeShellApplication {
+    name = "media-permission-reconcile";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.findutils
+      pkgs.acl
+    ];
+    text = ''
+      set -euo pipefail
+
+      INBOX_DIR=${cfg.inboxDir}
+      LIBRARY_DIR=${cfg.libraryDir}
+      QUARANTINE_DIR=${cfg.quarantineDir}
+
+      fixup_dir() {
+        local dir="$1"
+        local write_group="$2"
+        local read_group="$3"
+
+        if [[ ! -d "$dir" ]]; then
+          return 0
+        fi
+
+        find "$dir" -type d -exec chgrp "$write_group" {} +
+        find "$dir" -type d -exec chmod 2775 {} +
+        find "$dir" -type f -exec chgrp "$write_group" {} +
+        find "$dir" -type f -exec chmod 0664 {} +
+
+        setfacl -R -m "g:$write_group:rwx" "$dir"
+        find "$dir" -type d -exec setfacl -m "d:g:$write_group:rwX" {} +
+        setfacl -R -m "g:$read_group:r-X" "$dir"
+        find "$dir" -type d -exec setfacl -m "d:g:$read_group:r-X" {} +
+
+        setfacl -R -m u:syncthing:rwx "$dir"
+        find "$dir" -type d -exec setfacl -m d:u:syncthing:rwx {} +
+      }
+
+      fixup_dir "$INBOX_DIR" "music-ingest" "media"
+      fixup_dir "$LIBRARY_DIR" "music-ingest" "media"
+      fixup_dir "$QUARANTINE_DIR" "music-ingest" "media"
+    '';
+  };
 in
 {
   imports = [
@@ -133,10 +177,22 @@ in
       folderTargets = cfg.syncthingFolders;
     };
 
+    services.state-backups.services.syncthing = {
+      enable = true;
+      mode = "live";
+      paths = [ "${cfg.dataRoot}/syncthing" ];
+    };
+
     services.navidrome = {
       libraryDir = cfg.libraryDir;
       quarantineDir = cfg.quarantineDir;
       dataDir = "${cfg.dataRoot}/navidrome";
+    };
+
+    services.state-backups.services.navidrome = {
+      enable = true;
+      mode = "live";
+      paths = [ "${cfg.dataRoot}/navidrome" ];
     };
 
     services.beets-inbox = {
@@ -146,6 +202,12 @@ in
       libraryDir = cfg.libraryDir;
       quarantineDir = cfg.quarantineDir;
       secretFiles.host = cfg.secretFiles.host;
+    };
+
+    services.state-backups.services.beets = {
+      enable = true;
+      mode = "live";
+      paths = [ "${cfg.dataRoot}/beets" ];
     };
 
     systemd.paths.beets-inbox-watch.enable = false;
@@ -177,6 +239,12 @@ in
       };
     };
 
+    services.state-backups.services.soulsync = lib.mkIf config.services.soulsync.enable {
+      enable = true;
+      mode = "live";
+      paths = [ "${cfg.dataRoot}/soulsync" ];
+    };
+
     services.tagr = {
       enable = true;
       dataDir = "${cfg.dataRoot}/tagr";
@@ -202,8 +270,22 @@ in
       "a+ ${cfg.quarantineDir} - - - - default:group:media:r-X"
       "d ${cfg.inboxDir} 2775 root music-ingest - -"
       "z ${cfg.inboxDir} 2775 root music-ingest - -"
+      "a+ ${cfg.inboxDir} - - - - group:music-ingest:rwx"
+      "a+ ${cfg.inboxDir} - - - - default:group:music-ingest:rwX"
+      "a+ ${cfg.inboxDir} - - - - group:media:r-X"
+      "a+ ${cfg.inboxDir} - - - - default:group:media:r-X"
       "f /var/lib/slskd/environment 0640 slskd slskd - -"
       "f /var/lib/tagr/environment 0640 root root - -"
     ];
+
+    systemd.services.media-permission-reconcile = {
+      description = "Reconcile media directory ACLs and POSIX permissions recursively";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      unitConfig.RequiresMountsFor = [ cfg.mediaRoot ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${mediaPermissionReconcile}/bin/media-permission-reconcile";
+      };
+    };
   };
 }
