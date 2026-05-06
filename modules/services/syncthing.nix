@@ -98,7 +98,10 @@ in
       enable = true;
       dataDir = lib.mkDefault "/srv/data/syncthing";
       configDir = lib.mkDefault "/srv/data/syncthing/config";
+      guiAddress = lib.mkDefault "0.0.0.0:8384";
       openDefaultPorts = false;
+      overrideDevices = lib.mkDefault true;
+      overrideFolders = lib.mkDefault true;
       settings.devices = cfg.deviceTargets;
       settings.folders = folderSettings;
     };
