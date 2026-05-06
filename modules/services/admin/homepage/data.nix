@@ -191,8 +191,8 @@ in
           Syncthing = {
             icon = "syncthing";
             description = "Cross-host file sync controller";
-            href = serviceHref "syncthing-admin";
-            siteMonitor = (requireRoute "syncthing-admin").healthUrl;
+            href = serviceHref "syncthing-oci-melb-1";
+            siteMonitor = (requireRoute "syncthing-oci-melb-1").healthUrl;
           };
         }
       ];
