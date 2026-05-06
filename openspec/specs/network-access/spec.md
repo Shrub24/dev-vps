@@ -38,11 +38,15 @@ Firewall policy SHALL enforce explicit trust boundaries for allowed interfaces a
 - **THEN** only ingress-required ports are opened and private-service ports remain non-public
 
 ### Requirement: Break-glass access remains available
-Network-access design SHALL include documented recovery paths for control-plane failures.
+Network-access design SHALL include documented recovery paths for control-plane failures, including at least one path that does not depend on the primary post-boot operator login flow remaining healthy.
 
 #### Scenario: Tailnet access is degraded
 - **WHEN** primary private access path fails
 - **THEN** break-glass procedures provide alternate operator access
+
+#### Scenario: Console recovery path is needed
+- **WHEN** a host cannot be recovered through the normal post-boot SSH or tailscale login path
+- **THEN** operators have a documented provider or serial console recovery path that can be used outside the normal host login flow
 
 #### Scenario: A remote host adopts declarative network ownership
 - **WHEN** a host is migrated from provider-managed networking to declarative host-owned networking
@@ -68,3 +72,4 @@ Cloudflare resource declarations SHALL be owned in control-plane artifacts, whil
 #### Scenario: Runtime change depends on Cloudflare policy
 - **WHEN** runtime/Nix change needs edge policy values
 - **THEN** values are consumed from canonical policy and generated outputs rather than duplicated unmanaged config
+
