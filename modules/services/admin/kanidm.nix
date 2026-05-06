@@ -166,6 +166,26 @@ in
       default = { };
       description = "Per-client OIDC secret source files keyed by Kanidm oauth2 client id.";
     };
+
+    backup = {
+      exportDir = lib.mkOption {
+        type = lib.types.str;
+        default = "${cfg.dataDir}/backups";
+        description = "Directory containing Kanidm automatic backup artifacts for restic capture.";
+      };
+
+      schedule = lib.mkOption {
+        type = lib.types.str;
+        default = "15 03 * * *";
+        description = "Cron schedule for Kanidm automatic backups, aligned to run before the shared restic job.";
+      };
+
+      versions = lib.mkOption {
+        type = lib.types.int;
+        default = 7;
+        description = "Number of Kanidm automatic backup artifacts retained locally.";
+      };
+    };
   };
 
   config = lib.mkIf (appCfg.enable && cfg.enable) {
@@ -242,6 +262,11 @@ in
           tls_chain = cfg.tlsChainFile;
           tls_key = cfg.tlsKeyFile;
           role = "WriteReplica";
+          online_backup = {
+            path = cfg.backup.exportDir;
+            schedule = cfg.backup.schedule;
+            versions = cfg.backup.versions;
+          };
         };
       };
 
@@ -263,11 +288,21 @@ in
       pkgs.kanidm_1_9
     ];
 
+    services.state-backups.services.kanidm = {
+      enable = true;
+      mode = "export";
+      paths = [ cfg.dataDir ];
+      exportPaths = [ cfg.backup.exportDir ];
+    };
+
     systemd.services.kanidm.serviceConfig.SupplementaryGroups = cfg.tlsReaderGroups;
     systemd.services.kanidm.after = [ "caddy.service" ];
 
     systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 0750 root root - -"
+      "d ${cfg.dataDir} 0750 kanidm kanidm - -"
+      "z ${cfg.dataDir} 0750 kanidm kanidm - -"
+      "d ${cfg.backup.exportDir} 0750 kanidm kanidm - -"
+      "z ${cfg.backup.exportDir} 0750 kanidm kanidm - -"
     ];
   };
 }

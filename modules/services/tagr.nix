@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }:
 let
@@ -44,6 +45,12 @@ in
       type = lib.types.port;
       default = 3000;
       description = "Tagr web UI port on the host.";
+    };
+
+    backup.exportFile = lib.mkOption {
+      type = lib.types.str;
+      default = "/var/lib/state-backups/tagr/tagr.sqlite3";
+      description = "SQLite backup artifact path captured alongside Tagr raw state.";
     };
 
     secretFiles.host = secretHelpers.mkSecretFileOption "tagr-host-secrets";
@@ -140,6 +147,19 @@ in
       serviceConfig.SupplementaryGroups = lib.mkAfter [
         "music-ingest"
         "media"
+      ];
+    };
+
+    services.state-backups.services.tagr = {
+      enable = true;
+      mode = "export";
+      paths = [ cfg.dataDir ];
+      exportPaths = [ cfg.backup.exportFile ];
+      prepareCommands = [
+        ''
+          rm -f ${cfg.backup.exportFile}
+          ${pkgs.sqlite}/bin/sqlite3 ${cfg.dataDir}/tagr.db ".backup ${cfg.backup.exportFile}"
+        ''
       ];
     };
   };

@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }:
 let
@@ -23,6 +24,18 @@ in
       type = lib.types.nullOr lib.types.str;
       default = null;
       description = "From address for Vaultwarden emails. Set per-host (e.g. you@gmail.com).";
+    };
+
+    dataDir = lib.mkOption {
+      type = lib.types.str;
+      default = "/srv/data/vaultwarden";
+      description = "Persistent data directory for Vaultwarden state.";
+    };
+
+    backup.exportFile = lib.mkOption {
+      type = lib.types.str;
+      default = "/var/lib/state-backups/vaultwarden/db.sqlite3";
+      description = "SQLite backup artifact path captured alongside Vaultwarden raw state.";
     };
 
     secretFiles.host = secretHelpers.mkSecretFileOption "vaultwarden-host-secrets";
@@ -93,6 +106,7 @@ in
       dbBackend = "sqlite";
 
       config = {
+        DATA_FOLDER = cfg.dataDir;
         # ── Domain & reverse proxy ──
         DOMAIN = vaultRoute.publicUrl;
         ROCKET_ADDRESS = vaultHost;
@@ -139,6 +153,29 @@ in
       };
 
       environmentFile = config.sops.templates."vaultwarden.env".path;
+    };
+
+    systemd.tmpfiles.rules = [
+      "d ${cfg.dataDir} 0750 vaultwarden vaultwarden - -"
+      "z ${cfg.dataDir} 0750 vaultwarden vaultwarden - -"
+    ];
+
+    systemd.services.vaultwarden = {
+      unitConfig.RequiresMountsFor = [ cfg.dataDir ];
+      serviceConfig.ReadWritePaths = [ cfg.dataDir ];
+    };
+
+    services.state-backups.services.vaultwarden = {
+      enable = true;
+      mode = "export";
+      paths = [ cfg.dataDir ];
+      exportPaths = [ cfg.backup.exportFile ];
+      prepareCommands = [
+        ''
+          rm -f ${cfg.backup.exportFile}
+          ${pkgs.sqlite}/bin/sqlite3 ${cfg.dataDir}/db.sqlite3 ".backup ${cfg.backup.exportFile}"
+        ''
+      ];
     };
   };
 }

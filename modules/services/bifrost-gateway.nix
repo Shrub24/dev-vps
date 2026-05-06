@@ -206,6 +206,17 @@ in
       ];
     };
 
+    services.state-backups.services.bifrost-gateway = {
+      enable = true;
+      mode = "live";
+      paths = [ cfg.runtimePaths.appDir ];
+      exclude = [
+        cfg.runtimePaths.logsDir
+        cfg.runtimePaths.cacheDir
+        cfg.runtimePaths.vectorDir
+      ];
+    };
+
     systemd.services."podman-bifrost" = {
       wants = [
         "network-online.target"

@@ -154,6 +154,8 @@ in
           tlsKeyFile = "/var/lib/acme/${cfg.policyServices."kanidm-admin".primaryDomain}/key.pem";
           tlsReaderGroups = [ "caddy" ];
         };
+
+        services.state-backups.services.kanidm.paths = [ "${cfg.dataRoot}/kanidm" ];
       })
 
       # Termix OIDC and Tailscale serve
@@ -170,6 +172,12 @@ in
             userinfoUrl = config.services.identity.oidc.clients.termix.userinfoUrl;
             environmentFile = if oidcRuntimeEnabled oauth2Policy.termix then config.sops.templates."termix-oidc.env".path else null;
           };
+        };
+
+        services.state-backups.services.termix = {
+          enable = true;
+          mode = "live";
+          paths = [ "${cfg.dataRoot}/termix" ];
         };
 
         systemd.services.tailscale-serve-termix = {

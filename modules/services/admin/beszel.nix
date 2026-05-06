@@ -28,5 +28,11 @@ in
         USER_CREATION = "true";
       };
     };
+
+    services.state-backups.services.beszel = {
+      enable = true;
+      mode = "live";
+      paths = [ config.services.beszel.hub.dataDir ];
+    };
   };
 }
