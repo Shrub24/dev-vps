@@ -3,9 +3,7 @@
 ## Purpose
 
 Define declarative bootstrap and storage contracts for host installation, mount layout, and provider-aware disk composition.
-
 ## Requirements
-
 ### Requirement: Bootstrap workflow is declarative
 Host bootstrap SHALL be driven by repository-defined declarative workflows.
 
@@ -19,6 +17,7 @@ Host disk and filesystem layout SHALL be represented in disko module definitions
 #### Scenario: Storage plan is evaluated
 - **WHEN** storage modules are rendered for a host
 - **THEN** partition/filesystem/mount structure is derived declaratively
+- **AND** `oci-melb-1` can declare root, `/srv/data`, `/nix`, and `/srv/media` as stable labeled filesystems on the OCI boot volume
 
 ### Requirement: Service-state and media mounts are separated
 The storage model SHALL separate service-state and media mounts with predictable mount points.
@@ -33,3 +32,4 @@ Provider-specific storage/bootstrap defaults SHALL remain isolated from reusable
 #### Scenario: Multiple providers are supported
 - **WHEN** provider modules are compared
 - **THEN** provider-specific assumptions appear only in provider/host composition layers
+

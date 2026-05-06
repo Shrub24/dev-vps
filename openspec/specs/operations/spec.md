@@ -31,11 +31,12 @@ The operator surface SHALL provide commands for host status, service logs, and i
 - **THEN** operators can verify Caddy edge status, certificate state, and effective route behavior for edge and upstream transport
 
 ### Requirement: Break-glass baseline and rollback paths are documented
-Operators SHALL capture baseline state before risky changes and SHALL have documented rollback/recovery procedures.
+Operators SHALL capture baseline state before risky changes and SHALL have documented rollback and recovery procedures, including offline rescue rebuilds for storage-related failures.
 
 #### Scenario: Recovery is required
-- **WHEN** SSH/Tailscale access degrades after change
+- **WHEN** SSH, Tailscale, or boot viability degrades after a storage or mount change
 - **THEN** break-glass steps and generation rollback commands are available to restore access
+- **AND** the workflow includes offline rescue rebuild guidance for restoring `/nix`, mounting the ESP, and reinstalling a bootable generation when live recovery is no longer possible
 
 ### Requirement: Host recipient management is operationalized
 Host key to age-recipient derivation SHALL be available via operator workflows with preview and update modes.
@@ -65,3 +66,4 @@ The operator contract SHALL require validation beyond successful backup completi
 #### Scenario: Backup validation is performed for a critical service
 - **WHEN** operators validate backup health for identity or SQLite-backed services
 - **THEN** validation includes restore-oriented verification steps rather than only timer/job success status
+
