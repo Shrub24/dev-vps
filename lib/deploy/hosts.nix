@@ -8,7 +8,7 @@
   };
 
   do-admin-1 = {
-    hostName = "homelab-lon";
+    hostName = "do-admin-1";
     # hostName = "139.59.199.81";
     sshUser = "dev";
     system = "x86_64-linux";
