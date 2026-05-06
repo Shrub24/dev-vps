@@ -21,7 +21,7 @@ in
     ../../modules/applications/music.nix
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/oci/default.nix
-    ../../modules/storage/disko-root.nix
+    ../../modules/storage/disko-single-disk-split.nix
     ../../modules/core/users.nix
     ../../modules/services/admin/cockpit.nix
     ../../modules/services/bifrost-gateway.nix
@@ -42,7 +42,6 @@ in
   ];
 
   disko.devices.disk.main.device = "/dev/sda";
-  disko.devices.disk.media.device = "/dev/sdb";
   applications.music.enable = true;
   applications.music.dataRoot = "/srv/data";
   applications.music.mediaRoot = "/srv/media";
@@ -123,8 +122,10 @@ in
     secretFiles.oidc = ../../secrets/hosts/oci-melb-1/oidc.yaml;
   };
 
-  # Configurable root size — set here so it's visible in one place per host.
+  # Match the current OCI boot-volume partition layout.
   disko-root-extra = "20G";
+  disko-data-size = "28G";
+  disko-nix-size = "45G";
 
   environment.systemPackages = with pkgs; [
     git
@@ -154,8 +155,15 @@ in
     }
   );
 
-  services.tailscale = lib.mkIf hasHostSecrets {
-    authKeyFile = "/run/secrets/tailscale.auth_key";
+  services.tailscale = lib.mkIf hasHostSecrets { authKeyFile = "/run/secrets/tailscale.auth_key"; };
+
+  services.hostRecovery = lib.mkIf hasHostSecrets {
+    enable = true;
+    secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    rescueUser = {
+      name = "rescue";
+    };
+    reboot.onCalendar = "weekly";
   };
 
   services.beszel-agent-auth = {
@@ -167,7 +175,10 @@ in
     enable = true;
     secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
     bucket = "shrublab-backup-oci-melb-1";
+    stagingRoot = "/srv/data/state-backups";
   };
+
+  services.tagr.backup.exportFile = "/srv/data/state-backups/tagr/tagr.sqlite3";
 
   programs.nix-ld = {
     enable = true;

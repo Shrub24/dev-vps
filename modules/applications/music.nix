@@ -174,7 +174,13 @@ in
       dataDir = "${cfg.dataRoot}/syncthing";
       configDir = "${cfg.dataRoot}/syncthing/config";
       deviceTargets = cfg.syncthingDevices;
-      folderTargets = cfg.syncthingFolders;
+      folderTargets = lib.mapAttrs (
+        _name: folder:
+        folder
+        // {
+          ensureDir = false;
+        }
+      ) cfg.syncthingFolders;
     };
 
     services.state-backups.services.syncthing = {
@@ -282,6 +288,7 @@ in
       description = "Reconcile media directory ACLs and POSIX permissions recursively";
       after = [ "systemd-tmpfiles-setup.service" ];
       unitConfig.RequiresMountsFor = [ cfg.mediaRoot ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${mediaPermissionReconcile}/bin/media-permission-reconcile";

@@ -2,19 +2,21 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 let
   cfg = config.services.beets-inbox;
   secretHelpers = import ../../lib/secrets.nix { inherit lib; };
 
-  mediaInboxDir = if cfg.inboxDir != null then cfg.inboxDir else "${cfg.mediaRoot}/inbox";
-  mediaLibraryDir = if cfg.libraryDir != null then cfg.libraryDir else "${cfg.mediaRoot}/library";
-  mediaQuarantineDir =
-    if cfg.quarantineDir != null then cfg.quarantineDir else "${cfg.mediaRoot}/quarantine";
-  mediaUntaggedDir = "${mediaQuarantineDir}/untagged";
-  mediaApprovedDir = "${mediaQuarantineDir}/approved";
+  mediaPaths = rec {
+    inboxDir = if cfg.inboxDir != null then cfg.inboxDir else "${cfg.mediaRoot}/inbox";
+    libraryDir = if cfg.libraryDir != null then cfg.libraryDir else "${cfg.mediaRoot}/library";
+    quarantineDir =
+      if cfg.quarantineDir != null then cfg.quarantineDir else "${cfg.mediaRoot}/quarantine";
+    untaggedDir = "${quarantineDir}/untagged";
+    approvedDir = "${quarantineDir}/approved";
+    writableMediaDirs = [ libraryDir quarantineDir untaggedDir approvedDir ];
+  };
 
   beetsRuntime = pkgs.python3Packages.beets.override {
     pluginOverrides = {
@@ -25,107 +27,217 @@ let
     };
   };
 
-  beetsConfig = pkgs.writeText "beets-config.yaml" (
-    builtins.readFile ../../scripts/beets-config.yaml
-  );
+  beetsConfigNames = [
+    "beets-config.yaml"
+    "beets-approved-config.yaml"
+    "beets-quarantine-config.yaml"
+  ];
 
-  beetsApprovedConfig = pkgs.writeText "beets-approved-config.yaml" (
-    builtins.readFile ../../scripts/beets-approved-config.yaml
-  );
+  mkBeetsConfig = name:
+    pkgs.writeText name (builtins.readFile ../../scripts/${name});
 
-  beetsConfigSource =
-    if lib.hasAttrByPath [ "sops" "templates" "beets-config.yaml" "path" ] config then
-      config.sops.templates."beets-config.yaml".path
+  mkBeetsConfigSource = name:
+    if lib.hasAttrByPath [ "sops" "templates" name "path" ] config then
+      config.sops.templates.${name}.path
     else
-      beetsConfig;
+      mkBeetsConfig name;
 
-  beetsApprovedConfigSource =
-    if lib.hasAttrByPath [ "sops" "templates" "beets-approved-config.yaml" "path" ] config then
-      config.sops.templates."beets-approved-config.yaml".path
-    else
-      beetsApprovedConfig;
+  beetsSecretEntries = [
+    {
+      secretName = "beets_discogs_token";
+      key = "beets/discogs_token";
+      placeholder = "REPLACE_WITH_DISCOGS_USER_TOKEN";
+    }
+    {
+      secretName = "beets_spotify_client_id";
+      key = "beets/spotify_client_id";
+      placeholder = "REPLACE_WITH_SPOTIFY_CLIENT_ID";
+    }
+    {
+      secretName = "beets_spotify_client_secret";
+      key = "beets/spotify_client_secret";
+      placeholder = "REPLACE_WITH_SPOTIFY_CLIENT_SECRET";
+    }
+  ];
 
-  beetsInboxRunner = pkgs.writeShellApplication {
-    name = "beets-inbox-runner";
-    runtimeInputs = [
-      beetsRuntime
-      pkgs.coreutils
-      pkgs.findutils
-      pkgs.gnused
-    ];
-    text = ''
-      BEETS_CONFIG_SOURCE=${beetsConfigSource}
-      BEETS_APPROVED_CONFIG_SOURCE=${beetsApprovedConfigSource}
-      ${builtins.readFile ../../scripts/beets-inbox-runner.sh}
-    '';
+  mkSopsTemplate = name: {
+    owner = "beets";
+    group = "beets";
+    mode = "0440";
+    content =
+      builtins.replaceStrings
+        (map (e: e.placeholder) beetsSecretEntries)
+        (map (e: config.sops.placeholder.${e.secretName}) beetsSecretEntries)
+        (builtins.readFile ../../scripts/${name});
   };
 
-  beetsQuarantineApprovedRunner = pkgs.writeShellApplication {
-    name = "beets-quarantine-approved-runner";
-    runtimeInputs = [
-      beetsRuntime
-      pkgs.coreutils
-      pkgs.findutils
-      pkgs.gnused
-    ];
-    text = ''
-      BEETS_CONFIG_SOURCE=${beetsConfigSource}
-      ${builtins.readFile ../../scripts/beets-inbox-runner.sh}
-    '';
+  mkSopsSecret = { secretName, key, ... }: {
+    sopsFile = cfg.secretFiles.host;
+    inherit key;
+    path = "/run/secrets/beets.${builtins.replaceStrings [ "beets_" ] [ "" ] secretName}";
+    owner = "beets";
+    group = "beets";
   };
 
-  beetsPermissionReconcile = pkgs.writeShellApplication {
-    name = "beets-permission-reconcile";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.findutils
-      pkgs.acl
-    ];
-    text = ''
-      set -euo pipefail
+  beetsRunners = rec {
+    inbox = pkgs.writeShellApplication {
+      name = "beets-inbox-runner";
+      runtimeInputs = [ beetsRuntime pkgs.coreutils pkgs.findutils pkgs.gnused ];
+      text = ''
+        BEETS_CONFIG_SOURCE=${mkBeetsConfigSource "beets-config.yaml"}
+        BEETS_APPROVED_CONFIG_SOURCE=${mkBeetsConfigSource "beets-approved-config.yaml"}
+        ${builtins.readFile ../../scripts/beets-inbox-runner.sh}
+      '';
+    };
 
-      LIBRARY_ROOT=${mediaLibraryDir}
-      QUARANTINE_ROOT=${mediaQuarantineDir}
-      UNTAGGED_ROOT=${mediaUntaggedDir}
-      APPROVED_ROOT=${mediaApprovedDir}
+    quarantineApproved = pkgs.writeShellApplication {
+      name = "beets-quarantine-approved-runner";
+      runtimeInputs = [ beetsRuntime pkgs.coreutils pkgs.findutils pkgs.gnused ];
+      text = ''
+        BEETS_CONFIG_SOURCE=${mkBeetsConfigSource "beets-config.yaml"}
+        ${builtins.readFile ../../scripts/beets-inbox-runner.sh}
+      '';
+    };
 
-      if [[ -d "$LIBRARY_ROOT" ]]; then
-        find "$LIBRARY_ROOT" -type d -exec chgrp music-ingest {} +
-        find "$LIBRARY_ROOT" -type d -exec chmod 2775 {} +
-        find "$LIBRARY_ROOT" -type f -exec chgrp music-ingest {} +
-        find "$LIBRARY_ROOT" -type f -exec chmod 0664 {} +
-        setfacl -R -m g:music-ingest:rwx "$LIBRARY_ROOT"
-        find "$LIBRARY_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
-        setfacl -R -m g:media:r-X "$LIBRARY_ROOT"
-        find "$LIBRARY_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
-      fi
+    quarantine = pkgs.writeShellApplication {
+      name = "beets-quarantine-runner";
+      runtimeInputs = [ beetsRuntime pkgs.coreutils ];
+      text = ''
+        set -euo pipefail
+        BEETS_DATA_DIR="${cfg.dataDir}"
+        export BEETSDIR="$BEETS_DATA_DIR"
+        export HOME="$BEETS_DATA_DIR"
+        mkdir -p "$BEETS_DATA_DIR/state"
+        TARGET="''${1:-${mediaPaths.untaggedDir}}"
+        exec beet -c "${mkBeetsConfigSource "beets-quarantine-config.yaml"}" import "$TARGET"
+      '';
+    };
 
-      if [[ -d "$QUARANTINE_ROOT" ]]; then
-        find "$QUARANTINE_ROOT" -type d -exec chgrp music-ingest {} +
-        find "$QUARANTINE_ROOT" -type d -exec chmod 2775 {} +
-        find "$QUARANTINE_ROOT" -type f -exec chgrp music-ingest {} +
-        find "$QUARANTINE_ROOT" -type f -exec chmod 0664 {} +
-        setfacl -R -m g:music-ingest:rwx "$QUARANTINE_ROOT"
-        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
-        setfacl -R -m g:media:r-X "$QUARANTINE_ROOT"
-        find "$QUARANTINE_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
-      fi
+    interactive = pkgs.writeShellApplication {
+      name = "beets-interactive";
+      runtimeInputs = [ pkgs.coreutils ];
+      text = ''
+        set -euo pipefail
+        TARGET="''${1:-${mediaPaths.untaggedDir}}"
+        exec sudo -u beets -H "${quarantine}/bin/beets-quarantine-runner" "$TARGET"
+      '';
+    };
 
-      if [[ -d "$UNTAGGED_ROOT" ]]; then
-        setfacl -R -m g:music-ingest:rwx "$UNTAGGED_ROOT"
-        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
-        setfacl -R -m g:media:r-X "$UNTAGGED_ROOT"
-        find "$UNTAGGED_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
-      fi
+    convert = pkgs.writeShellApplication {
+      name = "beets-convert-runner";
+      runtimeInputs = [ beetsRuntime pkgs.coreutils pkgs.ffmpeg ];
+      text = ''
+        set -euo pipefail
+        BEETS_DATA_DIR="${cfg.dataDir}"
+        export BEETSDIR="$BEETS_DATA_DIR"
+        export HOME="$BEETS_DATA_DIR"
+        mkdir -p "$BEETS_DATA_DIR/state"
+        QUERY="''${1:-}"
+        exec beet -c "${mkBeetsConfigSource "beets-config.yaml"}" convert ''${QUERY:+"$QUERY"}
+      '';
+    };
 
-      if [[ -d "$APPROVED_ROOT" ]]; then
-        setfacl -R -m g:music-ingest:rwx "$APPROVED_ROOT"
-        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
-        setfacl -R -m g:media:r-X "$APPROVED_ROOT"
-        find "$APPROVED_ROOT" -type d -exec setfacl -m d:g:media:r-X {} +
-      fi
-    '';
+    reconcile = pkgs.writeShellApplication {
+      name = "beets-reconcile-runner";
+      runtimeInputs = [ beetsRuntime pkgs.coreutils pkgs.ffmpeg ];
+      text = ''
+        set -euo pipefail
+        BEETS_DATA_DIR="${cfg.dataDir}"
+        export BEETSDIR="$BEETS_DATA_DIR"
+        export HOME="$BEETS_DATA_DIR"
+        mkdir -p "$BEETS_DATA_DIR/state"
+        CONFIG="${mkBeetsConfigSource "beets-config.yaml"}"
+        echo "=== beet update (re-read tags from files) ==="
+        beet -c "$CONFIG" update -a
+        echo "=== beet check (verify library integrity) ==="
+        beet -c "$CONFIG" check
+        echo "=== beet convert (lossless -> AIFF where not yet converted) ==="
+        beet -c "$CONFIG" convert
+        echo "=== beet duplicates (detect duplicate albums) ==="
+        beet -c "$CONFIG" duplicates -a
+        echo "=== beet move (reorganize files to match path templates) ==="
+        beet -c "$CONFIG" move
+      '';
+    };
+
+    permissionReconcile = pkgs.writeShellApplication {
+      name = "beets-permission-reconcile";
+      runtimeInputs = [ pkgs.coreutils pkgs.findutils pkgs.acl ];
+      text = ''
+        set -euo pipefail
+        fixup() {
+          local dir="$1"
+          [[ -d "$dir" ]] || return 0
+          find "$dir" -type d -exec chgrp music-ingest {} +
+          find "$dir" -type d -exec chmod 2775 {} +
+          find "$dir" -type f -exec chgrp music-ingest {} +
+          find "$dir" -type f -exec chmod 0664 {} +
+          setfacl -R -m g:music-ingest:rwx "$dir"
+          find "$dir" -type d -exec setfacl -m d:g:music-ingest:rwX {} +
+          setfacl -R -m g:media:r-X "$dir"
+          find "$dir" -type d -exec setfacl -m d:g:media:r-X {} +
+        }
+        fixup "${mediaPaths.libraryDir}"
+        fixup "${mediaPaths.quarantineDir}"
+        fixup "${mediaPaths.untaggedDir}"
+        fixup "${mediaPaths.approvedDir}"
+      '';
+    };
   };
+
+  beetsServiceDefaults = {
+    Type = "oneshot";
+    User = "beets";
+    Group = "beets";
+    SupplementaryGroups = [ "music-ingest" "media" ];
+    WorkingDirectory = cfg.dataDir;
+    Environment = "BEETSDIR=${cfg.dataDir}";
+    ExecStartPost = [ "+${beetsRunners.permissionReconcile}/bin/beets-permission-reconcile" ];
+    UMask = "0002";
+    NoNewPrivileges = true;
+    PrivateTmp = true;
+    PrivateDevices = true;
+    ProtectSystem = "strict";
+    ProtectHome = true;
+    ProtectControlGroups = true;
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectClock = true;
+    ProtectProc = "invisible";
+    RestrictSUIDSGID = true;
+    RestrictRealtime = true;
+    LockPersonality = true;
+    MemoryDenyWriteExecute = true;
+    SystemCallArchitectures = "native";
+  };
+
+  mkBeetsService = { name, description, conditionDir, execStart, mountFor, writePaths }:
+    assert builtins.isString name && name != "";
+    assert builtins.isString description;
+    assert builtins.isString conditionDir;
+    assert builtins.isString execStart;
+    assert builtins.isList mountFor;
+    assert builtins.isList writePaths;
+    {
+      inherit description;
+      unitConfig = {
+        RequiresMountsFor = mountFor;
+        ConditionPathIsDirectory = conditionDir;
+      };
+      after = [ "systemd-tmpfiles-setup.service" ];
+      serviceConfig = beetsServiceDefaults // {
+        ExecStart = execStart;
+        ReadWritePaths = writePaths ++ [ "/run/secrets/rendered" ];
+      };
+    };
+
+  aclForDir = dir: [
+    "a+ ${dir} - - - - group:music-ingest:rwx"
+    "a+ ${dir} - - - - default:group:music-ingest:rwX"
+    "a+ ${dir} - - - - group:media:r-X"
+    "a+ ${dir} - - - - default:group:media:r-X"
+  ];
+
 in
 {
   options.services.beets-inbox.dataDir = lib.mkOption {
@@ -171,35 +283,15 @@ in
       })
     ];
 
-    sops.templates."beets-config.yaml" = {
-      owner = "beets";
-      group = "beets";
-      mode = "0440";
-      content =
-        builtins.replaceStrings
-          [ "REPLACE_WITH_DISCOGS_USER_TOKEN" ]
-          [ config.sops.placeholder.beets_discogs_token ]
-          (builtins.readFile ../../scripts/beets-config.yaml);
-    };
+    sops.templates = builtins.listToAttrs (map (name: {
+      inherit name;
+      value = mkSopsTemplate name;
+    }) beetsConfigNames);
 
-    sops.templates."beets-approved-config.yaml" = {
-      owner = "beets";
-      group = "beets";
-      mode = "0440";
-      content =
-        builtins.replaceStrings
-          [ "REPLACE_WITH_DISCOGS_USER_TOKEN" ]
-          [ config.sops.placeholder.beets_discogs_token ]
-          (builtins.readFile ../../scripts/beets-approved-config.yaml);
-    };
-
-    sops.secrets.beets_discogs_token = {
-      sopsFile = cfg.secretFiles.host;
-      key = "beets/discogs_token";
-      path = "/run/secrets/beets.discogs_token";
-      owner = "beets";
-      group = "beets";
-    };
+    sops.secrets = builtins.listToAttrs (map (e: {
+      name = e.secretName;
+      value = mkSopsSecret e;
+    }) beetsSecretEntries);
 
     users.groups.beets = { };
     users.users.beets = {
@@ -207,160 +299,62 @@ in
       group = "beets";
       home = cfg.dataDir;
       createHome = false;
-      extraGroups = [
-        "music-ingest"
-        "media"
-      ];
+      extraGroups = [ "music-ingest" "media" ];
     };
 
     environment.systemPackages = [
       beetsRuntime
-      beetsInboxRunner
-      beetsQuarantineApprovedRunner
-      beetsPermissionReconcile
+      beetsRunners.inbox
+      beetsRunners.quarantineApproved
+      beetsRunners.quarantine
+      beetsRunners.interactive
+      beetsRunners.permissionReconcile
+      beetsRunners.convert
+      beetsRunners.reconcile
     ];
 
-    systemd.tmpfiles.rules = [
-      "d ${config.services.beets-inbox.dataDir} 0750 beets beets - -"
-      "d ${config.services.beets-inbox.dataDir}/state 0750 beets beets - -"
-      "d ${config.services.beets-inbox.dataDir}/logs 0750 beets beets - -"
-      "a+ ${config.services.beets-inbox.dataDir}/logs - - - - user:dev:r-x"
-      "a+ ${config.services.beets-inbox.dataDir}/logs - - - - default:user:dev:r-x"
-      "d ${mediaLibraryDir} 2775 root music-ingest - -"
-      "a+ ${mediaLibraryDir} - - - - group:music-ingest:rwx"
-      "a+ ${mediaLibraryDir} - - - - default:group:music-ingest:rwX"
-      "a+ ${mediaLibraryDir} - - - - group:media:r-X"
-      "a+ ${mediaLibraryDir} - - - - default:group:media:r-X"
-      "d ${mediaQuarantineDir} 2775 root music-ingest - -"
-      "d ${mediaUntaggedDir} 2775 root music-ingest - -"
-      "d ${mediaApprovedDir} 2775 root music-ingest - -"
-      "a+ ${mediaUntaggedDir} - - - - group:music-ingest:rwx"
-      "a+ ${mediaUntaggedDir} - - - - default:group:music-ingest:rwX"
-      "a+ ${mediaUntaggedDir} - - - - group:media:r-X"
-      "a+ ${mediaUntaggedDir} - - - - default:group:media:r-X"
-      "a+ ${mediaApprovedDir} - - - - group:music-ingest:rwx"
-      "a+ ${mediaApprovedDir} - - - - default:group:music-ingest:rwX"
-      "a+ ${mediaApprovedDir} - - - - group:media:r-X"
-      "a+ ${mediaApprovedDir} - - - - default:group:media:r-X"
-    ];
+    systemd.tmpfiles.rules =
+      [
+        "d ${cfg.dataDir} 0750 beets beets - -"
+        "d ${cfg.dataDir}/state 0750 beets beets - -"
+        "d ${cfg.dataDir}/logs 0750 beets beets - -"
+        "a+ ${cfg.dataDir}/logs - - - - user:dev:r-x"
+        "a+ ${cfg.dataDir}/logs - - - - default:user:dev:r-x"
+        "d ${mediaPaths.untaggedDir} 2775 root music-ingest - -"
+        "d ${mediaPaths.approvedDir} 2775 root music-ingest - -"
+      ]
+      ++ aclForDir mediaPaths.untaggedDir
+      ++ aclForDir mediaPaths.approvedDir;
 
-    systemd.services.beets-inbox-run = {
+    systemd.services.beets-inbox-run = mkBeetsService {
+      name = "beets-inbox-run";
       description = "Beets all-inbox native album import worker";
-      unitConfig.RequiresMountsFor = [
-        config.services.beets-inbox.dataDir
-        cfg.mediaRoot
-        mediaInboxDir
-        mediaLibraryDir
-        mediaUntaggedDir
-        mediaApprovedDir
-      ];
-      unitConfig.ConditionPathIsDirectory = mediaInboxDir;
-      after = [
-        "systemd-tmpfiles-setup.service"
-      ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "beets";
-        Group = "beets";
-        SupplementaryGroups = [
-          "music-ingest"
-          "media"
-        ];
-        WorkingDirectory = cfg.dataDir;
-        Environment = "BEETSDIR=${cfg.dataDir}";
-        ExecStart = "${beetsInboxRunner}/bin/beets-inbox-runner ${mediaInboxDir}";
-        ExecStartPost = [ "+${beetsPermissionReconcile}/bin/beets-permission-reconcile" ];
-        UMask = "0002";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectControlGroups = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectClock = true;
-        ProtectProc = "invisible";
-        RestrictSUIDSGID = true;
-        RestrictRealtime = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
-        SystemCallArchitectures = "native";
-        ReadWritePaths = [
-          cfg.dataDir
-          mediaInboxDir
-          mediaLibraryDir
-          mediaUntaggedDir
-          mediaApprovedDir
-        ];
-      };
+      conditionDir = mediaPaths.inboxDir;
+      execStart = "${beetsRunners.inbox}/bin/beets-inbox-runner ${mediaPaths.inboxDir}";
+      mountFor = [ cfg.dataDir cfg.mediaRoot mediaPaths.inboxDir mediaPaths.libraryDir mediaPaths.untaggedDir mediaPaths.approvedDir ];
+      writePaths = [ cfg.dataDir mediaPaths.inboxDir mediaPaths.libraryDir mediaPaths.untaggedDir mediaPaths.approvedDir ];
     };
 
-    systemd.services.beets-quarantine-promote-run = {
+    systemd.services.beets-quarantine-promote-run = mkBeetsService {
+      name = "beets-quarantine-promote-run";
       description = "Beets quarantine approved promotion worker";
-      unitConfig.RequiresMountsFor = [
-        cfg.dataDir
-        cfg.mediaRoot
-        mediaLibraryDir
-        mediaApprovedDir
-      ];
-      unitConfig.ConditionPathIsDirectory = mediaApprovedDir;
-      after = [
-        "systemd-tmpfiles-setup.service"
-      ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "beets";
-        Group = "beets";
-        SupplementaryGroups = [
-          "music-ingest"
-          "media"
-        ];
-        WorkingDirectory = cfg.dataDir;
-        Environment = "BEETSDIR=${cfg.dataDir}";
-        ExecStart = "${beetsQuarantineApprovedRunner}/bin/beets-quarantine-approved-runner ${mediaApprovedDir}";
-        ExecStartPost = [ "+${beetsPermissionReconcile}/bin/beets-permission-reconcile" ];
-        UMask = "0002";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectControlGroups = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectClock = true;
-        ProtectProc = "invisible";
-        RestrictSUIDSGID = true;
-        RestrictRealtime = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
-        SystemCallArchitectures = "native";
-        ReadWritePaths = [
-          cfg.dataDir
-          mediaLibraryDir
-          mediaApprovedDir
-        ];
-      };
+      conditionDir = mediaPaths.approvedDir;
+      execStart = "${beetsRunners.quarantineApproved}/bin/beets-quarantine-approved-runner ${mediaPaths.approvedDir}";
+      mountFor = [ cfg.dataDir cfg.mediaRoot mediaPaths.libraryDir mediaPaths.approvedDir ];
+      writePaths = [ cfg.dataDir mediaPaths.libraryDir mediaPaths.approvedDir ];
     };
 
     systemd.paths.beets-inbox-watch = {
       enable = false;
-      unitConfig.RequiresMountsFor = [
-        cfg.mediaRoot
-        mediaInboxDir
-      ];
-      pathConfig.PathModified = mediaInboxDir;
+      unitConfig.RequiresMountsFor = [ cfg.mediaRoot mediaPaths.inboxDir ];
+      pathConfig.PathModified = mediaPaths.inboxDir;
       pathConfig.Unit = "beets-inbox-run.service";
     };
 
     systemd.paths.beets-quarantine-promote-watch = {
       enable = false;
-      unitConfig.RequiresMountsFor = [
-        cfg.mediaRoot
-        mediaApprovedDir
-      ];
-      pathConfig.PathModified = mediaApprovedDir;
+      unitConfig.RequiresMountsFor = [ cfg.mediaRoot mediaPaths.approvedDir ];
+      pathConfig.PathModified = mediaPaths.approvedDir;
       pathConfig.Unit = "beets-quarantine-promote-run.service";
     };
 
