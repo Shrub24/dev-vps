@@ -143,6 +143,8 @@ build host="oci-melb-1":
 # Backups
 # ---------------------------------------------------------------------------
 
+# NixOS exposes a single managed restic job; these wrappers intentionally target it.
+
 [arg("user", long)]
 backup-init host user="dev":
   @ssh {{user}}@{{host}} "sudo systemctl start restic-backups-state.service"
