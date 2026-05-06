@@ -7,7 +7,6 @@
 let
   cfg = config.services.tagr;
   secretHelpers = import ../../lib/secrets.nix { inherit lib; };
-  envDir = builtins.dirOf cfg.environmentFile;
   libraryPath = "${cfg.mediaRoot}/library";
   quarantinePath = "${cfg.mediaRoot}/quarantine";
   ingestGid = toString config.users.groups.music-ingest.gid;
@@ -97,27 +96,19 @@ in
 
     virtualisation.podman.enable = true;
 
-    systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 0750 root root - -"
-      "d ${envDir} 0750 root root - -"
-      "f ${cfg.environmentFile} 0640 root root - -"
-    ];
+    systemd.tmpfiles.rules = [ "d ${cfg.dataDir} 0750 root root - -" ];
 
     virtualisation.oci-containers.containers.tagr = {
       autoStart = true;
       image = "ghcr.io/shrub24/tagr:latest";
-      ports = [
-        "${cfg.listenAddress}:${toString cfg.port}:3000"
-      ];
+      ports = [ "${cfg.listenAddress}:${toString cfg.port}:3000" ];
       environment = {
         DATABASE_URL = "file:/data/tagr.db";
         MUSIC_FOLDERS = "/music/library,/music/quarantine";
         PUID = "1001";
         PGID = ingestGid;
       };
-      environmentFiles = [
-        cfg.environmentFile
-      ];
+      environmentFiles = [ config.sops.templates."tagr.env".path ];
       extraOptions = [
         "--group-add=${ingestGid}"
         "--group-add=${mediaGid}"
@@ -142,7 +133,6 @@ in
         cfg.dataDir
         libraryPath
         quarantinePath
-        envDir
       ];
       serviceConfig.SupplementaryGroups = lib.mkAfter [
         "music-ingest"
