@@ -112,6 +112,35 @@ Rationale:
 - reduces complexity and storage duplication
 - delayed ingest/pipeline split can be introduced when processing needs are concrete
 
+## D-032: `oci-melb-1` uses a recovered single-disk runtime layout with dedicated `/nix`
+
+Status: Accepted
+
+Decision:
+
+- `oci-melb-1` now runs with `/`, `/srv/data`, `/nix`, and `/srv/media` as labeled filesystems on the OCI boot volume
+- `modules/storage/disko-single-disk.nix` is the canonical declarative layout for that host shape
+- `/nix` remains a dedicated filesystem rather than a bind-mount into another service-data path
+
+Rationale:
+
+- the previous root-only layout was too small for real host operation and recovery
+- the validated rescue flow proved the single-disk labeled-filesystem shape is workable and recoverable on OCI
+
+## D-033: Shared music/media roots have one declarative directory owner
+
+Status: Accepted
+
+Decision:
+
+- `modules/applications/music.nix` owns creation of shared media roots such as `/srv/media/inbox`, `/srv/media/library`, and `/srv/media/quarantine`
+- leaf modules like Syncthing and Beets may add marker files, ACLs, or service-specific children, but do not redefine the same shared directory ownership contract
+
+Rationale:
+
+- avoids duplicate tmpfiles warnings and ownership drift
+- keeps cross-service storage policy in the application composition layer where shared media semantics are already defined
+
 ## D-009: Deployment tooling sequence
 
 Status: Accepted
@@ -549,6 +578,24 @@ Rationale:
 - a live SSH deployment can lose transport while activation stops the old network owner, even if the target generation itself is valid
 - applying the cutover at boot keeps the current session stable until the new generation takes control during early boot, where console rollback remains available
 - `do-admin-1`'s current provider-assigned addresses are stable enough for explicit declaration and matched the observed healthy runtime state better than the attempted DHCP handoff
+
+## D-034: Remote hosts keep a console-only rescue baseline with weekly exercise
+
+Status: Accepted
+
+Decision:
+
+- active remote hosts keep a declarative `rescue` user for provider or serial console break-glass access when normal SSH/Tailscale paths are unavailable
+- the `rescue` user is console-only, password-authenticated, separate from the normal identity-backed admin flow, and requires sudo with password rather than inheriting the default passwordless wheel posture
+- the recovery feature owns its own secret contract and reads the host-scoped rescue password hash from `secrets/hosts/<host>/system.yaml`, while host files remain thin and only enable/bind the feature
+- active hosts run a weekly reboot exercise through the shared recovery module so the break-glass baseline is exercised routinely
+
+Rationale:
+
+- the practical outage gap was lack of a local password-authenticated console path after network or SSH failure, not lack of another routine SSH identity
+- keeping the rescue user separate from normal admin access preserves the private-first identity model while making the break-glass path auditable and easy to rotate
+- module-owned secret wiring matches the repository's feature-oriented composition model better than host-owned `sops.secrets` declarations for recovery internals
+- a routine reboot exercise provides earlier feedback on boot/login regressions than waiting for a real outage
 
 ## Open Questions (Intentional)
 

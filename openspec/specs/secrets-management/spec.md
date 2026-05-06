@@ -134,12 +134,17 @@ When Karakeep secret/template ownership is leaf-managed, runtime containers SHAL
 - **AND** Karakeep runtime receives required secret-backed variables (including NextAuth and OIDC client credentials when OIDC is enabled)
 
 ### Requirement: Host exception secret scopes SHALL stay narrow and explicit
-Host exception secret scopes SHALL be reserved for host/bootstrap/system-only material and explicitly declared cross-host identity handshakes, and SHALL NOT become a fallback bucket for general application internals.
+Host exception secret scopes SHALL be reserved for host/bootstrap/system-only material, host recovery material, and explicitly declared cross-host identity handshakes, and SHALL NOT become a fallback bucket for general application internals.
 
 #### Scenario: Host system secrets are reviewed
 - **WHEN** `secrets/hosts/<host>/system.yaml` is inspected
 - **THEN** it contains host/bootstrap/system-only material
 - **AND** reusable application/service internals are absent from that scope
+
+#### Scenario: Host recovery secrets are reviewed
+- **WHEN** host-scoped recovery key material is inspected
+- **THEN** rescue-only password hash material or equivalent recovery secrets remain limited to the target host scope
+- **AND** unrelated hosts do not gain decryption access implicitly
 
 #### Scenario: Cross-host identity handshake material is reviewed
 - **WHEN** an explicit host-exception identity scope such as `secrets/hosts/<host>/oidc.yaml` is inspected

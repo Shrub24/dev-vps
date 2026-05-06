@@ -129,6 +129,7 @@ Standalone service scope:
 Host exception scope:
 
 - `secrets/hosts/<host>/system.yaml` — host-only bootstrap/system secrets (e.g. Tailscale auth key, SSH identities)
+  - this scope now also carries host-only recovery password hash material for console break-glass users when that recovery baseline is enabled
 - `secrets/hosts/<host>/oidc.yaml` — cross-host OIDC handshake secrets where both the app host and identity provider host need to decrypt
 
 Fleet-shared scope:
@@ -174,13 +175,22 @@ Accepted advanced alternative:
 
 Current decision:
 
+- one dedicated Nix store filesystem mounted at `/nix` on `oci-melb-1`
 - one persistent service-state mount on the host (`/srv/data`)
 - one dedicated media filesystem mounted at `/srv/media`
 - service state organized under subdirectories on `/srv/data`
 
+Recovered `oci-melb-1` single-disk baseline:
+
+- the OCI boot volume now carries the EFI system partition plus labeled ext4 filesystems for `/`, `/srv/data`, `/nix`, and `/srv/media`
+- `modules/storage/disko-single-disk.nix` is the canonical storage boundary for that recovered host shape
+- host-specific sizing stays in `hosts/oci-melb-1/default.nix`, while the partition/mount contract remains declarative in the storage module
+
 Initial media/data flow:
 
 - Syncthing manages both `/srv/media/library` and `/srv/media/quarantine` directly
+- `modules/applications/music.nix` is the canonical owner for creating shared media roots (`/srv/media`, `/srv/media/inbox`, `/srv/media/library`, `/srv/media/quarantine`, `.versions`)
+- lower-level service modules may add ACLs, marker files, or service-specific subdirectories, but do not redefine those shared root directory ownership contracts
 - SoulSync is the primary ingest and promotion control-plane service
 - Tagr is available as an operator-invoked manual metadata/cover fallback editor against canonical media paths
 - `/srv/media` remains the authoritative shared media root
@@ -258,6 +268,14 @@ Current model:
 - Bifrost baseline mode is file-driven and host-local on `oci-melb-1`; `config_store`, UI-managed config mutation, and other runtime-mutated control-plane state are intentionally out of baseline scope
 - Repo-owned AI gateway aliases (`shrublab-text`, `shrublab-image`, `shrublab-embedding`, `shrublab-fallback`) sit behind one host-local OpenAI-compatible endpoint for downstream consumers such as Karakeep
 
+Recovery posture:
+
+- normal operator access remains Tailscale-first over SSH
+- both active hosts may enable a console-only `rescue` user for provider/serial-console break-glass access when the normal network path is unavailable
+- the `rescue` user is password-authenticated for local console use, denied for SSH login, and remains separate from the normal identity-backed admin flow
+- host recovery secret registration remains feature-owned by `modules/shared/host-recovery.nix`, while hosts only bind the host secret file path and enable the feature
+- recovery readiness is exercised with a declared weekly reboot timer so console/login regressions are more likely to surface during routine operations rather than only during an outage
+
 ## Admin Surface Model
 
 Current admin-service shape:
@@ -297,6 +315,7 @@ Bootstrap and rollout order:
 - regular host updates via `deploy-rs` (`just deploy <host>`)
 - dry-activation and validation via `just activate <host>` and `just check`
 - remote network-owner cutovers are installed with `deploy-rs --boot` and applied on reboot rather than live-switched over SSH
+- recovery baseline rollouts must verify the `rescue` user contract, scheduled reboot timer, and rollback path before the change is treated as complete
 
 Fleet tooling posture:
 
@@ -314,6 +333,14 @@ Operator commands:
 - dry-activate: `just activate oci-melb-1`
 - checks: `just check`
 - backups: `just backup-init <host>`, `just backup-run <host>`, `just backup-check <host>`, `just backup-prune <host>`
+
+Recovery verification checklist:
+
+- confirm `services.hostRecovery` is enabled on the target host and points at the host-scoped `system.yaml` secret file
+- confirm the `rescue` account exists, is intended for console-only use, and cannot be used for SSH login
+- confirm `host-recovery-reboot.timer` is present with the expected weekly cadence
+- keep provider/serial console access available until the new generation has been verified
+- for `oci-melb-1`, note that some local builds on the x86_64 admin machine remain limited by non-substitutable `aarch64-linux` derivations; use remote/host-side validation when a full local build cannot complete
 
 Note: `just deploy` takes positional host arguments (`just deploy oci-melb-1`), not `host=...`.
 
