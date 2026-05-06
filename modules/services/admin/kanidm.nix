@@ -10,7 +10,9 @@ let
   secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
   identityPolicy = builtins.fromJSON (builtins.readFile ../../../policy/identity.json);
   oauth2Policy = identityPolicy.systems.oauth2;
-  oauth2ClientPolicies = lib.filterAttrs (_name: clientPolicy: clientPolicy.enable or true) oauth2Policy;
+  oauth2ClientPolicies = lib.filterAttrs (
+    _name: clientPolicy: clientPolicy.enable or true
+  ) oauth2Policy;
 
   oauth2Clients = lib.mapAttrs (
     _name: clientPolicy:
@@ -38,9 +40,7 @@ let
     // lib.optionalAttrs (clientPolicy ? preferShortUsername) {
       preferShortUsername = clientPolicy.preferShortUsername;
     }
-    // lib.optionalAttrs (clientPolicy ? public) {
-      public = clientPolicy.public;
-    }
+    // lib.optionalAttrs (clientPolicy ? public) { public = clientPolicy.public; }
   ) oauth2ClientPolicies;
 
   hasIdentitySecrets = cfg.secretFiles.identity != null;
@@ -53,7 +53,11 @@ let
     name: client:
     lib.nameValuePair "kanidm_oauth2_${name}_basic_secret" {
       sopsFile = client.secretFile;
-      key = if client ? secretKey && client.secretKey != null then client.secretKey else "${client.secretKeyPrefix}/client_secret";
+      key =
+        if client ? secretKey && client.secretKey != null then
+          client.secretKey
+        else
+          "${client.secretKeyPrefix}/client_secret";
       path = "/run/secrets/kanidm.oauth2.${name}.basic_secret";
       owner = "kanidm";
       group = "kanidm";
@@ -170,7 +174,7 @@ in
     backup = {
       exportDir = lib.mkOption {
         type = lib.types.str;
-        default = "${cfg.dataDir}/backups";
+        default = "/var/lib/kanidm/backups";
         description = "Directory containing Kanidm automatic backup artifacts for restic capture.";
       };
 
@@ -198,46 +202,45 @@ in
         assertion = config.services.identity.oidc.providerUrl == cfg.appUrl;
         message = "services.admin.kanidm.appUrl must stay aligned with services.identity.oidc.providerUrl.";
       }
-    ] ++ lib.mapAttrsToList (
-      name: _client: {
-        assertion = builtins.hasAttr name cfg.secretFiles.oauth2Clients;
-        message = "services.admin.kanidm.secretFiles.oauth2Clients.${name} must be set when system.oauth2.${name}.enable=true.";
-      }
-    ) oauth2Clients ++ lib.mapAttrsToList (
-      name: client: {
-        assertion = client.originUrl != null || ((client.route != null) && (client.callbackPath != null));
-        message = "system.oauth2.${name} must define originUrl directly or provide both routeKey and callbackPath.";
-      }
-    ) oauth2Clients;
+    ]
+    ++ lib.mapAttrsToList (name: _client: {
+      assertion = builtins.hasAttr name cfg.secretFiles.oauth2Clients;
+      message = "services.admin.kanidm.secretFiles.oauth2Clients.${name} must be set when system.oauth2.${name}.enable=true.";
+    }) oauth2Clients
+    ++ lib.mapAttrsToList (name: client: {
+      assertion = client.originUrl != null || ((client.route != null) && (client.callbackPath != null));
+      message = "system.oauth2.${name} must define originUrl directly or provide both routeKey and callbackPath.";
+    }) oauth2Clients;
 
-    sops.secrets = (lib.optionalAttrs hasIdentitySecrets (
-      secretHelpers.mkSecretsFromMap cfg.secretFiles.identity {
-        kanidm_admin_password = {
-          key = "kanidm/admin_password";
-          path = "/run/secrets/kanidm.admin_password";
+    sops.secrets =
+      (lib.optionalAttrs hasIdentitySecrets (
+        secretHelpers.mkSecretsFromMap cfg.secretFiles.identity {
+          kanidm_admin_password = {
+            key = "kanidm/admin_password";
+            path = "/run/secrets/kanidm.admin_password";
+            owner = "kanidm";
+            group = "kanidm";
+          };
+          kanidm_idm_admin_password = {
+            key = "kanidm/idm_admin_password";
+            path = "/run/secrets/kanidm.idm_admin_password";
+            owner = "kanidm";
+            group = "kanidm";
+          };
+        }
+      ))
+      // (lib.optionalAttrs hasProvisioningSecrets {
+        kanidm_provisioning_overlay = {
+          sopsFile = cfg.secretFiles.provisioning;
+          format = "json";
+          key = "";
+          path = "/run/secrets/kanidm.provisioning.json";
           owner = "kanidm";
           group = "kanidm";
+          mode = "0400";
         };
-        kanidm_idm_admin_password = {
-          key = "kanidm/idm_admin_password";
-          path = "/run/secrets/kanidm.idm_admin_password";
-          owner = "kanidm";
-          group = "kanidm";
-        };
-      }
-    ))
-    // (lib.optionalAttrs hasProvisioningSecrets {
-      kanidm_provisioning_overlay = {
-        sopsFile = cfg.secretFiles.provisioning;
-        format = "json";
-        key = "";
-        path = "/run/secrets/kanidm.provisioning.json";
-        owner = "kanidm";
-        group = "kanidm";
-        mode = "0400";
-      };
-    })
-    // oauth2SecretSpecs;
+      })
+      // oauth2SecretSpecs;
 
     services.admin.kanidm.oidc = {
       clientPathPrefix = config.services.identity.oidc.clientPathPrefix;
@@ -270,23 +273,23 @@ in
         };
       };
 
-      provision = lib.mkIf (hasIdentitySecrets || hasOauth2Clients || hasProvisioningSecrets) ({
-        enable = true;
-        instanceUrl = cfg.appUrl;
-        systems.oauth2 = oauth2Provisioning;
-      }
-      // lib.optionalAttrs hasIdentitySecrets {
-        adminPasswordFile = config.sops.secrets.kanidm_admin_password.path;
-        idmAdminPasswordFile = config.sops.secrets.kanidm_idm_admin_password.path;
-      }
-      // lib.optionalAttrs hasProvisioningSecrets {
-        extraJsonFile = config.sops.secrets.kanidm_provisioning_overlay.path;
-      });
+      provision = lib.mkIf (hasIdentitySecrets || hasOauth2Clients || hasProvisioningSecrets) (
+        {
+          enable = true;
+          instanceUrl = cfg.appUrl;
+          systems.oauth2 = oauth2Provisioning;
+        }
+        // lib.optionalAttrs hasIdentitySecrets {
+          adminPasswordFile = config.sops.secrets.kanidm_admin_password.path;
+          idmAdminPasswordFile = config.sops.secrets.kanidm_idm_admin_password.path;
+        }
+        // lib.optionalAttrs hasProvisioningSecrets {
+          extraJsonFile = config.sops.secrets.kanidm_provisioning_overlay.path;
+        }
+      );
     };
 
-    environment.systemPackages = [
-      pkgs.kanidm_1_9
-    ];
+    environment.systemPackages = [ pkgs.kanidm_1_9 ];
 
     services.state-backups.services.kanidm = {
       enable = true;

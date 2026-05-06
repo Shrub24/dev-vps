@@ -172,8 +172,10 @@ in
       exportPaths = [ cfg.backup.exportFile ];
       prepareCommands = [
         ''
-          rm -f ${cfg.backup.exportFile}
-          ${pkgs.sqlite}/bin/sqlite3 ${cfg.dataDir}/db.sqlite3 ".backup ${cfg.backup.exportFile}"
+          tmp_export="${cfg.backup.exportFile}.tmp"
+          rm -f "$tmp_export"
+          ${pkgs.sqlite}/bin/sqlite3 ${cfg.dataDir}/db.sqlite3 ".backup $tmp_export"
+          mv "$tmp_export" ${cfg.backup.exportFile}
         ''
       ];
     };
