@@ -235,8 +235,7 @@ Operator workflow:
 
 - initialize a host repository: `just backup-init <host>`
 - run an on-demand backup: `just backup-run <host>`
-- run repository integrity checks: `just backup-check <host>`
-- run retention pruning: `just backup-prune <host>`
+- re-run the canonical managed backup flow for initialization, integrity checks, and pruning: `just backup-check <host>` and `just backup-prune <host>`
 - inspect status/logs: `just backup-status <host>` and `just backup-logs <host>`
 
 Restore posture:
