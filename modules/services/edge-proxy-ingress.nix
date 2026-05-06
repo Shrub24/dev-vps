@@ -67,7 +67,7 @@ let
           ${accessGuard}
           ${responseHeaders}
           reverse_proxy ${route.upstream} {
-            header_up Host {host}
+            header_up Host ${route.upstreamHostHeader}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-For {remote_host}
             ${upstreamTransport}
@@ -77,11 +77,12 @@ let
     else if route.stripPrefix then
       ''
         # ${name} (${route.exposureMode})
+        ${lib.optionalString route.forceTrailingSlash "redir ${route.path} ${route.path}/ 308"}
         handle_path ${route.path}* {
           ${accessGuard}
           ${responseHeaders}
           reverse_proxy ${route.upstream} {
-            header_up Host {host}
+            header_up Host ${route.upstreamHostHeader}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-For {remote_host}
             ${upstreamTransport}
@@ -97,7 +98,7 @@ let
           ${accessGuard}
           ${responseHeaders}
           reverse_proxy ${route.upstream} {
-            header_up Host {host}
+            header_up Host ${route.upstreamHostHeader}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-For {remote_host}
             ${upstreamTransport}
@@ -346,6 +347,12 @@ in
               description = "Optional response headers injected before proxying for this route.";
             };
 
+            upstreamHostHeader = lib.mkOption {
+              type = lib.types.str;
+              default = "{host}";
+              description = "Value used for the upstream Host header when proxying this route.";
+            };
+
             authenticatedOriginPullsRequired = lib.mkOption {
               type = lib.types.bool;
               default = true;
@@ -431,7 +438,7 @@ in
         domain = cfg.primaryDomain;
         extraDomainNames = certExtraDomains;
         dnsProvider = "cloudflare";
-        credentialsFile = cfg.cloudflareCredentialsFile;
+        environmentFile = cfg.cloudflareCredentialsFile;
         group = "caddy";
       };
     };
