@@ -7,3 +7,4 @@ zshrc/.zsh_plugins.zsh
 __pycache__/
 .env
 .deploy-logs/
+result
