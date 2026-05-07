@@ -148,7 +148,7 @@ Fleet-shared scope:
 
 - `lib/secrets.nix` provides reusable helpers: `mkSecretFileOption`, `mkSecretKeyOption`, `mkRequiredSecretAssertion`, `mkSimpleSecret`, `mkSecretsFromMap`
 - `lib/secret-scope.nix` provides derived-reader validation
-- `lib/check-secret-scope.sh` validates configured recipients against expected topology
+- `scripts/check-secret-scope.sh` validates configured recipients against expected topology
 
 ### Operational implications
 

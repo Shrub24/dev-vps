@@ -11,7 +11,7 @@ This directory is the Cloudflare control-plane ownership boundary.
 ## Contract
 
 1. Nix policy is edited in `policy/web-services.nix`.
-2. JSON is exported with `./lib/export-web-services-policy.sh <host>`.
+2. JSON is exported with `./scripts/export-web-services-policy.sh <host>`.
 3. OpenTofu reads that JSON via `jsondecode(file(...))` and applies Cloudflare resources.
 
 This keeps one source of truth while separating runtime wiring from control-plane ownership.

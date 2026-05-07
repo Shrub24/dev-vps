@@ -205,11 +205,11 @@ sops-updatekeys: sops-updatekeys-changed
 # ---------------------------------------------------------------------------
 
 tofu-sync host="do-admin-1":
-  @./lib/export-web-services-policy.sh {{host}}
-  @./lib/check-web-services-policy.sh {{host}}
+  @./scripts/export-web-services-policy.sh {{host}}
+  @./scripts/check-web-services-policy.sh {{host}}
 
 tofu-runtime:
-  @./lib/render-opentofu-cloudflare-runtime.sh
+  @./scripts/render-opentofu-cloudflare-runtime.sh
 
 tofu-init:
   @just tofu-init-remote
