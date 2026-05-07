@@ -8,3 +8,6 @@ __pycache__/
 .env
 .deploy-logs/
 result
+.tmp/
+.ruff_cache/
+.codenomad/
