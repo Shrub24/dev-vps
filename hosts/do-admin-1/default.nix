@@ -10,7 +10,6 @@
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
-    ../../modules/profiles/worker-interface.nix
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/applications/admin/default.nix
@@ -90,6 +89,11 @@
     enable = true;
     secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
     bucket = "shrublab-backup-do-admin-1";
+  };
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 14d";
   };
   services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz";
 

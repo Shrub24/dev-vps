@@ -14,7 +14,6 @@ in
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
-    ../../modules/profiles/worker-interface.nix
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/shared/identity-oidc.nix
@@ -52,7 +51,7 @@ in
   nix.gc = {
     automatic = true;
     dates = "daily";
-    options = "--delete-older-than 7d";
+    options = "--delete-older-than 14d";
   };
 
   services.journald.extraConfig = ''

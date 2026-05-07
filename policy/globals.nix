@@ -34,6 +34,12 @@
   };
 
   services = {
+    nix = {
+      substituters = [ "ssh://eu.nixbuild.net" ];
+      trustedSubstituters = [ "ssh://eu.nixbuild.net" ];
+      trustedPublicKeys = [ "nixbuild.net/HWWKWC-1:dnSfpPDHQN/U9wexkK6r3GTaYrwqNwKS70SNGXistKg=" ];
+    };
+
     karakeep-pod = {
       dataDir = "/srv/data/karakeep";
       port = 3010;

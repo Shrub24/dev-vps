@@ -91,7 +91,7 @@ The exact file tree can evolve, but the intended shape is:
 - `modules/core/base.nix` for shared baseline NixOS policy
 - `modules/core/users.nix` for shared user declarations
 - `modules/profiles/base-server.nix` for host profile composition
-- `modules/profiles/worker-interface.nix` for operator-facing shell and tooling defaults
+- `modules/profiles/base-server.nix` for common host profile composition, including shared Nix substitute/trust defaults
 - `modules/providers/oci/default.nix` for OCI-specific host-safe defaults
 - `modules/providers/digitalocean/default.nix` for DigitalOcean host-safe defaults
 - `modules/storage/disko-root.nix` for declarative root disk layout
@@ -328,6 +328,25 @@ Fleet tooling posture:
 - `deploy-rs` is the primary host deployment path (`deploy.nodes` in flake output)
 - per-host deploy metadata is defined in `lib/deploy/hosts.nix`, with reusable wiring in `lib/deploy/default.nix`
 - keep `nixos-anywhere` for bootstrap and break-glass flows; use `deploy-rs` for regular host updates
+- GitHub Actions is the canonical hosted validation and deploy automation surface:
+  - validation runs on PRs to `main` and pushes to non-`main`
+  - pushes to `main` run validation first, then serial fail-fast deploys (`do-admin-1` before `oci-melb-1`)
+  - operators may also run the deploy workflow manually from any selected branch via `workflow_dispatch`; that manual path still uses the same validation and serial deploy ordering
+  - CI joins the tailnet temporarily with `tailscale/github-action@v4` and reaches hosts over Tailscale-only addresses
+  - the top-level deploy workflow keeps shared validation and explicit ordering logic, while the reusable per-host deploy workflow owns host prebuild + deploy steps
+  - deploy workflow structure keeps shared nixbuild and per-host deploy logic in reusable GitHub Actions surfaces rather than duplicating job steps for each host
+  - deploy auth is intended to rely on Tailscale SSH policy for the `dev` user rather than a repository-stored CI deploy private key
+  - CI-specific SSH relaxations for deploy-rs are passed inline as workflow command options rather than through a generated SSH config file
+- nixbuild.net is the CI build plane for mixed-architecture validation:
+  - GitHub Actions installs Nix with `nixbuild/nix-quick-install-action`
+  - GitHub Actions configures nixbuild with `nixbuild/nixbuild-action` using GitHub OIDC plus an attenuated `NIXBUILD_TOKEN`
+  - CI remote-builds host toplevels against `ssh-ng://eu.nixbuild.net` so `x86_64-linux` runners can validate both active host architectures without a custom runner fleet
+- Host-side Nix consumption remains substitute-only in phase 1:
+  - hosts inherit one shared substitute/trust baseline through `modules/profiles/base-server.nix`
+  - current substitute defaults point at `nixbuild.net` over `ssh://eu.nixbuild.net`
+  - host-side substitute/trust settings are policy-driven through `policy/globals.nix` and applied by the common base-server profile rather than repeated in host files
+  - CI auth remains separate and uses GitHub OIDC plus `NIXBUILD_TOKEN`
+  - the account-specific nixbuild signing key is public but must still be populated explicitly in `policy/globals.nix` before substitute consumption is relied on
 - before any bootstrap/deploy operation, run `just bootstrap-preflight host=<host>` to enforce access-safety invariants (`openssh` enabled, tcp/22 allowed, declarative `dev`/`root` SSH keys present)
 
 Operator commands:

@@ -598,6 +598,60 @@ Rationale:
 - module-owned secret wiring matches the repository's feature-oriented composition model better than host-owned `sops.secrets` declarations for recovery internals
 - a routine reboot exercise provides earlier feedback on boot/login regressions than waiting for a real outage
 
+## D-035: GitHub Actions uses nixbuild.net as the canonical CI build plane
+
+Status: Accepted
+
+Decision:
+
+- GitHub Actions is the canonical hosted validation surface for this repository
+- CI installs Nix with `nixbuild/nix-quick-install-action` and configures nixbuild with `nixbuild/nixbuild-action`
+- nixbuild authentication in CI uses GitHub OIDC plus an attenuated `NIXBUILD_TOKEN`
+- validation workflows remote-build both active host toplevels against `ssh-ng://eu.nixbuild.net`
+- OpenTofu validation is intentionally deferred from CI in this change until a separate CI credential model is introduced
+
+Rationale:
+
+- keeps mixed-architecture validation reproducible without maintaining a custom runner fleet
+- reduces CI secret sharpness versus SSH-key-only nixbuild auth
+- keeps the change focused on Nix host validation and deploy flow first
+
+## D-036: GitHub Actions deploys use Tailscale SSH-first auth with reusable workflow structure
+
+Status: Accepted
+
+Decision:
+
+- deploy workflows join the tailnet temporarily with `tailscale/github-action@v4` using GitHub OIDC workload identity
+- pushes to `main` deploy serially and fail fast in the order `do-admin-1` then `oci-melb-1`
+- operators may also invoke the deploy workflow manually from any selected branch ref via `workflow_dispatch`, using the same canonical deploy entrypoints and ordering
+- deploy auth is intended to succeed via Tailscale SSH policy for the `dev` user rather than a repository-stored CI deploy SSH private key
+- workflow structure keeps shared deploy logic in reusable GitHub Actions surfaces so host changes do not require copying large job blocks, with host prebuild + deploy owned by the reusable per-host workflow
+- CI-specific SSH client relaxations are passed inline to `deploy-rs` rather than written to a generated SSH config file
+- host-side substitute/trust defaults remain policy-driven for hosts and are not reused for GitHub deploy access
+
+Rationale:
+
+- preserves the private-first network model while removing a separate CI deploy private key contract
+- avoids overloading host-scoped machine auth for CI concerns
+- makes deploy order explicit so edge/admin dependencies fail early instead of drifting silently
+
+## D-037: Shared host Nix substitute defaults live in policy and common host profile composition
+
+Status: Accepted
+
+Decision:
+
+- canonical host-side substitute/trust defaults live in `policy/globals.nix`
+- `modules/profiles/base-server.nix` applies those defaults for active hosts as part of common host profile composition
+- host files should not need separate build-profile imports or enable flags just to inherit the shared substitute baseline
+
+Rationale:
+
+- keeps `flake.nix` focused on wiring rather than embedding fleet policy
+- reduces host boilerplate while preserving one canonical policy source
+- keeps future host exceptions available through normal NixOS module override behavior if needed
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

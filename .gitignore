@@ -11,3 +11,4 @@ result
 .tmp/
 .ruff_cache/
 .codenomad/
+*.token

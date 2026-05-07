@@ -1,0 +1,6 @@
+check if
+  jwt_claim("iss", "https://token.actions.githubusercontent.com");
+
+check if
+  jwt_claim("sub", $sub),
+  $sub.contains("repo:Shrub24/nix-homelab");

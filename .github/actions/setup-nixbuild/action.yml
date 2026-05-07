@@ -1,0 +1,16 @@
+name: Setup nixbuild
+description: Install Lix and configure nixbuild.net with GitHub OIDC
+inputs:
+  nixbuild_token:
+    description: Attenuated nixbuild.net token for this repository
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: nixbuild/nix-quick-install-action@v34
+    - name: Configure nixbuild.net
+      uses: nixbuild/nixbuild-action@v24
+      with:
+        nixbuild_token: ${{ inputs.nixbuild_token }}
+        oidc: true
