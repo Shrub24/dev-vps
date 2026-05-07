@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HOST="${1:-do-admin-1}"
-OUT="generated/policy/web-services.json"
+OUT="${REPO_ROOT}/generated/policy/web-services.json"
 TMP="$(mktemp)"
 
 cleanup() {

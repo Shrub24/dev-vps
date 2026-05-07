@@ -135,6 +135,14 @@ breakglass host user="dev":
 
 check:
   @nix flake check --no-build --no-write-lock-file path:.
+  @just test-secrets
+  @just test-web-policy
+
+test-secrets:
+  @./tests/check-secret-scope.sh
+
+test-web-policy host="do-admin-1":
+  @./tests/check-web-services-policy.sh {{host}}
 
 build host="oci-melb-1":
   @nix build --no-link --no-write-lock-file "path:.#nixosConfigurations.{{host}}.config.system.build.toplevel"
@@ -206,7 +214,7 @@ sops-updatekeys: sops-updatekeys-changed
 
 tofu-sync host="do-admin-1":
   @./scripts/export-web-services-policy.sh {{host}}
-  @./scripts/check-web-services-policy.sh {{host}}
+  @./tests/check-web-services-policy.sh {{host}}
 
 tofu-runtime:
   @./scripts/render-opentofu-cloudflare-runtime.sh

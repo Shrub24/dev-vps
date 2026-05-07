@@ -99,8 +99,11 @@ The exact file tree can evolve, but the intended shape is:
 - `policy/globals.nix` for canonical non-secret fleet defaults
 - `policy/service-defaults.nix` for feature enablement and path defaults
 - `policy/web-services.nix` for SSOT endpoint and routing policy
+- `generated/policy/web-services.json` for the committed exported web-policy artifact consumed by OpenTofu
 - `lib/secrets.nix` for reusable secret-contract helpers
-- `lib/secret-scope.nix` for derived reader-scope validation
+- `scripts/*.sh` for operator-facing repo utilities and export/render helpers
+- `tests/fixtures/secret-scope.nix` for secret-scope contract expectations used by validation checks
+- `tests/*.sh` for repo-owned validation checks that verify committed artifacts and policy contracts
 - `lib/deploy/` for deploy-rs host wiring
 - `secrets/applications/<name>.yaml` for application-scoped encrypted values
 - `secrets/services/<name>.yaml` for standalone service-scoped encrypted values
@@ -144,11 +147,13 @@ Fleet-shared scope:
 - **Host modules** own only host identity, feature enables, and explicit secret-file-path bindings (e.g. `applications.music.secretFiles.host = ./secrets/applications/music.yaml`)
 - **Policy layer** (`.sops.yaml`) defines decryption recipients per file pattern using explicit path-scoped rules; normal scope derives from feature enablement; explicit exception readers declared for OIDC handshake material
 
-### Contract helpers
+### Validation Contracts
 
 - `lib/secrets.nix` provides reusable helpers: `mkSecretFileOption`, `mkSecretKeyOption`, `mkRequiredSecretAssertion`, `mkSimpleSecret`, `mkSecretsFromMap`
-- `lib/secret-scope.nix` provides derived-reader validation
-- `scripts/check-secret-scope.sh` validates configured recipients against expected topology
+- `.sops.yaml` remains the source of truth for recipient policy; validation lives separately so tests do not read as authoritative configuration
+- `tests/fixtures/secret-scope.nix` defines the expected recipient contract used by secret-scope validation
+- `tests/check-secret-scope.sh` verifies `.sops.yaml` matches the intended topology and blast-radius rules
+- `tests/check-web-services-policy.sh` verifies the committed exported web-services JSON matches `policy/web-services.nix`
 
 ### Operational implications
 
@@ -331,7 +336,9 @@ Operator commands:
 - deploy without rollback: `just deploy oci-melb-1 --rollback false`
 - network-owner cutover: `nix run .#deploy-rs -- --skip-checks --boot .#do-admin-1`, then reboot from console
 - dry-activate: `just activate oci-melb-1`
-- checks: `just check`
+- checks: `just check` (flake checks plus `tests/check-secret-scope.sh` and `tests/check-web-services-policy.sh`)
+- Cloudflare policy export sync: `just tofu-sync`
+- Cloudflare runtime render: `just tofu-runtime`
 - backups: `just backup-init <host>`, `just backup-run <host>`, `just backup-check <host>`, `just backup-prune <host>`
 
 Recovery verification checklist:

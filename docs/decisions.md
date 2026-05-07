@@ -468,7 +468,7 @@ Decision:
 - define host deploy metadata in `lib/deploy/hosts.nix` and reusable wiring in `lib/deploy/default.nix`
 - set each node to `sshUser = "dev"`, host hostname, and `profiles.system.path` from the matching `nixosConfigurations.<host>`
 - wire `deploy-rs` deployment checks into `flake checks` for both `aarch64-linux` and `x86_64-linux`
-- make `just deploy`, `just deploy-activate`, and `just deploy-check` the primary operator workflow
+- make `just deploy`, `just activate`, and `just check` the primary operator workflow
 
 Rationale:
 
@@ -548,6 +548,7 @@ Decision:
 - keep plain explicit `flake.nix` architecture (no `flake-parts` or Dendritic Nix adoption in this change)
 - perform a clean cutover without backward-compatibility aliases or migration shims
 - use `lib/secrets.nix` as a light reusable helper library for common secret-contract option declarations
+- keep `.sops.yaml` as recipient-policy source of truth, with secret-scope validation implemented as repo-owned checks under `tests/`
 
 Rationale:
 

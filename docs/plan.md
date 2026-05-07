@@ -63,6 +63,7 @@ Track B: Secrets and identity model
 - keep `secrets/templates/*.yaml` as unencrypted reference templates for each encrypted bucket
 - deep leaf modules own their own `sops.secrets`/`sops.templates` registrations; application modules pass through `secretFiles.*` bindings
 - keep `lib/secrets.nix` as a light reusable helper library for common secret-contract patterns
+- keep validation separate from configuration authority: `.sops.yaml` remains SSOT, while repo checks live under `tests/`
 - default host recipient bootstrap via live SSH host key to age derivation, with injected-key override available
 - keep host enrollment artifacts and policies explicit
 
@@ -135,3 +136,13 @@ Active implementation anchor paths that must stay reflected in docs:
 - `modules/services/admin/cockpit.nix`
 
 Maintenance requirement: changes to active architecture paths, trust boundaries, or operator/CI commands must update canonical docs in the same change window.
+
+Current operator/validation entrypoints that docs should track when they change:
+
+- `just check`
+- `just tofu-sync`
+- `just tofu-runtime`
+- `tests/check-secret-scope.sh`
+- `tests/check-web-services-policy.sh`
+- `scripts/export-web-services-policy.sh`
+- `scripts/render-opentofu-cloudflare-runtime.sh`

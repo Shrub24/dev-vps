@@ -27,19 +27,7 @@ echo ""
 PASS=0
 FAIL=0
 
-for path_key in \
-  "applications/music:oci-melb-1" \
-  "applications/admin:do-admin-1" \
-  "applications/edge-ingress:oci-melb-1,do-admin-1" \
-  "services/karakeep-pod:oci-melb-1" \
-  "services/bifrost-gateway:oci-melb-1" \
-  "hosts/oci-melb-1/system:oci-melb-1" \
-  "hosts/do-admin-1/system:do-admin-1" \
-  "hosts/oci-melb-1/oidc:oci-melb-1,do-admin-1" \
-  "hosts/do-admin-1/oidc:do-admin-1,oci-melb-1"
-do
-  scope="${path_key%%:*}"
-  expected="${path_key##*:}"
+while IFS=$'\t' read -r scope expected; do
   echo "[scope] secrets/$scope"
   echo "  expected readers: $expected"
 
@@ -77,7 +65,10 @@ do
 
   PASS=$((PASS+1))
   echo ""
-done
+done < <(
+  nix eval --json --file "$REPO_ROOT/tests/fixtures/secret-scope.nix" \
+    | python3 -c 'import json, sys; data = json.load(sys.stdin); [print(f"{scope}\t{",".join(readers)}") for scope, readers in data.items()]'
+)
 
 echo "=== Result: $PASS scopes checked ==="
 if [ "$FAIL" -gt 0 ]; then
