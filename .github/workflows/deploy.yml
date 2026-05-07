@@ -1,29 +1,24 @@
 name: deploy
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
 concurrency:
   group: deploy-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
-
 permissions:
   contents: read
   id-token: write
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     environment: ci
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
       - name: Derive deploy metadata
         id: meta
         shell: bash
@@ -37,15 +32,12 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
-
       - name: Setup nixbuild
         uses: ./.github/actions/setup-nixbuild
         with:
           nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
-
       - name: Validate flake wiring
         run: nix flake check --no-build --no-write-lock-file path:.
-
       - name: Summarize deployment validation
         run: |
           {
@@ -58,14 +50,12 @@ jobs:
             echo "- Host prebuilds run inside the reusable deploy-host workflow"
             echo "- Manual workflow_dispatch may deploy from any selected branch ref"
           } >> "$GITHUB_STEP_SUMMARY"
-
   deploy-do-admin-1:
     needs: validate
     uses: ./.github/workflows/deploy-host.yml
     with:
       host: do-admin-1
     secrets: inherit
-
   deploy-oci-melb-1:
     needs: deploy-do-admin-1
     uses: ./.github/workflows/deploy-host.yml

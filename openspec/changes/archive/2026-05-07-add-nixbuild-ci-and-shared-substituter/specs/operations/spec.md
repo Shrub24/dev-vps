@@ -8,6 +8,11 @@ Operations SHALL provide canonical CI validation behavior that distinguishes pul
 - **THEN** validation workflows execute canonical repository checks
 - **AND** no deployment steps are executed
 
+#### Scenario: Host remote-build validation is scoped to high-signal triggers
+- **WHEN** CI is triggered by routine pushes to non-`main` branches
+- **THEN** lightweight validation checks MAY run without host toplevel remote-build jobs
+- **AND** host toplevel remote-build validation runs on pull requests to `main` and on manual workflow dispatch triggers
+
 #### Scenario: CI jobs use the canonical GitHub environment for secret-backed automation
 - **WHEN** validation or deployment jobs need GitHub-hosted secrets or environment protection rules
 - **THEN** those jobs are explicitly bound to the canonical GitHub Actions environment for this repository
@@ -46,6 +51,12 @@ Automated deployment on `main` SHALL execute repository-defined deployment entry
 - **WHEN** GitHub Actions deploys via `deploy-rs`
 - **THEN** any temporary CI-specific SSH client relaxations are passed inline via deploy command options
 - **AND** the workflow does not require generating a persistent SSH config file for those CI-specific options
+
+#### Scenario: CI deploys can force host-side realization without changing local defaults
+- **WHEN** GitHub Actions deployment should avoid acting as a middleman for store-path transfer
+- **THEN** CI MAY pass an inline `deploy-rs` remote-build override for the target host deployment
+- **AND** repository-local deploy topology defaults do not need to change for non-CI operator workflows
+- **AND** the target host becomes the realization point that fetches directly from its configured substituters
 
 ### Requirement: CI SHALL validate OpenTofu posture without applying infrastructure
 CI workflows SHALL include OpenTofu validation checks while leaving infrastructure apply as an explicit manual operator action.

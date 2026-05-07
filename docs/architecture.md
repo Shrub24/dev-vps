@@ -329,7 +329,8 @@ Fleet tooling posture:
 - per-host deploy metadata is defined in `lib/deploy/hosts.nix`, with reusable wiring in `lib/deploy/default.nix`
 - keep `nixos-anywhere` for bootstrap and break-glass flows; use `deploy-rs` for regular host updates
 - GitHub Actions is the canonical hosted validation and deploy automation surface:
-  - validation runs on PRs to `main` and pushes to non-`main`
+  - lightweight validation runs on PRs to `main` and pushes to non-`main`
+  - host toplevel remote-build validation is reserved for PRs to `main` and manual `workflow_dispatch` runs
   - pushes to `main` run validation first, then serial fail-fast deploys (`do-admin-1` before `oci-melb-1`)
   - operators may also run the deploy workflow manually from any selected branch via `workflow_dispatch`; that manual path still uses the same validation and serial deploy ordering
   - CI joins the tailnet temporarily with `tailscale/github-action@v4` and reaches hosts over Tailscale-only addresses
@@ -337,6 +338,7 @@ Fleet tooling posture:
   - deploy workflow structure keeps shared nixbuild and per-host deploy logic in reusable GitHub Actions surfaces rather than duplicating job steps for each host
   - deploy auth is intended to rely on Tailscale SSH policy for the `dev` user rather than a repository-stored CI deploy private key
   - CI-specific SSH relaxations for deploy-rs are passed inline as workflow command options rather than through a generated SSH config file
+  - CI deploys also pass `deploy-rs --remote-build` inline so the target host becomes the realization point and fetches directly from configured substituters instead of using the GitHub runner as an extra store-path transfer hop
 - nixbuild.net is the CI build plane for mixed-architecture validation:
   - GitHub Actions installs Nix with `nixbuild/nix-quick-install-action`
   - GitHub Actions configures nixbuild with `nixbuild/nixbuild-action` using GitHub OIDC plus an attenuated `NIXBUILD_TOKEN`
@@ -347,6 +349,7 @@ Fleet tooling posture:
   - host-side substitute/trust settings are policy-driven through `policy/globals.nix` and applied by the common base-server profile rather than repeated in host files
   - CI auth remains separate and uses GitHub OIDC plus `NIXBUILD_TOKEN`
   - the account-specific nixbuild signing key is public but must still be populated explicitly in `policy/globals.nix` before substitute consumption is relied on
+  - repo-local `deploy-rs` topology stays unchanged for operator workflows; the CI-only `--remote-build` override exists specifically to keep GitHub-hosted deploy runs off the store-path data plane where hosts already have direct substituter access
 - before any bootstrap/deploy operation, run `just bootstrap-preflight host=<host>` to enforce access-safety invariants (`openssh` enabled, tcp/22 allowed, declarative `dev`/`root` SSH keys present)
 
 Operator commands:

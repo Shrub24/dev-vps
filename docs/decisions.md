@@ -607,7 +607,7 @@ Decision:
 - GitHub Actions is the canonical hosted validation surface for this repository
 - CI installs Nix with `nixbuild/nix-quick-install-action` and configures nixbuild with `nixbuild/nixbuild-action`
 - nixbuild authentication in CI uses GitHub OIDC plus an attenuated `NIXBUILD_TOKEN`
-- validation workflows remote-build both active host toplevels against `ssh-ng://eu.nixbuild.net`
+- validation workflows reserve host toplevel remote-build checks for pull requests targeting `main` and manual `workflow_dispatch` runs; routine pushes to non-`main` stay on lightweight validation only
 - OpenTofu validation is intentionally deferred from CI in this change until a separate CI credential model is introduced
 
 Rationale:
@@ -628,6 +628,7 @@ Decision:
 - deploy auth is intended to succeed via Tailscale SSH policy for the `dev` user rather than a repository-stored CI deploy SSH private key
 - workflow structure keeps shared deploy logic in reusable GitHub Actions surfaces so host changes do not require copying large job blocks, with host prebuild + deploy owned by the reusable per-host workflow
 - CI-specific SSH client relaxations are passed inline to `deploy-rs` rather than written to a generated SSH config file
+- CI deploys pass `deploy-rs --remote-build` inline so the target host realizes the deployment and fetches directly from configured substituters instead of using the GitHub runner as a store-path relay
 - host-side substitute/trust defaults remain policy-driven for hosts and are not reused for GitHub deploy access
 
 Rationale:
@@ -635,6 +636,7 @@ Rationale:
 - preserves the private-first network model while removing a separate CI deploy private key contract
 - avoids overloading host-scoped machine auth for CI concerns
 - makes deploy order explicit so edge/admin dependencies fail early instead of drifting silently
+- reduces CI bandwidth/storage waste and one extra failure hop when hosts already have equivalent substituter access
 
 ## D-037: Shared host Nix substitute defaults live in policy and common host profile composition
 

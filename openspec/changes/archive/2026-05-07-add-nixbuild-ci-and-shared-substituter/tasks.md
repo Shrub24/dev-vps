@@ -71,4 +71,16 @@
 
 - [x] 12.1 Attach all secret-consuming CI validation and deploy jobs to the `ci` GitHub Actions environment so environment-scoped secrets and protection rules are applied consistently.
 - [x] 12.2 Update workflow secret templates/docs to state that the required GitHub Actions secrets live in the `ci` environment for these workflows.
-- [ ] 12.3 Re-run workflow/repo validation and strict OpenSpec validation after the environment binding update.
+- [x] 12.3 Re-run workflow/repo validation and strict OpenSpec validation after the environment binding update.
+
+## 13. Make CI deploys fetch directly from host-side substituters
+
+- [x] 13.1 Update the reusable CI deploy workflow so GitHub Actions passes an inline `deploy-rs` remote-build override instead of relying on repository-local deploy topology defaults.
+- [x] 13.2 Update canonical docs/spec text to explain that CI deploys prefer host-side realization/direct substituter fetch while local operator deploy topology remains unchanged.
+- [x] 13.3 Re-run workflow/OpenSpec validation after the CI-only remote-build override change.
+
+## 14. Scope expensive CI host builds to high-signal triggers
+
+- [x] 14.1 Keep lightweight validation on pushes to non-`main` while gating host toplevel remote-build jobs to pull requests targeting `main` and manual dispatch runs.
+- [x] 14.2 Update canonical docs/spec text to reflect the resource-aware CI trigger split.
+- [x] 14.3 Re-run workflow/OpenSpec validation after CI trigger scoping changes.
