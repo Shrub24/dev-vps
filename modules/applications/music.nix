@@ -216,6 +216,16 @@ in
       paths = [ "${cfg.dataRoot}/beets" ];
     };
 
+    services.state-backups.services.media = {
+      enable = true;
+      mode = "live";
+      paths = [ cfg.mediaRoot ];
+      exclude = [
+        cfg.versionArchiveRoot
+        "${cfg.mediaRoot}/.stversions"
+      ];
+    };
+
     systemd.paths.beets-inbox-watch.enable = false;
     systemd.paths.beets-quarantine-promote-watch.enable = false;
     systemd.timers.beets-inbox-backstop.enable = false;

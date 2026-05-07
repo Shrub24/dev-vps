@@ -12,13 +12,13 @@ The fleet SHALL back up mutable host state using NixOS `services.restic.backups`
 - **THEN** the host resolves a restic backup definition through the canonical NixOS module surface
 - **AND** the repository target is isolated to that host via its dedicated bucket/repository rather than a shared cross-host repository
 
-### Requirement: Initial backup scope SHALL include service state and exclude media payloads
-Initial fleet backups SHALL include mutable service state and generated export artifacts, SHALL exclude repo-owned immutable configuration, and SHALL exclude `/srv/media` from required backup coverage in this wave.
+### Requirement: Initial backup scope SHALL include service state and host-declared backup paths
+Initial fleet backups SHALL include mutable service state and generated export artifacts, SHALL exclude repo-owned immutable configuration, and MAY include host-declared payload paths such as `/srv/media` when explicitly wired into host backup coverage.
 
 #### Scenario: Backup path scope is reviewed
 - **WHEN** canonical backup paths and exclusions are inspected
 - **THEN** service state paths under declared managed roots such as `/srv/data` are included
-- **AND** `/srv/media` is excluded from required backup payload in this change
+- **AND** additional paths such as `/srv/media` are included or excluded according to declared host backup path and exclusion policy
 
 ### Requirement: Backup consistency SHALL use explicit service classes
 Each backed-up stateful service SHALL declare or inherit an explicit consistency class of `export`, `quiesce`, or `live` that determines whether the service generates an app-native restorable backup artifact, stabilizes runtime state around the backup window, or allows direct live capture.

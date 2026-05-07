@@ -220,7 +220,7 @@ Future evolution:
 Current baseline:
 
 - mutable service state is backed up with NixOS-native `services.restic.backups`
-- backup scope is state-first: `/srv/data` subtrees and generated recovery artifacts are in scope; `/srv/media` is intentionally excluded in the first wave
+- backup scope is state-first: `/srv/data` subtrees and generated recovery artifacts are in scope, and `/srv/media` coverage is controlled by host backup policy
 - each host writes to its own dedicated Cloudflare R2 bucket using host-scoped credentials and a host-unique restic password
 - non-secret transport defaults (`endpoint`, `region`, path-style behavior) stay canonical in `policy/globals.nix`
 

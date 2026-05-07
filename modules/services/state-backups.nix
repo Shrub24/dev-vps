@@ -66,14 +66,14 @@ in
 
     stagingRoot = lib.mkOption {
       type = lib.types.str;
-      default = "/var/lib/state-backups";
+      default = "/srv/data/state-backups";
       description = "Host-local staging root for generated export artifacts captured by restic.";
     };
 
     exclude = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "/srv/media" ];
-      description = "Global backup exclusions for the first-wave state backup contract.";
+      default = [ ];
+      description = "Global backup exclusions applied to the shared host restic job.";
     };
 
     timerConfig = lib.mkOption {
