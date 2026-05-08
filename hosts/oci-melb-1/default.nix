@@ -27,7 +27,7 @@ in
     ../../modules/services/karakeep.nix
     ../../modules/services/niks3.nix
     ../../modules/services/postgres-shared.nix
-    ../../modules/services/niks3-push.nix
+    ../../modules/shared/niks3-post-deploy.nix
     ../../modules/shared/nixbuild-ssh.nix
     ./cockpit-auth.nix
   ]
@@ -188,9 +188,10 @@ in
     niks3.enable = true;
   };
 
-  services.niks3-push = {
+  services.niks3-auto-upload = {
     enable = true;
-    hostSecretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    serverUrl = "http://127.0.0.1:5751";
+    authTokenFile = "/run/secrets/niks3.api_token";
   };
 
   fleet.nixbuild-ssh.enable = true;
