@@ -7,7 +7,7 @@
 }:
 let
   hostSystemSecret = ../../secrets/hosts/do-admin-1/system.yaml;
-  hostSecretDir = builtins.unsafeDiscardStringContext (builtins.dirOf (toString hostSystemSecret));
+  hostSecretDir = builtins.dirOf hostSystemSecret;
 in
 {
   imports = [

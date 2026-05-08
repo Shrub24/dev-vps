@@ -8,7 +8,7 @@
 let
   hostSystemSecret = ../../secrets/hosts/oci-melb-1/system.yaml;
   hasHostSecrets = builtins.pathExists hostSystemSecret;
-  hostSecretDir = builtins.unsafeDiscardStringContext (builtins.dirOf (toString hostSystemSecret));
+  hostSecretDir = builtins.dirOf hostSystemSecret;
   globals = import ../../policy/globals.nix;
 in
 {
