@@ -14,7 +14,6 @@ in
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
-    ../../modules/profiles/worker-interface.nix
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/shared/identity-oidc.nix
@@ -26,6 +25,10 @@ in
     ../../modules/services/admin/cockpit.nix
     ../../modules/services/bifrost-gateway.nix
     ../../modules/services/karakeep.nix
+    ../../modules/services/niks3.nix
+    ../../modules/services/postgres-shared.nix
+    ../../modules/services/niks3-push.nix
+    ../../modules/shared/nixbuild-ssh.nix
     ./cockpit-auth.nix
   ]
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
@@ -52,7 +55,7 @@ in
   nix.gc = {
     automatic = true;
     dates = "daily";
-    options = "--delete-older-than 7d";
+    options = "--delete-older-than 14d";
   };
 
   services.journald.extraConfig = ''
@@ -122,7 +125,6 @@ in
     secretFiles.oidc = ../../secrets/hosts/oci-melb-1/oidc.yaml;
   };
 
-  # Match the current OCI boot-volume partition layout.
   disko-root-extra = "20G";
   disko-data-size = "28G";
   disko-nix-size = "45G";
@@ -143,7 +145,6 @@ in
         path = "/run/secrets/tailscale.auth_key";
         mode = "0400";
       };
-
       cockpit_service_user_password_hash = {
         sopsFile = ../../secrets/hosts/oci-melb-1/system.yaml;
         key = "cockpit/service_user/password_hash";
@@ -160,9 +161,7 @@ in
   services.hostRecovery = lib.mkIf hasHostSecrets {
     enable = true;
     secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
-    rescueUser = {
-      name = "rescue";
-    };
+    rescueUser = { name = "rescue"; };
     reboot.onCalendar = "weekly";
   };
 
@@ -177,6 +176,26 @@ in
     bucket = "shrublab-backup-oci-melb-1";
     stagingRoot = "/srv/data/state-backups";
   };
+
+  services.niks3-cache = {
+    enable = true;
+    hostSecretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    secretFiles.host = ../../secrets/services/niks3.yaml;
+  };
+
+  services.postgres-shared = {
+    enable = true;
+    niks3.enable = true;
+  };
+
+  services.niks3-push = {
+    enable = true;
+    hostSecretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+  };
+
+  fleet.nixbuild-ssh.enable = true;
+
+  fleet.hostIdentity.sshPrivateKeyFile = ../../secrets/hosts/oci-melb-1/system.yaml;
 
   services.tagr.backup.exportFile = "/srv/data/state-backups/tagr/tagr.sqlite3";
 

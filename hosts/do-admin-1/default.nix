@@ -10,7 +10,6 @@
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ../../modules/profiles/base-server.nix
-    ../../modules/profiles/worker-interface.nix
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/applications/admin/default.nix
@@ -18,6 +17,8 @@
     ../../modules/providers/digitalocean/default.nix
     ../../modules/storage/disko-single-disk.nix
     ../../modules/core/users.nix
+    ../../modules/services/niks3-push.nix
+    ../../modules/shared/nixbuild-ssh.nix
     ./quantum.nix
     ./cockpit-auth.nix
     ./edge.nix
@@ -77,9 +78,7 @@
   services.hostRecovery = {
     enable = true;
     secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
-    rescueUser = {
-      name = "rescue";
-    };
+    rescueUser = { name = "rescue"; };
     reboot.onCalendar = "weekly";
   };
   services.beszel-agent-auth = {
@@ -91,6 +90,22 @@
     secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
     bucket = "shrublab-backup-do-admin-1";
   };
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 14d";
+  };
+
+  services.niks3-push = {
+    enable = true;
+    hostSecretFile = ../../secrets/hosts/do-admin-1/system.yaml;
+    serverUrl = "http://oci-melb-1:5751";
+  };
+
+  fleet.nixbuild-ssh.enable = true;
+
+  fleet.hostIdentity.sshPrivateKeyFile = ../../secrets/hosts/do-admin-1/system.yaml;
+
   services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz";
 
   system.stateVersion = "25.11";

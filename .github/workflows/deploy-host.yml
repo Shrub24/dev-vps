@@ -1,0 +1,54 @@
+name: deploy-host
+on:
+  workflow_call:
+    inputs:
+      host:
+        required: true
+        type: string
+    secrets:
+      NIXBUILD_TOKEN:
+        required: true
+      TAILSCALE_OAUTH_CLIENT_ID:
+        required: true
+      TAILSCALE_OAUTH_AUDIENCE:
+        required: true
+jobs:
+  deploy-host:
+    runs-on: ubuntu-latest
+    environment: ci
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      NIXBUILD_STORE: ssh-ng://eu.nixbuild.net
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Setup nixbuild
+        uses: ./.github/actions/setup-nixbuild
+        with:
+          nixbuild_token: ${{ secrets.NIXBUILD_TOKEN }}
+      - name: Join Tailscale tailnet
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TAILSCALE_OAUTH_AUDIENCE }}
+          tags: tag:ci
+          ping: ${{ inputs.host }}
+      - name: Prebuild ${{ inputs.host }} generation
+        run: |
+          nix build \
+            --no-link \
+            --no-write-lock-file \
+            --print-build-logs \
+            --eval-store auto \
+            --store "$NIXBUILD_STORE" \
+            path:.#nixosConfigurations.${{ inputs.host }}.config.system.build.toplevel
+      - name: Deploy ${{ inputs.host }}
+        run: |
+          nix run path:.#deploy-rs -- \
+            --skip-checks \
+            --remote-build \
+            --ssh-opts="-o StrictHostKeyChecking=no" \
+            --ssh-opts="-o UserKnownHostsFile=/dev/null" \
+            .#${{ inputs.host }}

@@ -8,6 +8,8 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+    niks3.url = "github:Mic92/niks3";
+    niks3.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -17,6 +19,7 @@
       disko,
       sops-nix,
       deploy-rs,
+      niks3,
       ...
     }:
     let
@@ -70,6 +73,7 @@
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          niks3.nixosModules.niks3
           ./hosts/oci-melb-1/default.nix
         ];
         specialArgs = { inherit self inputs; };
