@@ -254,13 +254,35 @@ resource "cloudflare_ruleset" "zone_firewall_custom" {
   phase       = "http_request_firewall_custom"
   kind        = "zone"
 
-  rules = [{
-    ref         = "block_non_allowlisted_countries"
-    description = "Block requests from countries not in the allow list (zone-wide)"
-    expression  = "not (${local.firewall_allowed_countries_expression})"
-    action      = "block"
-    enabled     = var.firewall_country_allowlist_enabled
-  }]
+  rules = [
+    {
+      ref         = "block_non_allowlisted_countries"
+      description = "Block requests from countries not in the allow list (zone-wide)"
+      expression  = "not (${local.firewall_allowed_countries_expression})"
+      action      = "block"
+      enabled     = var.firewall_country_allowlist_enabled
+    },
+    {
+      ref         = "skip_cache_subdomain_managed_waf"
+      description = "Skip managed WAF for sovereign binary cache subdomain"
+      expression  = "(http.host eq \"cache.shrublab.xyz\")"
+      action      = "skip"
+      enabled     = true
+      action_parameters = {
+        phases = ["http_request_firewall_managed"]
+      }
+    },
+    {
+      ref         = "skip_cache_subdomain_rate_limit"
+      description = "Skip rate limiting for sovereign binary cache subdomain"
+      expression  = "(http.host eq \"cache.shrublab.xyz\")"
+      action      = "skip"
+      enabled     = true
+      action_parameters = {
+        phases = ["http_ratelimit"]
+      }
+    },
+  ]
 }
 
 resource "cloudflare_ruleset" "zone_rate_limit" {
@@ -287,15 +309,31 @@ resource "cloudflare_ruleset" "zone_rate_limit" {
 }
 
 resource "cloudflare_ruleset" "service_cache_bypass" {
-  count = length(local.cache_bypass_rules) > 0 ? 1 : 0
-
   zone_id     = var.cloudflare_zone_id
-  name        = "zone-service-cache-bypass"
-  description = "Bypass CDN cache for selected service hosts"
+  name        = "zone-cache-settings"
+  description = "Cache configuration for service hosts"
   phase       = "http_request_cache_settings"
   kind        = "zone"
 
-  rules = local.cache_bypass_rules
+  rules = concat(
+    local.cache_bypass_rules,
+    [{
+      ref         = "cache_narinfo_nar"
+      description = "Enable edge caching for Nix binary cache subdomain"
+      expression  = "(http.host eq \"cache.shrublab.xyz\")"
+      action      = "set_cache_settings"
+      enabled     = true
+      action_parameters = {
+        cache = true
+        edge_ttl = {
+          mode    = "override_origin"
+          default = 3600
+        }
+      }
+    }]
+  )
+
+  count = 1
 }
 
 # ---------------------------------------------------------------------------
