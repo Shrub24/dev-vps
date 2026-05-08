@@ -52,7 +52,7 @@ in
   config = lib.mkIf cfg.enable {
     services.niks3 = {
       enable = true;
-      httpAddr = "127.0.0.1:5751";
+      httpAddr = "0.0.0.0:5751";
       database.createLocally = true;
 
       s3 = {

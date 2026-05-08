@@ -14,7 +14,7 @@
 
 ## 3. Secret provisioning
 
-- [x] 3.1 Add the niks3 signing key (private) to `secrets/hosts/oci-melb-1/system.yaml` under `niks3.signing_key`, encrypted to the host system scope recipients. (Operational — requires `sops` + age key)
+- [x] 3.1 Add the niks3 signing key (private) and S3 credentials to `secrets/services/niks3.yaml`, encrypted to the niks3 service scope recipients.
 - [x] 3.2 Add host-scoped niks3 API push tokens to `secrets/hosts/oci-melb-1/system.yaml` and `secrets/hosts/do-admin-1/system.yaml` under `niks3.api_token`. (Operational — requires `sops` + age key)
 - [x] 3.3 Update `secrets/.templates/hosts/system.yaml` to document the `niks3.api_token`, `niks3.signing_key`, `niks3.s3_access_key_id`, and `niks3.s3_secret_access_key` placeholder contracts.
 - [x] 3.4 Validate `.sops.yaml` host system scope rules cover the new niks3 entries without requiring rule changes — confirmed: existing `secrets/hosts/<host>/system.yaml` rules cover niks3 entries with correct blast-radius scoping.

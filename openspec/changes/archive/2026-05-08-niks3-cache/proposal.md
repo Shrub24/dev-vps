@@ -31,7 +31,7 @@ The fleet currently relies on nixbuild.net as the sole shared binary cache, whic
   - `modules/profiles/base-server.nix` — inherits updated policy values (no structural change)
   - `secrets/hosts/oci-melb-1/system.yaml` — signing key, niks3 server API token
   - `secrets/hosts/do-admin-1/system.yaml` — host-scoped niks3 push API token
-  - `.sops.yaml` — no change needed (host system scope already covers it)
+  - `.sops.yaml` — updated with `secrets/services/niks3.yaml` service scope rule
   - New: `modules/services/niks3.nix` — NixOS service module for niks3 server
 - Affected specs:
   - New: `sovereign-binary-cache/spec.md`

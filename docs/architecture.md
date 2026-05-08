@@ -90,7 +90,6 @@ The exact file tree can evolve, but the intended shape is:
 - `modules/services/<name>.nix` for standalone leaf service modules
 - `modules/core/base.nix` for shared baseline NixOS policy
 - `modules/core/users.nix` for shared user declarations
-- `modules/profiles/base-server.nix` for host profile composition
 - `modules/profiles/base-server.nix` for common host profile composition, including shared Nix substitute/trust defaults
 - `modules/providers/oci/default.nix` for OCI-specific host-safe defaults
 - `modules/providers/digitalocean/default.nix` for DigitalOcean host-safe defaults

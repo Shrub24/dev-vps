@@ -31,8 +31,9 @@ in
     };
 
     programs.ssh.extraConfig = lib.mkIf (cfg.sshPrivateKeyFile != null) ''
-      IdentityFile /run/secrets/host.ssh_identity
-      IdentitiesOnly yes
+      Host *
+        IdentityFile /run/secrets/host.ssh_identity
+        IdentitiesOnly yes
     '';
 
     sops.secrets = lib.mkIf (cfg.sshPrivateKeyFile != null) {

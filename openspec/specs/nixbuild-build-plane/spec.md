@@ -1,7 +1,7 @@
 # nixbuild-build-plane Specification
 
 ## Purpose
-TBD - created by archiving change add-nixbuild-ci-and-shared-substituter. Update Purpose after archive.
+Defines nixbuild.net as the canonical CI remote build plane and shared substituter contract for fleet hosts and documented local consumers.
 ## Requirements
 ### Requirement: CI builds SHALL use nixbuild.net as the primary remote build plane
 Repository CI workflows SHALL execute build-heavy Nix validation through `nixbuild.net` rather than depending on GitHub-hosted multi-architecture runners.
@@ -12,12 +12,19 @@ Repository CI workflows SHALL execute build-heavy Nix validation through `nixbui
 - **AND** CI does not require a dedicated multi-architecture runner matrix to build host outputs
 
 ### Requirement: Shared substituter contract SHALL be available for active hosts
-Active hosts SHALL support a common substituter/trust baseline for `nixbuild.net` so normal rebuild workflows can consume shared build artifacts.
+Active hosts SHALL support a common substituter/trust baseline that prioritizes `nixbuild.net` as the first substituter and the sovereign S3-backed binary cache as the durable secondary tier, with `cache.nixos.org` as the upstream fallback.
 
 #### Scenario: Host build configuration is evaluated
 - **WHEN** `nixosConfigurations.do-admin-1` and `nixosConfigurations.oci-melb-1` are evaluated
-- **THEN** both include a shared `nixbuild.net` substituter/trusted-key contract
+- **THEN** both include `ssh://eu.nixbuild.net` as the first substituter
+- **AND** both include the sovereign S3 cache as the second substituter
+- **AND** both include `https://cache.nixos.org` as the upstream fallback
 - **AND** host composition remains module-driven rather than ad hoc host-inline Nix settings
+
+#### Scenario: Sovereign cache is unavailable
+- **WHEN** the sovereign S3 cache is unreachable during Nix evaluation or build
+- **THEN** Nix falls through to `cache.nixos.org` as the next configured substituter
+- **AND** host evaluation does not fail solely due to sovereign cache unavailability
 
 ### Requirement: Host-side build mode SHALL remain substituter-only in phase 1
 Phase-1 host participation in `nixbuild.net` SHALL be limited to substitute consumption and SHALL NOT require host-side remote build offload.

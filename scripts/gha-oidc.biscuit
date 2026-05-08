@@ -3,4 +3,4 @@ check if
 
 check if
   jwt_claim("sub", $sub),
-  $sub.contains("repo:Shrub24/nix-homelab");
+  $sub.starts_with("repo:Shrub24/nix-homelab");

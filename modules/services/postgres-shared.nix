@@ -36,10 +36,10 @@ in
         }
       ];
 
-      authentication = lib.mkIf cfg.niks3.enable ''
-        # Allow niks3 local peer access to its own database.
-        local niks3 niks3 peer
-      '';
+      authentication = lib.mkIf cfg.niks3.enable (
+        lib.mkBefore ''
+          local niks3 niks3 peer
+        '');
 
       settings = {
         max_connections = "20";

@@ -49,6 +49,17 @@ in
       };
     };
 
+    systemd.timers.niks3-push-backstop = {
+      description = "Backstop timer for niks3 post-deploy push";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "2m";
+        OnUnitActiveSec = "30m";
+        Persistent = true;
+        Unit = "niks3-push.service";
+      };
+    };
+
     systemd.services.niks3-push = {
       description = "Push current system closure to niks3 sovereign cache";
       path = [ pkgs.niks3 ];
@@ -63,17 +74,14 @@ in
       environment = {
         NIK3_SERVER = cfg.serverUrl;
         NIK3_CACHE = cfg.cacheName;
+        NIK3_TOKEN = lib.mkIf (cfg.hostSecretFile != null)
+          "$(cat /run/secrets/niks3_push_token)";
       };
 
-      script =
-        let
-          tokenArg = lib.optionalString (cfg.hostSecretFile != null)
-            ''--token "$(cat /run/secrets/niks3_push_token)"'';
-        in
-        ''
-          set -euo pipefail
-          exec niks3 push ${tokenArg} --cache "$NIK3_CACHE" "$NIK3_SERVER" /run/current-system
-        '';
+      script = ''
+        set -euo pipefail
+        exec niks3 push --token "$NIK3_TOKEN" --cache "$NIK3_CACHE" "$NIK3_SERVER" /run/current-system
+      '';
     };
   };
 }
