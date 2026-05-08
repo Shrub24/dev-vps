@@ -49,6 +49,5 @@ jobs:
           nix run path:.#deploy-rs -- \
             --skip-checks \
             --remote-build \
-            --ssh-opts="-o StrictHostKeyChecking=no" \
-            --ssh-opts="-o UserKnownHostsFile=/dev/null" \
+            --ssh-opts="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
             .#${{ inputs.host }}
