@@ -8,9 +8,9 @@ on:
     secrets:
       NIXBUILD_TOKEN:
         required: true
-      TAILSCALE_OAUTH_CLIENT_ID:
+      TS_OAUTH_CLIENT_ID:
         required: true
-      TAILSCALE_OAUTH_AUDIENCE:
+      TS_AUDIENCE:
         required: true
 jobs:
   deploy-host:
@@ -31,8 +31,8 @@ jobs:
       - name: Join Tailscale tailnet
         uses: tailscale/github-action@v4
         with:
-          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
-          audience: ${{ secrets.TAILSCALE_OAUTH_AUDIENCE }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
           tags: tag:ci
           ping: ${{ inputs.host }}
       - name: Prebuild ${{ inputs.host }} generation
