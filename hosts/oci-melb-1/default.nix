@@ -193,6 +193,7 @@ in
     serverUrl = "http://127.0.0.1:5751";
     authTokenFile = "/run/secrets/niks3.api_token";
   };
+  services.niks3-post-deploy.enable = true;
 
   fleet.nixbuild-ssh.enable = true;
 
