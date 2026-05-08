@@ -654,6 +654,26 @@ Rationale:
 - reduces host boilerplate while preserving one canonical policy source
 - keeps future host exceptions available through normal NixOS module override behavior if needed
 
+## D-038: Sovereign binary cache uses niks3 with native S3 read path
+
+Status: Accepted
+
+Decision:
+
+- niks3 (Mic92/niks3) is the fleet sovereign Nix binary cache, chosen over Attic/Celler for native S3 read path (no public HTTP endpoint required)
+- cache runs on `oci-melb-1` with PostgreSQL and Cloudflare R2 backend
+- only hosts push, post-deploy, via host-scoped API tokens; CI never pushes
+- server-side Ed25519 signing with key only on cache host; consumers trust public key from `policy/globals.nix`
+- substituter priority: nixbuild.net → sovereign S3 → cache.nixos.org
+- reference-tracking GC with 30-day retention
+
+Rationale:
+
+- native S3 consumer reads avoid exposing a public homelab HTTP cache endpoint, preserving private-first posture
+- host-only push authority aligns cache contents with known-good deployed states
+- server-side signing reduces key exposure vs per-pusher keys
+- niks3's GC and signing provide governance that plain S3 lacks
+
 ## Open Questions (Intentional)
 
 These are known but intentionally unresolved until implementation and operational learning justify final decisions.

@@ -46,7 +46,7 @@ jobs:
           echo "ref_slug=${{ steps.meta.outputs.ref_slug }}"
           echo "short_sha=${{ steps.meta.outputs.short_sha }}"
       - name: Validate flake wiring
-        run: nix flake check --no-build --no-write-lock-file path:.
+        run: nix flake check --no-build --no-write-lock-file --refresh path:.
   build-hosts:
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.base_ref == 'main') }}
     runs-on: ubuntu-latest

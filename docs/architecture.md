@@ -259,6 +259,22 @@ Restore posture:
 - export-first services should prefer their generated recovery artifact first, with raw state retained for exact-state recovery and forensic fallback
 - restore prep should verify bucket credentials, restic password access, available snapshots, and target service stop/isolation requirements before modifying runtime state
 
+## Sovereign Binary Cache
+
+niks3 (Mic92/niks3) is the fleet sovereign Nix binary cache, running on `oci-melb-1` with PostgreSQL and Cloudflare R2 backend.
+
+Read path:
+- Consumers read directly from `s3://nix-cache?...` — no HTTP endpoint, no credentials needed (bucket is public-read)
+- Substituter priority: `nixbuild.net` first, sovereign S3 second, `cache.nixos.org` third
+- Both hosts and CI can consume the cache as a standard Nix S3 substituter via `policy/globals.nix`
+
+Write path:
+- Only hosts push, post-deploy, via `modules/services/niks3-push.nix`
+- Pushers authenticate with host-scoped API tokens to the niks3 server (`http://127.0.0.1:5751` local, or `http://oci-melb-1:5751` over Tailscale)
+- Server signs NARs with its Ed25519 key (stored in `secrets/services/niks3.yaml`, only on `oci-melb-1`)
+- Consumers trust the public key from `policy/globals.nix`
+- Reference-tracking GC runs daily, 30-day retention
+
 ## Network and Access Model
 
 Current model:

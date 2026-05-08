@@ -6,7 +6,9 @@
   ...
 }:
 let
-  hasHostSecrets = builtins.pathExists ../../secrets/hosts/oci-melb-1/system.yaml;
+  hostSystemSecret = ../../secrets/hosts/oci-melb-1/system.yaml;
+  hasHostSecrets = builtins.pathExists hostSystemSecret;
+  hostSecretDir = builtins.unsafeDiscardStringContext (builtins.dirOf (toString hostSystemSecret));
   globals = import ../../policy/globals.nix;
 in
 {
@@ -25,6 +27,10 @@ in
     ../../modules/services/admin/cockpit.nix
     ../../modules/services/bifrost-gateway.nix
     ../../modules/services/karakeep.nix
+    ../../modules/services/niks3.nix
+    ../../modules/services/postgres-shared.nix
+    ../../modules/services/niks3-push.nix
+    ../../modules/shared/nixbuild-ssh.nix
     ./cockpit-auth.nix
   ]
   ++ lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;
@@ -118,7 +124,7 @@ in
     };
     storage.s3.enable = true;
     secretFiles.host = ../../secrets/services/karakeep-pod.yaml;
-    secretFiles.oidc = ../../secrets/hosts/oci-melb-1/oidc.yaml;
+    secretFiles.oidc = "${hostSecretDir}/oidc.yaml";
   };
 
   # Match the current OCI boot-volume partition layout.
@@ -137,14 +143,14 @@ in
   sops.secrets = (
     lib.optionalAttrs hasHostSecrets {
       tailscale_auth_key = {
-        sopsFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+        sopsFile = "${hostSecretDir}/system.yaml";
         key = "tailscale/auth_key";
         path = "/run/secrets/tailscale.auth_key";
         mode = "0400";
       };
 
       cockpit_service_user_password_hash = {
-        sopsFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+        sopsFile = "${hostSecretDir}/system.yaml";
         key = "cockpit/service_user/password_hash";
         path = "/run/secrets/cockpit.service_user.password_hash";
         owner = "root";
@@ -158,7 +164,7 @@ in
 
   services.hostRecovery = lib.mkIf hasHostSecrets {
     enable = true;
-    secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    secretFile = "${hostSecretDir}/system.yaml";
     rescueUser = {
       name = "rescue";
     };
@@ -167,14 +173,35 @@ in
 
   services.beszel-agent-auth = {
     enable = true;
-    secretFiles.host = ../../secrets/hosts/oci-melb-1/system.yaml;
+    secretFiles.host = "${hostSecretDir}/system.yaml";
   };
 
   services.state-backups = {
     enable = true;
-    secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    secretFile = "${hostSecretDir}/system.yaml";
     bucket = "shrublab-backup-oci-melb-1";
     stagingRoot = "/srv/data/state-backups";
+  };
+
+  # Sovereign Nix binary cache (niks3) with shared PostgreSQL.
+  services.niks3-cache = {
+    enable = true;
+    hostSecretFile = "${hostSecretDir}/system.yaml";
+    secretFiles.host = ../../secrets/services/niks3.yaml;
+  };
+
+  services.niks3-push = {
+    enable = true;
+    hostSecretFile = "${hostSecretDir}/system.yaml";
+  };
+
+  fleet.nixbuild-ssh.enable = true;
+
+  fleet.hostIdentity.sshPrivateKeyFile = "${hostSecretDir}/system.yaml";
+
+  services.postgres-shared = {
+    enable = true;
+    niks3.enable = true;
   };
 
   services.tagr.backup.exportFile = "/srv/data/state-backups/tagr/tagr.sqlite3";

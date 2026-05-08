@@ -35,9 +35,18 @@
 
   services = {
     nix = {
-      substituters = [ "ssh://eu.nixbuild.net" ];
-      trustedSubstituters = [ "ssh://eu.nixbuild.net" ];
-      trustedPublicKeys = [ "nixbuild.net/HWWKWC-1:dnSfpPDHQN/U9wexkK6r3GTaYrwqNwKS70SNGXistKg=" ];
+      substituters = [
+        "ssh://eu.nixbuild.net"
+        "https://cache.shrublab.xyz"
+      ];
+      trustedSubstituters = [
+        "ssh://eu.nixbuild.net"
+        "https://cache.shrublab.xyz"
+      ];
+      trustedPublicKeys = [
+        "nixbuild.net/HWWKWC-1:dnSfpPDHQN/U9wexkK6r3GTaYrwqNwKS70SNGXistKg="
+        "nix-cache-1:FW0bJll9BP5ch0mHI+bXOImcD0RKLrH117WfQC+CU4A="
+      ];
     };
 
     karakeep-pod = {
