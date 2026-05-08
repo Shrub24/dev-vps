@@ -6,9 +6,7 @@
   ...
 }:
 let
-  hostSystemSecret = ../../secrets/hosts/oci-melb-1/system.yaml;
-  hasHostSecrets = builtins.pathExists hostSystemSecret;
-  hostSecretDir = builtins.dirOf hostSystemSecret;
+  hasHostSecrets = builtins.pathExists ../../secrets/hosts/oci-melb-1/system.yaml;
   globals = import ../../policy/globals.nix;
 in
 {
@@ -124,10 +122,9 @@ in
     };
     storage.s3.enable = true;
     secretFiles.host = ../../secrets/services/karakeep-pod.yaml;
-    secretFiles.oidc = "${hostSecretDir}/oidc.yaml";
+    secretFiles.oidc = ../../secrets/hosts/oci-melb-1/oidc.yaml;
   };
 
-  # Match the current OCI boot-volume partition layout.
   disko-root-extra = "20G";
   disko-data-size = "28G";
   disko-nix-size = "45G";
@@ -143,14 +140,13 @@ in
   sops.secrets = (
     lib.optionalAttrs hasHostSecrets {
       tailscale_auth_key = {
-        sopsFile = "${hostSecretDir}/system.yaml";
+        sopsFile = ../../secrets/hosts/oci-melb-1/system.yaml;
         key = "tailscale/auth_key";
         path = "/run/secrets/tailscale.auth_key";
         mode = "0400";
       };
-
       cockpit_service_user_password_hash = {
-        sopsFile = "${hostSecretDir}/system.yaml";
+        sopsFile = ../../secrets/hosts/oci-melb-1/system.yaml;
         key = "cockpit/service_user/password_hash";
         path = "/run/secrets/cockpit.service_user.password_hash";
         owner = "root";
@@ -164,45 +160,42 @@ in
 
   services.hostRecovery = lib.mkIf hasHostSecrets {
     enable = true;
-    secretFile = "${hostSecretDir}/system.yaml";
-    rescueUser = {
-      name = "rescue";
-    };
+    secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+    rescueUser = { name = "rescue"; };
     reboot.onCalendar = "weekly";
   };
 
   services.beszel-agent-auth = {
     enable = true;
-    secretFiles.host = "${hostSecretDir}/system.yaml";
+    secretFiles.host = ../../secrets/hosts/oci-melb-1/system.yaml;
   };
 
   services.state-backups = {
     enable = true;
-    secretFile = "${hostSecretDir}/system.yaml";
+    secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
     bucket = "shrublab-backup-oci-melb-1";
     stagingRoot = "/srv/data/state-backups";
   };
 
-  # Sovereign Nix binary cache (niks3) with shared PostgreSQL.
   services.niks3-cache = {
     enable = true;
-    hostSecretFile = "${hostSecretDir}/system.yaml";
+    hostSecretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
     secretFiles.host = ../../secrets/services/niks3.yaml;
   };
-
-  services.niks3-push = {
-    enable = true;
-    hostSecretFile = "${hostSecretDir}/system.yaml";
-  };
-
-  fleet.nixbuild-ssh.enable = true;
-
-  fleet.hostIdentity.sshPrivateKeyFile = "${hostSecretDir}/system.yaml";
 
   services.postgres-shared = {
     enable = true;
     niks3.enable = true;
   };
+
+  services.niks3-push = {
+    enable = true;
+    hostSecretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
+  };
+
+  fleet.nixbuild-ssh.enable = true;
+
+  fleet.hostIdentity.sshPrivateKeyFile = ../../secrets/hosts/oci-melb-1/system.yaml;
 
   services.tagr.backup.exportFile = "/srv/data/state-backups/tagr/tagr.sqlite3";
 

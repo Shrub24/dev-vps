@@ -5,10 +5,6 @@
   modulesPath,
   ...
 }:
-let
-  hostSystemSecret = ../../secrets/hosts/do-admin-1/system.yaml;
-  hostSecretDir = builtins.dirOf hostSystemSecret;
-in
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
@@ -33,14 +29,14 @@ in
   networking.hostName = "do-admin-1";
   sops.defaultSopsFile = ../../secrets/common.yaml;
   sops.secrets = {
-      tailscale_auth_key = {
-        sopsFile = "${hostSecretDir}/system.yaml";
-        key = "tailscale/auth_key";
-        path = "/run/secrets/tailscale.auth_key";
-        mode = "0400";
-      };
-      cockpit_service_user_password_hash = {
-        sopsFile = "${hostSecretDir}/system.yaml";
+    tailscale_auth_key = {
+      sopsFile = ../../secrets/hosts/do-admin-1/system.yaml;
+      key = "tailscale/auth_key";
+      path = "/run/secrets/tailscale.auth_key";
+      mode = "0400";
+    };
+    cockpit_service_user_password_hash = {
+      sopsFile = ../../secrets/hosts/do-admin-1/system.yaml;
       key = "cockpit/service_user/password_hash";
       path = "/run/secrets/cockpit.service_user.password_hash";
       mode = "0400";
@@ -63,9 +59,9 @@ in
     else
       null;
   applications.admin.secretFiles.oidcClients = {
-    termix = "${hostSecretDir}/oidc.yaml";
-    beszel = "${hostSecretDir}/oidc.yaml";
-    quantum = "${hostSecretDir}/oidc.yaml";
+    termix = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    beszel = ../../secrets/hosts/do-admin-1/oidc.yaml;
+    quantum = ../../secrets/hosts/do-admin-1/oidc.yaml;
     karakeep = ../../secrets/hosts/oci-melb-1/oidc.yaml;
     cloudflare-access = ../../secrets/opentofu/oidc.yaml;
   };
@@ -81,19 +77,17 @@ in
   };
   services.hostRecovery = {
     enable = true;
-    secretFile = "${hostSecretDir}/system.yaml";
-    rescueUser = {
-      name = "rescue";
-    };
+    secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
+    rescueUser = { name = "rescue"; };
     reboot.onCalendar = "weekly";
   };
   services.beszel-agent-auth = {
     enable = true;
-    secretFiles.host = "${hostSecretDir}/system.yaml";
+    secretFiles.host = ../../secrets/hosts/do-admin-1/system.yaml;
   };
   services.state-backups = {
     enable = true;
-    secretFile = "${hostSecretDir}/system.yaml";
+    secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
     bucket = "shrublab-backup-do-admin-1";
   };
   nix.gc = {
@@ -104,13 +98,14 @@ in
 
   services.niks3-push = {
     enable = true;
-    hostSecretFile = "${hostSecretDir}/system.yaml";
+    hostSecretFile = ../../secrets/hosts/do-admin-1/system.yaml;
     serverUrl = "http://oci-melb-1:5751";
   };
 
   fleet.nixbuild-ssh.enable = true;
 
-  fleet.hostIdentity.sshPrivateKeyFile = "${hostSecretDir}/system.yaml";
+  fleet.hostIdentity.sshPrivateKeyFile = ../../secrets/hosts/do-admin-1/system.yaml;
+
   services.admin.vaultwarden.smtpFrom = "admin@send.shrublab.xyz";
 
   system.stateVersion = "25.11";
