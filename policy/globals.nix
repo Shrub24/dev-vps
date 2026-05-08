@@ -36,11 +36,11 @@
   services = {
     nix = {
       substituters = [
-        "ssh://eu.nixbuild.net"
+        "ssh://eu.nixbuild.net?priority=0"
         "https://cache.shrublab.xyz"
       ];
       trustedSubstituters = [
-        "ssh://eu.nixbuild.net"
+        "ssh://eu.nixbuild.net?priority=0"
         "https://cache.shrublab.xyz"
       ];
       trustedPublicKeys = [

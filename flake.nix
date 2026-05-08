@@ -74,6 +74,7 @@
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
           niks3.nixosModules.niks3
+          niks3.nixosModules.niks3-auto-upload
           ./hosts/oci-melb-1/default.nix
         ];
         specialArgs = { inherit self inputs; };
@@ -83,6 +84,7 @@
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          niks3.nixosModules.niks3-auto-upload
           ./hosts/do-admin-1/default.nix
         ];
         specialArgs = { inherit self inputs; };

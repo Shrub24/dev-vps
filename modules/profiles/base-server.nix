@@ -36,11 +36,17 @@ in
         IdentitiesOnly yes
     '';
 
+    sops.templates."host-ssh-identity" = lib.mkIf (cfg.sshPrivateKeyFile != null) {
+      content = ''
+        ${config.sops.placeholder.host_ssh_identity_raw}
+      '';
+      path = "/run/secrets/host.ssh_identity";
+      mode = "0400";
+    };
     sops.secrets = lib.mkIf (cfg.sshPrivateKeyFile != null) {
-      host_ssh_identity = {
+      host_ssh_identity_raw = {
         sopsFile = cfg.sshPrivateKeyFile;
         key = "identity/ssh_private_key";
-        path = "/run/secrets/host.ssh_identity";
         mode = "0400";
       };
     };

@@ -17,7 +17,7 @@
     ../../modules/providers/digitalocean/default.nix
     ../../modules/storage/disko-single-disk.nix
     ../../modules/core/users.nix
-    ../../modules/services/niks3-push.nix
+    ../../modules/shared/niks3-post-deploy.nix
     ../../modules/shared/nixbuild-ssh.nix
     ./quantum.nix
     ./cockpit-auth.nix
@@ -39,6 +39,12 @@
       sopsFile = ../../secrets/hosts/do-admin-1/system.yaml;
       key = "cockpit/service_user/password_hash";
       path = "/run/secrets/cockpit.service_user.password_hash";
+      mode = "0400";
+    };
+    niks3_api_token = {
+      sopsFile = ../../secrets/hosts/do-admin-1/system.yaml;
+      key = "niks3/api_token";
+      path = "/run/secrets/niks3.api_token";
       mode = "0400";
     };
   };
@@ -96,10 +102,10 @@
     options = "--delete-older-than 14d";
   };
 
-  services.niks3-push = {
+  services.niks3-auto-upload = {
     enable = true;
-    hostSecretFile = ../../secrets/hosts/do-admin-1/system.yaml;
     serverUrl = "http://oci-melb-1:5751";
+    authTokenFile = "/run/secrets/niks3.api_token";
   };
 
   fleet.nixbuild-ssh.enable = true;
