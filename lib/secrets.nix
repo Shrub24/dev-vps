@@ -40,7 +40,14 @@
       mode ? "0400",
     }:
     {
-      inherit sopsFile key path owner group mode;
+      inherit
+        sopsFile
+        key
+        path
+        owner
+        group
+        mode
+        ;
     };
 
   mkSecretsFromMap =

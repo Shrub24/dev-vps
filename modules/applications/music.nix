@@ -9,55 +9,194 @@ let
   globals = import ../../policy/globals.nix;
   secretHelpers = import ../../lib/secrets.nix { inherit lib; };
 
-  mediaPermissionReconcile = pkgs.writeShellApplication {
-    name = "media-permission-reconcile";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.findutils
-      pkgs.acl
-    ];
-    text = ''
-      set -euo pipefail
-
-      INBOX_DIR=${cfg.inboxDir}
-      LIBRARY_DIR=${cfg.libraryDir}
-      QUARANTINE_DIR=${cfg.quarantineDir}
-
-      fixup_dir() {
-        local dir="$1"
-        local write_group="$2"
-        local read_group="$3"
-
-        if [[ ! -d "$dir" ]]; then
-          return 0
-        fi
-
-        find "$dir" -type d -exec chgrp "$write_group" {} +
-        find "$dir" -type d -exec chmod 2775 {} +
-        find "$dir" -type f -exec chgrp "$write_group" {} +
-        find "$dir" -type f -exec chmod 0664 {} +
-
-        setfacl -R -m "g:$write_group:rwx" "$dir"
-        find "$dir" -type d -exec setfacl -m "d:g:$write_group:rwX" {} +
-        setfacl -R -m "g:$read_group:r-X" "$dir"
-        find "$dir" -type d -exec setfacl -m "d:g:$read_group:r-X" {} +
-
-        setfacl -R -m u:syncthing:rwx "$dir"
-        find "$dir" -type d -exec setfacl -m d:u:syncthing:rwx {} +
-      }
-
-      fixup_dir "$INBOX_DIR" "music-ingest" "media"
-      fixup_dir "$LIBRARY_DIR" "music-ingest" "media"
-      fixup_dir "$QUARANTINE_DIR" "music-ingest" "media"
-    '';
+  # Concrete media paths derived at the application layer.
+  mediaPaths = rec {
+    inboxDir = cfg.inboxDir;
+    libraryDir = cfg.libraryDir;
+    quarantineDir = cfg.quarantineDir;
+    untaggedDir = "${quarantineDir}/untagged";
+    approvedDir = "${quarantineDir}/approved";
   };
+
+  # Beets config files live under the music/ subdirectory (sibling to this file).
+  beetsConfigDir = ./music/files;
+  beetsConfigs = {
+    standard = "${beetsConfigDir}/beets-config.yaml";
+    quarantine = "${beetsConfigDir}/beets-quarantine-config.yaml";
+  };
+
+  # ffmpeg pre-processing binary for lossless-to-AIFF conversion (pre-import).
+  ffmpegPreprocessBin = pkgs.writeShellApplication {
+    name = "ffmpeg-preprocess";
+    runtimeInputs = [
+      pkgs.ffmpeg
+      pkgs.findutils
+      pkgs.coreutils
+    ];
+    text = builtins.readFile ./music/files/ffmpeg-preprocess.sh;
+  };
+
+  # Derived from policy/web-services.nix — ntfy failure notifications go here.
+  ntfyAdminUrl = config.repo.web.hosts."do-admin-1".services."ntfy-admin".publicUrl or "https://ntfy.sh";
+
+  # SOPS secret destination path for ntfy auth token.
+  ntfyTokenSecretPath = "/run/secrets/beets/ntfy_token";
+
+  # SOPS secret entries for Beets plugin credentials.
+  beetsSecretEntries = [
+    {
+      secretName = "beets_discogs_token";
+      key = "beets/discogs_token";
+      placeholder = "REPLACE_WITH_DISCOGS_USER_TOKEN";
+    }
+    {
+      secretName = "beets_spotify_client_id";
+      key = "beets/spotify_client_id";
+      placeholder = "REPLACE_WITH_SPOTIFY_CLIENT_ID";
+    }
+    {
+      secretName = "beets_spotify_client_secret";
+      key = "beets/spotify_client_secret";
+      placeholder = "REPLACE_WITH_SPOTIFY_CLIENT_SECRET";
+    }
+  ];
+
+  mkBeetsSopsTemplate = name: {
+    owner = "beets";
+    group = "beets";
+    mode = "0440";
+    content = builtins.replaceStrings (map (e: e.placeholder) beetsSecretEntries) (map (
+      e: config.sops.placeholder.${e.secretName}
+    ) beetsSecretEntries) (builtins.readFile beetsConfigs.${name});
+  };
+
+  mkBeetsSopsSecret =
+    { secretName, key, ... }:
+    {
+      sopsFile = cfg.secretFiles.host;
+      inherit key;
+      path = "/run/secrets/beets.${builtins.replaceStrings [ "beets_" ] [ "" ] secretName}";
+      owner = "beets";
+      group = "beets";
+    };
+
+  # ------------------------------------------------------------------------ #
+  # Concrete runner instances for this music application
+  # ------------------------------------------------------------------------ #
+  # Each instance is typed and grounded to application-owned paths and configs.
+  # Built-in runner kinds only; no arbitrary custom commands.
+
+  beetsRunnerInstances = {
+
+    inbox = {
+      runnerKind = "import";
+      description = "Beets automated inbox import worker";
+      targetPath = mediaPaths.inboxDir;
+      configSource = beetsConfigs.standard;
+      mediaRoot = cfg.mediaRoot;
+      dataDir = "${cfg.dataRoot}/beets";
+      writePaths = [
+        "${cfg.dataRoot}/beets"
+        mediaPaths.inboxDir
+        mediaPaths.libraryDir
+        mediaPaths.quarantineDir
+        mediaPaths.untaggedDir
+        mediaPaths.approvedDir
+      ];
+      mountFor = [
+        "${cfg.dataRoot}/beets"
+        cfg.mediaRoot
+        mediaPaths.inboxDir
+        mediaPaths.libraryDir
+        mediaPaths.untaggedDir
+        mediaPaths.approvedDir
+      ];
+      conditionDir = mediaPaths.inboxDir;
+      # Timer purposefully disabled — rely on event-driven triggers only
+      # (slskdN hook → PathChanged, dropbox → PathModified).
+      # triggers.timer = {
+      #   OnBootSec = "5m";
+      #   OnUnitActiveSec = "15m";
+      #   RandomizedDelaySec = "2m";
+      # };
+
+    };
+
+    quarantine-interactive = {
+      runnerKind = "quarantine-interactive";
+      description = "Beets interactive quarantine review worker";
+      targetPath = mediaPaths.untaggedDir;
+      configSource = beetsConfigs.quarantine;
+      mediaRoot = cfg.mediaRoot;
+      dataDir = "${cfg.dataRoot}/beets";
+      enableHardening = false;
+      writePaths = [
+        "${cfg.dataRoot}/beets"
+        mediaPaths.quarantineDir
+        mediaPaths.untaggedDir
+      ];
+      mountFor = [
+        "${cfg.dataRoot}/beets"
+        cfg.mediaRoot
+        mediaPaths.quarantineDir
+        mediaPaths.untaggedDir
+      ];
+      conditionDir = mediaPaths.quarantineDir;
+      # No timer - operator-invoked only over SSH TTY.
+    };
+
+    reconcile = {
+      runnerKind = "reconcile";
+      description = "Beets library reconciliation worker";
+      targetPath = mediaPaths.libraryDir;
+      configSource = beetsConfigs.standard;
+      mediaRoot = cfg.mediaRoot;
+      dataDir = "${cfg.dataRoot}/beets";
+      writePaths = [
+        "${cfg.dataRoot}/beets"
+        mediaPaths.libraryDir
+      ];
+      mountFor = [
+        "${cfg.dataRoot}/beets"
+        cfg.mediaRoot
+        mediaPaths.libraryDir
+      ];
+      conditionDir = mediaPaths.libraryDir;
+      # No timer - operator-invoked for maintenance.
+    };
+
+    permission-reconcile = {
+      runnerKind = "permission-reconcile";
+      description = "Beets media permission reconciliation worker";
+      targetPath = mediaPaths.libraryDir;
+      configSource = beetsConfigs.standard;
+      mediaRoot = cfg.mediaRoot;
+      dataDir = "${cfg.dataRoot}/beets";
+      writePaths = [
+        mediaPaths.libraryDir
+        mediaPaths.quarantineDir
+        mediaPaths.untaggedDir
+        mediaPaths.approvedDir
+      ];
+      mountFor = [
+        cfg.mediaRoot
+        mediaPaths.libraryDir
+        mediaPaths.quarantineDir
+        mediaPaths.untaggedDir
+        mediaPaths.approvedDir
+      ];
+      conditionDir = cfg.mediaRoot;
+      # No timer - operator-invoked for ACL repairs.
+    };
+  };
+
 in
 {
   imports = [
     ../../modules/services/syncthing.nix
     ../../modules/services/navidrome.nix
     ../../modules/services/slskd.nix
-    ../../modules/services/beets-inbox.nix
+    ../../modules/services/beets # NEW: reusable Beets framework
     ../../modules/services/soulsync.nix
     ../../modules/services/tagr.nix
   ];
@@ -161,6 +300,27 @@ in
       })
     ];
 
+    # SOPS templates and secrets for Beets plugin credentials.
+    sops.templates = {
+      "beets-config.yaml" = mkBeetsSopsTemplate "standard";
+      "beets-quarantine-config.yaml" = mkBeetsSopsTemplate "quarantine";
+    };
+
+    sops.secrets = (builtins.listToAttrs (
+      map (e: {
+        name = e.secretName;
+        value = mkBeetsSopsSecret e;
+      }) beetsSecretEntries
+    )) // {
+      "beets/ntfy_token" = {
+        sopsFile = cfg.secretFiles.host;
+        key = "beets/ntfy_token";
+        path = ntfyTokenSecretPath;
+        owner = "beets";
+        group = "beets";
+      };
+    };
+
     users.groups.music-ingest.gid = 990;
     users.groups.media.gid = 987;
 
@@ -201,13 +361,20 @@ in
       paths = [ "${cfg.dataRoot}/navidrome" ];
     };
 
-    services.beets-inbox = {
+    # NEW: Beets service configuration with concrete runner instances.
+    services.beets = {
       dataDir = "${cfg.dataRoot}/beets";
       mediaRoot = cfg.mediaRoot;
       inboxDir = cfg.inboxDir;
       libraryDir = cfg.libraryDir;
       quarantineDir = cfg.quarantineDir;
       secretFiles.host = cfg.secretFiles.host;
+      runners = beetsRunnerInstances;
+      notify = {
+        enable = true;
+        ntfyUrl = ntfyAdminUrl;
+        tokenFile = ntfyTokenSecretPath;
+      };
     };
 
     services.state-backups.services.beets = {
@@ -215,6 +382,57 @@ in
       mode = "live";
       paths = [ "${cfg.dataRoot}/beets" ];
     };
+
+    # ---------------------------------------------------------------------- #
+    # ffmpeg-preprocess: pre-import lossless → AIFF conversion
+    #
+    # Event-driven trigger architecture:
+    #
+    #   dropbox/ dir → PathModified (flat dirs from Syncthing/manual)
+    #
+    # Both converge on ffmpeg-preprocess.service → beets-inbox.service.
+    # ---------------------------------------------------------------------- #
+    systemd.services.ffmpeg-preprocess = {
+      description = "Pre-process incoming lossless audio to AIFF before import";
+      after = [ "network.target" ];
+      unitConfig = {
+        OnSuccess = "beets-inbox.service";
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        MemoryDenyWriteExecute = true;
+        RestrictRealtime = true;
+        SystemCallArchitectures = "native";
+        ExecStart = "${ffmpegPreprocessBin}/bin/ffmpeg-preprocess ${mediaPaths.inboxDir}";
+        Environment = [
+          "PATH=/run/current-system/sw/bin"
+        ];
+        User = "beets";
+        Group = "beets";
+        StateDirectory = "beets/ffmpeg-preprocess";
+        WorkingDirectory = "${mediaPaths.inboxDir}";
+        ReadWritePaths = [ mediaPaths.inboxDir ];
+      };
+    };
+
+    # Dropbox: flat manual/Syncthing drops — PathModified on flat dir.
+    systemd.paths.dropbox-inbox = {
+      enable = true;
+      wantedBy = [ "multi-user.target" ];
+      unitConfig = {
+        RequiresMountsFor = cfg.mediaRoot;
+        Unit = "ffmpeg-preprocess.service";
+      };
+      pathConfig = {
+        PathModified = "${cfg.inboxDir}/dropbox";
+      };
+    };
+
+    environment.systemPackages = [ ffmpegPreprocessBin ];
 
     services.state-backups.services.media = {
       enable = true;
@@ -225,11 +443,6 @@ in
         "${cfg.mediaRoot}/.stversions"
       ];
     };
-
-    systemd.paths.beets-inbox-watch.enable = false;
-    systemd.paths.beets-quarantine-promote-watch.enable = false;
-    systemd.timers.beets-inbox-backstop.enable = false;
-    systemd.timers.beets-quarantine-promote-backstop.enable = false;
 
     services.slskd = {
       downloadsPath = "${cfg.mediaRoot}/inbox/slskd";
@@ -286,6 +499,7 @@ in
       "a+ ${cfg.quarantineDir} - - - - default:group:media:r-X"
       "d ${cfg.inboxDir} 2775 root music-ingest - -"
       "z ${cfg.inboxDir} 2775 root music-ingest - -"
+      "d ${cfg.inboxDir}/dropbox 2775 root music-ingest - -"
       "a+ ${cfg.inboxDir} - - - - group:music-ingest:rwX"
       "a+ ${cfg.inboxDir} - - - - default:group:music-ingest:rwX"
       "a+ ${cfg.inboxDir} - - - - group:media:r-X"
@@ -293,16 +507,5 @@ in
       "f /var/lib/slskd/environment 0640 slskd slskd - -"
       "f /var/lib/tagr/environment 0640 root root - -"
     ];
-
-    systemd.services.media-permission-reconcile = {
-      description = "Reconcile media directory ACLs and POSIX permissions recursively";
-      after = [ "systemd-tmpfiles-setup.service" ];
-      unitConfig.RequiresMountsFor = [ cfg.mediaRoot ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${mediaPermissionReconcile}/bin/media-permission-reconcile";
-      };
-    };
   };
 }

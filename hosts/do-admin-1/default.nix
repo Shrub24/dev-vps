@@ -1,7 +1,5 @@
 {
-  config,
   lib,
-  pkgs,
   modulesPath,
   ...
 }:
@@ -84,7 +82,9 @@
   services.hostRecovery = {
     enable = true;
     secretFile = ../../secrets/hosts/do-admin-1/system.yaml;
-    rescueUser = { name = "rescue"; };
+    rescueUser = {
+      name = "rescue";
+    };
     reboot.onCalendar = "weekly";
   };
   services.beszel-agent-auth = {
