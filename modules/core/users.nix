@@ -18,7 +18,10 @@ in
   users.users.dev = {
     isNormalUser = true;
     description = "Dev User";
-    extraGroups = [ "wheel" ];
+    extraGroups = [
+      "wheel"
+      "apprise"
+    ];
     openssh.authorizedKeys.keys = sshKeys;
   };
 

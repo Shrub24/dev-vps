@@ -45,8 +45,7 @@ in
       mkdir -p "$BEETS_DATA_DIR/state"
       mkdir -p "$BEETS_DATA_DIR/logs"
 
-      cp "''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}" "$BEETS_DATA_DIR/config.yaml"
-      chmod 0640 "$BEETS_DATA_DIR/config.yaml"
+      CONFIG="''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}"
 
       TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
       RUNNER_LOG_FILE="$BEETS_DATA_DIR/logs/$TIMESTAMP-runner.log"
@@ -92,7 +91,7 @@ in
       fi
 
       # --- Headless import ---
-      beet -c "$BEETS_DATA_DIR/config.yaml" import -q -C "$TARGET_PATH"
+      beet -c "$CONFIG" import -q -C "$TARGET_PATH"
 
       ${concatStringsSep "\n" postCommands}
 
@@ -143,12 +142,11 @@ in
       mkdir -p "$BEETS_DATA_DIR/state"
       TARGET="''${1:-${if targetPath != null then targetPath else ""}}"
 
-      cp "''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}" "$BEETS_DATA_DIR/config.yaml"
-      chmod 0640 "$BEETS_DATA_DIR/config.yaml"
+      CONFIG="''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}"
 
       ${concatStringsSep "\n" preCommands}
 
-      exec beet -c "$BEETS_DATA_DIR/config.yaml" import "$TARGET"
+      exec beet -c "$CONFIG" import "$TARGET"
 
       ${concatStringsSep "\n" postCommands}
     '';
@@ -169,18 +167,14 @@ in
       export HOME="$BEETS_DATA_DIR"
       mkdir -p "$BEETS_DATA_DIR/state"
 
-      cp "''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}" "$BEETS_DATA_DIR/config.yaml"
-      chmod 0640 "$BEETS_DATA_DIR/config.yaml"
+      CONFIG="''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}"
 
       ${concatStringsSep "\n" preCommands}
 
-      CONFIG="$BEETS_DATA_DIR/config.yaml"
-      echo "=== beet update (re-read tags from files) ==="
+      echo "=== beet update (reconcile library with filesystem) ==="
       beet -c "$CONFIG" update -a
-      echo "=== beet check (verify library integrity) ==="
-      beet -c "$CONFIG" check
-      echo "=== beet convert (lossless -> AIFF where not yet converted) ==="
-      beet -c "$CONFIG" convert
+      echo "=== beet convert (lossless -> AIFF, auto-accept) ==="
+      beet -c "$CONFIG" convert --yes
       echo "=== beet duplicates (detect duplicate albums) ==="
       beet -c "$CONFIG" duplicates -a
       echo "=== beet move (reorganize files to match path templates) ==="
@@ -193,6 +187,28 @@ in
   # Note: standalone beets-convert runner removed.
   # Pre-import conversion is now handled by ffmpeg-preprocess (pure ffmpeg, no beets).
   # In-library conversion is bundled into the reconcile runner (beet convert step).
+
+  duplicates = pkgs.writeShellApplication {
+    name = "beets-runner-duplicates";
+    runtimeInputs = [
+      beetsRuntime
+      pkgs.coreutils
+    ];
+    text = ''
+      set -euo pipefail
+
+      BEETS_DATA_DIR="${dataDir}"
+      export BEETSDIR="$BEETS_DATA_DIR"
+      export HOME="$BEETS_DATA_DIR"
+      mkdir -p "$BEETS_DATA_DIR/state"
+
+      CONFIG="''${BEETS_CONFIG_SOURCE:?BEETS_CONFIG_SOURCE must be set}"
+
+      ${concatStringsSep "\n" preCommands}
+
+      exec beet -c "$CONFIG" duplicates -a "$@"
+    '';
+  };
 
   permission-reconcile = pkgs.writeShellApplication {
     name = "beets-runner-permission-reconcile";

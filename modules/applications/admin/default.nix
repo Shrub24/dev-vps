@@ -229,6 +229,19 @@ in
           };
         };
       })
+
+      # ntfy Firebase FCM key — whole-file sops decrypt, no wrapper key
+      {
+        sops.secrets."ntfy-firebase-key" = {
+          sopsFile = ../../../secrets/services/firebase-key.json;
+          format = "json";
+          key = "";
+          path = "/run/secrets/ntfy/firebase-key.json";
+          mode = "0400";
+          owner = "ntfy-sh";
+        };
+        services.admin.ntfy.firebaseKeyFile = lib.mkDefault "/run/secrets/ntfy/firebase-key.json";
+      }
     ]
   );
 }

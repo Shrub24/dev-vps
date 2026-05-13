@@ -25,6 +25,21 @@ let
     quarantine = "${beetsConfigDir}/beets-quarantine-config.yaml";
   };
 
+  # Sops-rendered config paths (secrets substituted). Falls back to raw template
+  # when sops templates are not configured.
+  beetsRenderedConfigs = {
+    standard =
+      if lib.hasAttrByPath [ "sops" "templates" "beets-config.yaml" "path" ] config then
+        config.sops.templates."beets-config.yaml".path
+      else
+        beetsConfigs.standard;
+    quarantine =
+      if lib.hasAttrByPath [ "sops" "templates" "beets-quarantine-config.yaml" "path" ] config then
+        config.sops.templates."beets-quarantine-config.yaml".path
+      else
+        beetsConfigs.quarantine;
+  };
+
   # ffmpeg pre-processing binary for lossless-to-AIFF conversion (pre-import).
   ffmpegPreprocessBin = pkgs.writeShellApplication {
     name = "ffmpeg-preprocess";
@@ -36,11 +51,58 @@ let
     text = builtins.readFile ./music/files/ffmpeg-preprocess.sh;
   };
 
-  # Derived from policy/web-services.nix — ntfy failure notifications go here.
-  ntfyAdminUrl = config.repo.web.hosts."do-admin-1".services."ntfy-admin".publicUrl or "https://ntfy.sh";
+  # Interactive wrapper for manual quarantine import.
+  # Runs the quarantine-interactive runner as the beets user with the correct env.
+  beetsInteractiveBin = pkgs.writeShellApplication {
+    name = "beets-interactive";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.shadow
+    ];
+    text = ''
+      set -euo pipefail
 
-  # SOPS secret destination path for ntfy auth token.
-  ntfyTokenSecretPath = "/run/secrets/beets/ntfy_token";
+      # Path to the low-level runner binary (installed with beets runners).
+      RUNNER="/run/current-system/sw/bin/beets-runner-quarantine-interactive"
+
+      # Target dir: argument or default to untagged.
+      TARGET="''${1:-${mediaPaths.untaggedDir}}"
+
+      # Run as beets user so DB/library writes succeed without root ownership.
+      exec sudo -u beets -H env \
+        BEETSDIR="${config.services.beets.dataDir}" \
+        BEETS_CONFIG_SOURCE="${beetsRenderedConfigs.quarantine}" \
+        "$RUNNER" "$TARGET"
+    '';
+  };
+
+  # Permission reconciliation wrapper — fixes ACLs/ownership on all media dirs.
+  # Needs root for setfacl/chgrp/chmod, so runs directly (not as beets user).
+  beetsFixPermsBin = pkgs.writeShellApplication {
+    name = "beets-fixperms";
+    runtimeInputs = [ ];
+    text = ''
+      set -euo pipefail
+      exec /run/current-system/sw/bin/beets-runner-permission-reconcile "$@"
+    '';
+  };
+
+  # Duplicates detection wrapper — runs as beets user with correct env.
+  # Pass any beet duplicates flags: beets-dupes --merge, beets-dupes --delete, etc.
+  beetsDupesBin = pkgs.writeShellApplication {
+    name = "beets-dupes";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.shadow
+    ];
+    text = ''
+      set -euo pipefail
+      exec sudo -u beets -H env \
+        BEETSDIR="${config.services.beets.dataDir}" \
+        BEETS_CONFIG_SOURCE="${beetsRenderedConfigs.standard}" \
+        /run/current-system/sw/bin/beets-runner-duplicates "$@"
+    '';
+  };
 
   # SOPS secret entries for Beets plugin credentials.
   beetsSecretEntries = [
@@ -58,6 +120,16 @@ let
       secretName = "beets_spotify_client_secret";
       key = "beets/spotify_client_secret";
       placeholder = "REPLACE_WITH_SPOTIFY_CLIENT_SECRET";
+    }
+    {
+      secretName = "beets_beatport_username";
+      key = "beets/beatport_username";
+      placeholder = "REPLACE_WITH_BEATPORT_USERNAME";
+    }
+    {
+      secretName = "beets_beatport_password";
+      key = "beets/beatport_password";
+      placeholder = "REPLACE_WITH_BEATPORT_PASSWORD";
     }
   ];
 
@@ -92,7 +164,7 @@ let
       runnerKind = "import";
       description = "Beets automated inbox import worker";
       targetPath = mediaPaths.inboxDir;
-      configSource = beetsConfigs.standard;
+      configSource = beetsRenderedConfigs.standard;
       mediaRoot = cfg.mediaRoot;
       dataDir = "${cfg.dataRoot}/beets";
       writePaths = [
@@ -126,7 +198,7 @@ let
       runnerKind = "quarantine-interactive";
       description = "Beets interactive quarantine review worker";
       targetPath = mediaPaths.untaggedDir;
-      configSource = beetsConfigs.quarantine;
+      configSource = beetsRenderedConfigs.quarantine;
       mediaRoot = cfg.mediaRoot;
       dataDir = "${cfg.dataRoot}/beets";
       enableHardening = false;
@@ -149,7 +221,7 @@ let
       runnerKind = "reconcile";
       description = "Beets library reconciliation worker";
       targetPath = mediaPaths.libraryDir;
-      configSource = beetsConfigs.standard;
+      configSource = beetsRenderedConfigs.standard;
       mediaRoot = cfg.mediaRoot;
       dataDir = "${cfg.dataRoot}/beets";
       writePaths = [
@@ -169,7 +241,7 @@ let
       runnerKind = "permission-reconcile";
       description = "Beets media permission reconciliation worker";
       targetPath = mediaPaths.libraryDir;
-      configSource = beetsConfigs.standard;
+      configSource = beetsRenderedConfigs.standard;
       mediaRoot = cfg.mediaRoot;
       dataDir = "${cfg.dataRoot}/beets";
       writePaths = [
@@ -187,6 +259,24 @@ let
       ];
       conditionDir = cfg.mediaRoot;
       # No timer - operator-invoked for ACL repairs.
+    };
+
+    duplicates = {
+      runnerKind = "duplicates";
+      description = "Beets duplicate detection and cleanup (interactive)";
+      targetPath = mediaPaths.libraryDir;
+      configSource = beetsRenderedConfigs.standard;
+      mediaRoot = cfg.mediaRoot;
+      dataDir = "${cfg.dataRoot}/beets";
+      writePaths = [
+        mediaPaths.libraryDir
+      ];
+      mountFor = [
+        cfg.mediaRoot
+        mediaPaths.libraryDir
+      ];
+      conditionDir = mediaPaths.libraryDir;
+      # No timer - operator-invoked for manual review.
     };
   };
 
@@ -306,20 +396,12 @@ in
       "beets-quarantine-config.yaml" = mkBeetsSopsTemplate "quarantine";
     };
 
-    sops.secrets = (builtins.listToAttrs (
+    sops.secrets = builtins.listToAttrs (
       map (e: {
         name = e.secretName;
         value = mkBeetsSopsSecret e;
       }) beetsSecretEntries
-    )) // {
-      "beets/ntfy_token" = {
-        sopsFile = cfg.secretFiles.host;
-        key = "beets/ntfy_token";
-        path = ntfyTokenSecretPath;
-        owner = "beets";
-        group = "beets";
-      };
-    };
+    );
 
     users.groups.music-ingest.gid = 990;
     users.groups.media.gid = 987;
@@ -372,8 +454,7 @@ in
       runners = beetsRunnerInstances;
       notify = {
         enable = true;
-        ntfyUrl = ntfyAdminUrl;
-        tokenFile = ntfyTokenSecretPath;
+        tier = "music";
       };
     };
 
@@ -432,7 +513,12 @@ in
       };
     };
 
-    environment.systemPackages = [ ffmpegPreprocessBin ];
+    environment.systemPackages = [
+      ffmpegPreprocessBin
+      beetsInteractiveBin
+      beetsDupesBin
+      beetsFixPermsBin
+    ];
 
     services.state-backups.services.media = {
       enable = true;

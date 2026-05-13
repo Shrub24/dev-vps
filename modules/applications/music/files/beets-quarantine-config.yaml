@@ -1,6 +1,6 @@
 directory: /srv/media/library
 library: /srv/data/beets/state/library.db
-plugins: bandcamp chroma discogs fetchart embedart fromfilename inline duplicates spotify deezer convert check beatport4
+plugins: bandcamp chroma discogs fetchart embedart fromfilename inline duplicates spotify deezer convert beatport4
 item_fields:
   source_filename: |
     import os
@@ -56,18 +56,20 @@ duplicates:
   tiebreak:
     items: [bitrate, num_media, tracks]
 discogs:
-  user_token: "REPLACE_WITH_DISCOGS_USER_TOKEN"
+  user_token: REPLACE_WITH_DISCOGS_USER_TOKEN
 spotify:
-  client_id: "REPLACE_WITH_SPOTIFY_CLIENT_ID"
-  client_secret: "REPLACE_WITH_SPOTIFY_CLIENT_SECRET"
+  client_id: REPLACE_WITH_SPOTIFY_CLIENT_ID
+  client_secret: REPLACE_WITH_SPOTIFY_CLIENT_SECRET
 convert:
   auto: yes
+  dest: /srv/media/library
   format: aiff
   copy_album_art: yes
   threads: 2
-  quiet: no
+  quiet: yes
   never_convert_lossy_files: yes
   pretend: no
+  delete_originals: yes
   id3v23: true
   formats:
     aiff:
@@ -79,5 +81,7 @@ beetcamp:
 chroma:
   auto: yes
 beatport4:
+  username: REPLACE_WITH_BEATPORT_USERNAME
+  password: REPLACE_WITH_BEATPORT_PASSWORD
   art: yes
   art_overwrite: no

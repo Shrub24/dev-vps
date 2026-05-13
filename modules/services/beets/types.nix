@@ -13,6 +13,7 @@ in
         "quarantine-interactive"
         "reconcile"
         "permission-reconcile"
+        "duplicates"
       ];
       description = "Which built-in runner behavior this instance uses.";
     };

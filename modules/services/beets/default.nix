@@ -40,18 +40,21 @@ let
 
   beets-beatport4 = pkgs.python3Packages.buildPythonPackage {
     pname = "beets-beatport4";
-    version = "0.3.4";
-    format = "setuptools";
+    version = "1.1.0";
+    format = "pyproject";
     src = pkgs.python3Packages.fetchPypi {
-      pname = "beets-beatport4";
-      version = "0.3.4";
-      hash = "sha256-gst4Tv4cLVHtCwX85eExT1cZBw1FpNv7XjOe1eqla/E=";
+      pname = "beets_beatport4";
+      version = "1.1.0";
+      hash = "sha256-JRXybbLMfZmVw3Z0+mWPi5DPSPv+MplrrfdfVfm6KvQ=";
     };
-    buildInputs = [ pkgs.python3Packages.setuptools ];
+    build-system = [ pkgs.python3Packages.setuptools ];
     propagatedBuildInputs = [
       pkgs.python3Packages.requests
       pkgs.python3Packages.confuse
     ];
+    # beets is provided by the pluginOverrides context at runtime;
+    # skip the check that would fail during standalone build
+    dontCheckRuntimeDeps = true;
   };
 
   beetsRuntime = pkgs.python3Packages.beets.override {
@@ -166,22 +169,17 @@ in
           enable = lib.mkOption {
             type = lib.types.bool;
             default = false;
-            description = "Send ntfy.sh notification on runner failure.";
+            description = "Send apprise notification on runner failure.";
           };
-          ntfyUrl = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "ntfy.sh topic URL for failure notifications (e.g. https://ntfy.sh/my-topic).";
-          };
-          tokenFile = lib.mkOption {
-            type = lib.types.nullOr lib.types.path;
-            default = null;
-            description = "Optional path to ntfy.sh authentication token file.";
+          tier = lib.mkOption {
+            type = lib.types.str;
+            default = "warning";
+            description = "Notification tier to use (references services.apprise.telegram.chatIds).";
           };
         };
       };
       default = { };
-      description = "ntfy.sh failure notification configuration for beets runners.";
+      description = "Apprise/Telegram failure notification configuration for beets runners.";
     };
 
     # Per-runner-instance configuration, keyed by runner name.
@@ -211,11 +209,13 @@ in
       extraGroups = [
         "music-ingest"
         "media"
+        "apprise"
       ];
     };
 
     environment.systemPackages = [
       beetsRuntime
+      pkgs.apprise
     ]
     ++ builtins.map (r: runnerKinds.${r.runnerKind}) (builtins.attrValues cfg.runners);
 
@@ -239,13 +239,15 @@ in
           kind = runnerInstance.runnerKind;
           runnerBin = runnerKinds.${kind};
           baseUnit = mkBeetsService runnerInstance runnerName kind runnerBin;
-          onFailureUnits = lib.optional cfg.notify.enable "beets-notify-failure@beets-${runnerName}.service"
+          onFailureUnits =
+            lib.optional cfg.notify.enable "beets-notify-failure@beets-${runnerName}.service"
             ++ lib.optional (kind == "import") "beets-${runnerName}-retry.timer";
         in
         lib.nameValuePair "beets-${runnerName}" (
           baseUnit
           // lib.optionalAttrs (onFailureUnits != [ ] || kind == "import") {
-            unitConfig = (baseUnit.unitConfig or { })
+            unitConfig =
+              (baseUnit.unitConfig or { })
               // lib.optionalAttrs (onFailureUnits != [ ]) {
                 OnFailure = lib.concatStringsSep " " onFailureUnits;
               }
@@ -255,10 +257,9 @@ in
               };
           }
           // {
-            serviceConfig = (baseUnit.serviceConfig or { })
-              // {
-                ExecStartPost = [ "+${permissionReconcileBin}/bin/beets-runner-permission-reconcile" ];
-              };
+            serviceConfig = (baseUnit.serviceConfig or { }) // {
+              ExecStartPost = [ "+${permissionReconcileBin}/bin/beets-runner-permission-reconcile" ];
+            };
           }
         )
       ) cfg.runners)
@@ -268,47 +269,25 @@ in
         "beets-notify-failure@" = {
           description = "Beets runner failure notification for %i";
           after = [ "network.target" ];
-          environment =
-            {
-              NTFY_URL = cfg.notify.ntfyUrl;
-              NTFY_TOPIC = "beets-import-errors";
-            }
-            // lib.optionalAttrs (cfg.notify.tokenFile != null) {
-              NTFY_TOKEN_FILE = cfg.notify.tokenFile;
-            };
           serviceConfig = hardenedServiceDefaults // {
             User = "beets";
             Group = "beets";
-            ExecStart = let
-              notifyScript = pkgs.writeShellApplication {
-                name = "beets-notify-failure";
-                runtimeInputs = [ pkgs.curl pkgs.systemd ];
-                text = ''
-                  set -euo pipefail
-                  runner="''${1:?}"
-                  title="Beets runner beets-$runner failed on oci-melb-1"
-                  body="$(journalctl -u "beets-$runner.service" -n 20 --no-pager --output=short-full 2>/dev/null || echo '(no journal output)')"
-
-                  if [[ -n "''${NTFY_TOKEN_FILE:-}" && -f "$NTFY_TOKEN_FILE" ]]; then
-                    curl -s -o /dev/null -w '%{http_code}' \
-                      -H "Authorization: Bearer $(cat "$NTFY_TOKEN_FILE")" \
-                      -H "Title: $title" \
-                      -H "Priority: high" \
-                      -H "Tags: warning,beets" \
-                      -d "$body" \
-                      "$NTFY_URL/$NTFY_TOPIC"
-                  else
-                    curl -s -o /dev/null -w '%{http_code}' \
-                      -H "Title: $title" \
-                      -H "Priority: high" \
-                      -H "Tags: warning,beets" \
-                      -d "$body" \
-                      "$NTFY_URL/$NTFY_TOPIC"
-                  fi
-                '';
-              };
-            in
-            "${notifyScript}/bin/beets-notify-failure %i";
+            ExecStart =
+              let
+                notifyScript = pkgs.writeShellApplication {
+                  name = "beets-notify-failure";
+                  runtimeInputs = [
+                    pkgs.systemd
+                  ];
+                  text = ''
+                    set -euo pipefail
+                    runner="''${1:?}"
+                    body="$(journalctl -u "beets-$runner.service" -n 20 --no-pager --output=short-full 2>/dev/null || echo '(no journal output)')"
+                    echo "$body" | apprise-notify ${cfg.notify.tier} "Beets runner beets-$runner failed on oci-melb-1"
+                  '';
+                };
+              in
+              "${notifyScript}/bin/beets-notify-failure %i";
           };
         };
       })
@@ -316,40 +295,33 @@ in
 
     # Generate timer units for runner instances that declare timer triggers.
     systemd.timers =
-      (
-        lib.mapAttrs'
-          (
-            runnerName: runnerInstance:
-            lib.nameValuePair "beets-${runnerName}-timer" {
-              enable = true;
-              timerConfig = {
-                OnBootSec = runnerInstance.triggers.timer.OnBootSec or "5m";
-                OnUnitActiveSec = runnerInstance.triggers.timer.OnUnitActiveSec or "15m";
-                RandomizedDelaySec = runnerInstance.triggers.timer.RandomizedDelaySec or null;
-                Unit = "beets-${runnerName}.service";
-                Persistent = true;
-              };
-            }
-          )
-          (
-            lib.filterAttrs (_: r: r ? triggers && r.triggers ? timer && r.triggers.timer != null) cfg.runners
-          )
+      (lib.mapAttrs'
+        (
+          runnerName: runnerInstance:
+          lib.nameValuePair "beets-${runnerName}-timer" {
+            enable = true;
+            timerConfig = {
+              OnBootSec = runnerInstance.triggers.timer.OnBootSec or "5m";
+              OnUnitActiveSec = runnerInstance.triggers.timer.OnUnitActiveSec or "15m";
+              RandomizedDelaySec = runnerInstance.triggers.timer.RandomizedDelaySec or null;
+              Unit = "beets-${runnerName}.service";
+              Persistent = true;
+            };
+          }
+        )
+        (lib.filterAttrs (_: r: r ? triggers && r.triggers ? timer && r.triggers.timer != null) cfg.runners)
       )
-      // (
-        lib.mapAttrs'
-          (
-            runnerName: _runner:
-            lib.nameValuePair "beets-${runnerName}-retry" {
-              enable = true;
-              wantedBy = [ "beets-${runnerName}.service" ];
-              timerConfig = {
-                OnActiveSec = "10min";
-                Unit = "beets-${runnerName}.service";
-              };
-            }
-          )
-          (lib.filterAttrs (_: r: r.runnerKind == "import") cfg.runners)
-      );
+      // (lib.mapAttrs' (
+        runnerName: _runner:
+        lib.nameValuePair "beets-${runnerName}-retry" {
+          enable = true;
+          wantedBy = [ "beets-${runnerName}.service" ];
+          timerConfig = {
+            OnActiveSec = "10min";
+            Unit = "beets-${runnerName}.service";
+          };
+        }
+      ) (lib.filterAttrs (_: r: r.runnerKind == "import") cfg.runners));
 
     # Generate path units for runner instances that declare path triggers.
     systemd.paths =

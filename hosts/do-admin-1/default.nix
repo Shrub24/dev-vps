@@ -11,6 +11,7 @@
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/applications/admin/default.nix
+    ../../modules/services/apprise.nix
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/digitalocean/default.nix
     ../../modules/storage/disko-single-disk.nix
@@ -51,6 +52,11 @@
   disko-root-extra = "100%";
   applications.admin.enable = true;
   applications.admin.dataRoot = "/srv/data";
+  services.apprise = {
+    enable = true;
+    secretFiles.host = ../../secrets/services/apprise.yaml;
+  };
+
   applications.admin.secretFiles.host = ../../secrets/applications/admin.yaml;
   applications.admin.secretFiles.identity =
     if builtins.pathExists ../../secrets/identity/kanidm.yaml then

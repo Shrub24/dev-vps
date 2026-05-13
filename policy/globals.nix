@@ -15,10 +15,6 @@
     forcePathStyle = true;
   };
 
-  # Canonical non-secret defaults for application stacks.
-  # Application modules import this attrset and apply values
-  # via lib.mkDefault so hosts can override without touching
-  # the module definition.
   applications = {
     music = {
       dataRoot = "/srv/data";
@@ -33,6 +29,18 @@
     };
   };
 
+  notifications = {
+    telegram = {
+      chatId = "-1003913476155";
+
+      topics = {
+        critical = "2";
+        warning = "3";
+        info = "4";
+        music = "5";
+      };
+    };
+  };
   services = {
     nix = {
       substituters = [
