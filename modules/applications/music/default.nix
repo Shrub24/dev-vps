@@ -6,8 +6,8 @@
 }:
 let
   cfg = config.applications.music;
-  globals = import ../../policy/globals.nix;
-  secretHelpers = import ../../lib/secrets.nix { inherit lib; };
+  globals = import ../../../policy/globals.nix;
+  secretHelpers = import ../../../lib/secrets.nix { inherit lib; };
 
   # Concrete media paths derived at the application layer.
   mediaPaths = rec {
@@ -19,7 +19,7 @@ let
   };
 
   # Beets config files live under the music/ subdirectory (sibling to this file).
-  beetsConfigDir = ./music/files;
+  beetsConfigDir = ./files;
   beetsConfigs = {
     standard = "${beetsConfigDir}/beets-config.yaml";
     quarantine = "${beetsConfigDir}/beets-quarantine-config.yaml";
@@ -48,7 +48,7 @@ let
       pkgs.findutils
       pkgs.coreutils
     ];
-    text = builtins.readFile ./music/files/ffmpeg-preprocess.sh;
+    text = builtins.readFile ./files/ffmpeg-preprocess.sh;
   };
 
   # Interactive wrapper for manual quarantine import.
@@ -283,12 +283,12 @@ let
 in
 {
   imports = [
-    ../../modules/services/syncthing.nix
-    ../../modules/services/navidrome.nix
-    ../../modules/services/slskd.nix
-    ../../modules/services/beets # NEW: reusable Beets framework
-    ../../modules/services/soulsync.nix
-    ../../modules/services/tagr.nix
+    ../../services/syncthing.nix
+    ../../services/navidrome.nix
+    ../../services/slskd.nix
+    ../../services/beets/default.nix
+    ../../services/soulsync.nix
+    ../../services/tagr.nix
   ];
 
   options.applications.music = {

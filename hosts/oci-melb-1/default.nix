@@ -17,7 +17,7 @@ in
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/shared/identity-oidc.nix
-    ../../modules/applications/music.nix
+    ../../modules/applications/music
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-single-disk-split.nix
