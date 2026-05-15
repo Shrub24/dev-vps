@@ -71,7 +71,7 @@ let
   };
 
   runnerKinds = import ./runners.nix {
-    inherit pkgs beetsRuntime lib;
+    inherit pkgs lib;
     mediaPaths = mediaPaths;
     dataDir = cfg.dataDir;
   };
@@ -184,9 +184,89 @@ in
 
     # Per-runner-instance configuration, keyed by runner name.
     runners = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule ./types.nix);
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = {
+            runnerKind = lib.mkOption {
+              type = lib.types.enum [
+                "import"
+                "quarantine-interactive"
+                "reconcile"
+                "permission-reconcile"
+                "duplicates"
+              ];
+              description = "Built-in runner behavior.";
+            };
+            configSource = lib.mkOption {
+              type = lib.types.path;
+              description = "Beets YAML config path.";
+            };
+            targetPath = lib.mkOption {
+              type = lib.types.str;
+              description = "Target media path.";
+            };
+            description = lib.mkOption {
+              type = lib.types.str;
+              default = "Beets runner";
+            };
+            conditionDir = lib.mkOption {
+              type = lib.types.str;
+              description = "Directory that must exist before running.";
+            };
+            mountFor = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+            enableHardening = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+            };
+            writePaths = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+            readPaths = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+            dataDir = lib.mkOption {
+              type = lib.types.str;
+              description = "Beets runtime data dir.";
+            };
+            mediaRoot = lib.mkOption {
+              type = lib.types.str;
+              description = "Media root path.";
+            };
+            args = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+            preCommands = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+            postCommands = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+            triggers = lib.mkOption {
+              type = lib.types.attrsOf lib.types.attrs;
+              default = { };
+            };
+          };
+        }
+      );
       default = { };
       description = "Runner instances for this beets deployment.";
+    };
+
+    configFiles = lib.mkOption {
+      type = lib.types.submodule {
+        options = {
+          standard = lib.mkOption { type = lib.types.path; };
+          quarantine = lib.mkOption { type = lib.types.path; };
+        };
+      };
     };
   };
 

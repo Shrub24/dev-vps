@@ -133,7 +133,7 @@ let
     }
   ];
 
-  mkBeetsSopsTemplate = name: {
+  _mkBeetsSopsTemplate = name: {
     owner = "beets";
     group = "beets";
     mode = "0440";
@@ -142,7 +142,7 @@ let
     ) beetsSecretEntries) (builtins.readFile beetsConfigs.${name});
   };
 
-  mkBeetsSopsSecret =
+  _mkBeetsSopsSecret =
     { secretName, key, ... }:
     {
       sopsFile = cfg.secretFiles.host;
@@ -378,6 +378,21 @@ in
     };
 
     secretFiles.host = secretHelpers.mkSecretFileOption "music-host-secrets";
+    configFiles = lib.mkOption {
+      type = lib.types.submodule {
+        options = {
+          standard = lib.mkOption {
+            type = lib.types.path;
+            default = ./files/beets-config.yaml;
+          };
+          quarantine = lib.mkOption {
+            type = lib.types.path;
+            default = ./files/beets-quarantine-config.yaml;
+          };
+        };
+      };
+      default = { };
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -389,19 +404,6 @@ in
         label = "secretFiles.host";
       })
     ];
-
-    # SOPS templates and secrets for Beets plugin credentials.
-    sops.templates = {
-      "beets-config.yaml" = mkBeetsSopsTemplate "standard";
-      "beets-quarantine-config.yaml" = mkBeetsSopsTemplate "quarantine";
-    };
-
-    sops.secrets = builtins.listToAttrs (
-      map (e: {
-        name = e.secretName;
-        value = mkBeetsSopsSecret e;
-      }) beetsSecretEntries
-    );
 
     users.groups.music-ingest.gid = 990;
     users.groups.media.gid = 987;
@@ -443,7 +445,6 @@ in
       paths = [ "${cfg.dataRoot}/navidrome" ];
     };
 
-    # NEW: Beets service configuration with concrete runner instances.
     services.beets = {
       dataDir = "${cfg.dataRoot}/beets";
       mediaRoot = cfg.mediaRoot;
@@ -451,6 +452,10 @@ in
       libraryDir = cfg.libraryDir;
       quarantineDir = cfg.quarantineDir;
       secretFiles.host = cfg.secretFiles.host;
+      configFiles = {
+        standard = cfg.configFiles.standard;
+        quarantine = cfg.configFiles.quarantine;
+      };
       runners = beetsRunnerInstances;
       notify = {
         enable = true;
