@@ -23,6 +23,8 @@ Beets SHALL use explicit module-injected media/data paths for runtime state, log
 - **THEN** path usage derives from declared options instead of hardcoded filesystem literals
 - **AND** hardened service units include required rendered config access paths
 
+## ADDED Requirements
+
 ### Requirement: Reusable Beets framework and workflow policy MUST remain separate
 The system SHALL keep reusable Beets execution scaffolding separate from music-specific workflow composition.
 
@@ -49,11 +51,3 @@ The system SHALL support optional pre/post command hooks and optional triggers f
 - **WHEN** a Beets runner instance includes a timer trigger and pre/post commands
 - **THEN** the generated unit and timer include those lifecycle extensions
 - **AND** the core runner behavior still comes from the declared built-in runner kind
-
-### Requirement: Automation remains operationally controllable
-Beets execution SHALL support operator-controlled manual rescue processing after SoulSync cutover, and beets-inbox SHALL NOT remain the default primary automated ingest/promotion backend.
-
-#### Scenario: Operator executes manual rescue run
-- **WHEN** beets runner is invoked manually against an approved rescue boundary
-- **THEN** processing occurs within declared boundary checks and logs are emitted to state paths
-- **AND** this execution is fallback-oriented rather than the canonical default ingest path
