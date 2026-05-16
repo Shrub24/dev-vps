@@ -22,7 +22,6 @@ creation_rules:
     key_groups:
       - age:
           - *owner_age
-
   # === New topology-aligned secret buckets ===
 
   # Application scopes
@@ -42,8 +41,13 @@ creation_rules:
           - *owner_age
           - *oci_melb_1_age
           - *do_admin_1_age
-
   # Service scopes (standalone leaf services)
+  - path_regex: ^secrets/services/apprise\.ya?ml$
+    key_groups:
+      - age:
+          - *owner_age
+          - *oci_melb_1_age
+          - *do_admin_1_age
   - path_regex: ^secrets/services/niks3\.ya?ml$
     key_groups:
       - age:
@@ -59,7 +63,6 @@ creation_rules:
       - age:
           - *owner_age
           - *oci_melb_1_age
-
   # Identity scopes
   - path_regex: ^secrets/identity/kanidm\.ya?ml$
     key_groups:
@@ -71,7 +74,6 @@ creation_rules:
       - age:
           - *owner_age
           - *do_admin_1_age
-
   # Host exception scopes: system (host/bootstrap-only, including recovery password hashes)
   - path_regex: ^secrets/hosts/oci-melb-1/system\.ya?ml$
     key_groups:
@@ -83,7 +85,6 @@ creation_rules:
       - age:
           - *owner_age
           - *do_admin_1_age
-
   # Host exception scopes: OIDC (cross-host identity handshake)
   - path_regex: ^secrets/hosts/oci-melb-1/oidc\.ya?ml$
     key_groups:
@@ -97,3 +98,9 @@ creation_rules:
           - *owner_age
           - *do_admin_1_age
           - *oci_melb_1_age
+  # Firebase service key
+  - path_regex: ^secrets/services/firebase-key\.json$
+    key_groups:
+      - age:
+          - *owner_age
+          - *do_admin_1_age

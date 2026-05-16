@@ -17,12 +17,13 @@ in
     ../../modules/shared/web-policy.nix
     ../../modules/shared/kanidm-host-auth.nix
     ../../modules/shared/identity-oidc.nix
-    ../../modules/applications/music.nix
+    ../../modules/applications/music
     ../../modules/applications/edge-ingress.nix
     ../../modules/providers/oci/default.nix
     ../../modules/storage/disko-single-disk-split.nix
     ../../modules/core/users.nix
     ../../modules/services/admin/cockpit.nix
+    ../../modules/services/apprise.nix
     ../../modules/services/bifrost-gateway.nix
     ../../modules/services/karakeep.nix
     ../../modules/services/niks3.nix
@@ -161,7 +162,9 @@ in
   services.hostRecovery = lib.mkIf hasHostSecrets {
     enable = true;
     secretFile = ../../secrets/hosts/oci-melb-1/system.yaml;
-    rescueUser = { name = "rescue"; };
+    rescueUser = {
+      name = "rescue";
+    };
     reboot.onCalendar = "weekly";
   };
 
@@ -211,6 +214,11 @@ in
       xz
       icu
     ];
+  };
+
+  services.apprise = {
+    enable = true;
+    secretFiles.host = ../../secrets/services/apprise.yaml;
   };
 
   system.stateVersion = "25.11";

@@ -7,14 +7,11 @@ let
   policyLib = import ../../lib/policy.nix { inherit lib; };
   webServicesPolicy = import ../../policy/web-services.nix;
   currentHostName = config.networking.hostName or null;
-  resolvedHosts = lib.mapAttrs (
-    hostName: _host:
-    {
-      primaryDomain = policyLib.resolvePrimaryDomain webServicesPolicy hostName;
-      services = policyLib.resolveHostServices webServicesPolicy hostName;
-      cloudflare.hosts = policyLib.resolveCloudflareHosts webServicesPolicy hostName;
-    }
-  ) (webServicesPolicy.hosts or { });
+  resolvedHosts = lib.mapAttrs (hostName: _host: {
+    primaryDomain = policyLib.resolvePrimaryDomain webServicesPolicy hostName;
+    services = policyLib.resolveHostServices webServicesPolicy hostName;
+    cloudflare.hosts = policyLib.resolveCloudflareHosts webServicesPolicy hostName;
+  }) (webServicesPolicy.hosts or { });
 in
 {
   options.repo.web = {

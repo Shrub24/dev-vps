@@ -12,3 +12,4 @@ result
 .ruff_cache/
 .codenomad/
 *.token
+.pi/
