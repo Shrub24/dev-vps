@@ -25,7 +25,7 @@ Beets SHALL use explicit module-injected media/data paths for runtime state, log
 #### Scenario: Service units are rendered
 - **WHEN** Beets units and runner environment are generated
 - **THEN** path usage derives from declared options instead of hardcoded filesystem literals
-- **AND** hardened service units include required rendered config access paths
+- **AND** hardened service units include required access paths to rendered config templates
 
 ### Requirement: Automation remains operationally controllable
 Beets execution SHALL support operator-controlled manual rescue processing after SoulSync cutover, and beets-inbox SHALL NOT remain the default primary automated ingest/promotion backend.

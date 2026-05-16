@@ -114,7 +114,7 @@ let
             "BEETSDIR=${cfg.dataDir}"
             "BEETS_CONFIG_SOURCE=${runnerInstance.configSource}"
           ];
-          ExecStart = "${runnerBin}/bin/${runnerBin.name} ${lib.concatStringsSep " " runnerInstance.args} ${runnerInstance.targetPath}";
+          ExecStart = [ "${runnerBin}/bin/${runnerBin.name}" ] ++ runnerInstance.args ++ [ runnerInstance.targetPath ];
           ReadWritePaths = runnerInstance.writePaths ++ [ "/run/secrets/rendered" ];
           ReadPaths = runnerInstance.readPaths;
         }
@@ -289,7 +289,6 @@ in
       extraGroups = [
         "music-ingest"
         "media"
-        "apprise"
       ];
     };
 
@@ -320,7 +319,7 @@ in
           runnerBin = runnerKinds.${kind};
           baseUnit = mkBeetsService runnerInstance runnerName kind runnerBin;
           onFailureUnits =
-            lib.optional cfg.notify.enable "beets-notify-failure@beets-${runnerName}.service"
+            lib.optional cfg.notify.enable "beets-notify-failure@${runnerName}.service"
             ++ lib.optional (kind == "import") "beets-${runnerName}-retry.timer";
         in
         lib.nameValuePair "beets-${runnerName}" (
@@ -363,7 +362,7 @@ in
                     set -euo pipefail
                     runner="''${1:?}"
                     body="$(journalctl -u "beets-$runner.service" -n 20 --no-pager --output=short-full 2>/dev/null || echo '(no journal output)')"
-                    echo "$body" | apprise-notify ${cfg.notify.tier} "Beets runner beets-$runner failed on oci-melb-1"
+                    echo "$body" | apprise-notify ${cfg.notify.tier} "Beets runner $runner failed on ${config.networking.hostName}"
                   '';
                 };
               in
@@ -395,7 +394,7 @@ in
         runnerName: _runner:
         lib.nameValuePair "beets-${runnerName}-retry" {
           enable = true;
-          wantedBy = [ "beets-${runnerName}.service" ];
+          wantedBy = [ "timers.target" ];
           timerConfig = {
             OnActiveSec = "10min";
             Unit = "beets-${runnerName}.service";
@@ -412,10 +411,10 @@ in
             enable = runnerInstance.triggers ? path && runnerInstance.triggers.path != null;
             unitConfig = {
               RequiresMountsFor = runnerInstance.mountFor;
-              Unit = "beets-${runnerName}.service";
             };
             pathConfig = {
               PathModified = runnerInstance.conditionDir;
+              Unit = "beets-${runnerName}.service";
             };
           }
         )

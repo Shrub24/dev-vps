@@ -75,7 +75,7 @@ convert:
     aiff:
       command: ffmpeg -i $source -y -c:a pcm_s16be -write_id3v2 1 $dest
       extension: aiff
-beetcamp:
+bandcamp:
   include_digital_only_tracks: true
   art: true
 chroma:
